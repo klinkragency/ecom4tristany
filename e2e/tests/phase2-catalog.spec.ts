@@ -57,8 +57,10 @@ test('admin creates product with options + variants, storefront renders it', asy
   // Wait for the variant count to show 2 variants, then delete "Default".
   await expect(page.getByRole('heading', { name: /Variants \(2\)/ })).toBeVisible();
   page.once('dialog', (d) => d.accept());
+  // After adding the "Size" option, the pre-existing default variant has no option values assigned,
+  // so its computed label is "?". Delete that one.
   await page
-    .locator('[data-variant-label="Default"]')
+    .locator('[data-variant-label="?"]')
     .getByRole('button', { name: /^Delete$/ })
     .click();
   await expect(page.getByRole('heading', { name: /Variants \(1\)/ })).toBeVisible();
@@ -66,7 +68,8 @@ test('admin creates product with options + variants, storefront renders it', asy
   // Update handle to a stable one so the storefront test below is predictable.
   const handleInput = page.getByLabel('Handle (URL slug)');
   await handleInput.fill(handle);
-  await page.getByRole('button', { name: /^Save$/ }).click();
+  // Use the header Save button (first in DOM order).
+  await page.getByRole('button', { name: /^Save$/ }).first().click();
   await expect(page.getByText(/Saved/)).toBeVisible({ timeout: 5000 });
 
   // Storefront listing
@@ -77,6 +80,7 @@ test('admin creates product with options + variants, storefront renders it', asy
   // PDP
   await store.goto(`${STORE}/products/${handle}`);
   await expect(store.getByRole('heading', { name: title })).toBeVisible();
-  await expect(store.getByText('€29,99')).toBeVisible();
+  // fr-FR EUR format: "29,99 €" with NBSP between amount and symbol.
+  await expect(store.getByText(/29,99/)).toBeVisible();
   await expect(store.getByText(/Warm hoodie/)).toBeVisible();
 });

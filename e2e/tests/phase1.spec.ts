@@ -18,8 +18,8 @@ test('admin can sign in and see dashboard shell', async ({ page }) => {
     await expect(page.getByRole('link', { name: label })).toBeVisible();
   }
 
-  await page.getByRole('link', { name: 'Products' }).click();
-  await expect(page.getByText(/Phase 2/)).toBeVisible();
+  await page.getByRole('link', { name: 'Orders' }).click();
+  await expect(page.getByText(/Phase 3/)).toBeVisible();
 
   await page.getByRole('button', { name: /log out/i }).click();
   await expect(page).toHaveURL(/\/login$/);
