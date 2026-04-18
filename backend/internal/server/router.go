@@ -10,7 +10,9 @@ import (
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/product"
 	"github.com/3mg/shop/backend/internal/session"
+	"github.com/3mg/shop/backend/internal/storage"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,6 +23,7 @@ type Deps struct {
 	Log      *slog.Logger
 	DB       *pgxpool.Pool
 	Sessions *session.Store
+	Storage  storage.Storage
 }
 
 func NewRouter(d Deps) http.Handler {
@@ -38,6 +41,7 @@ func NewRouter(d Deps) http.Handler {
 
 	// Admin
 	adminH := admin.NewHandler(d.DB, d.Sessions)
+	productH := product.NewHandler(d.DB, d.Storage)
 	r.Route("/api/admin", func(r chi.Router) {
 		r.Use(auth.CSRF())
 		r.Post("/auth/login", adminH.Login)
@@ -46,7 +50,31 @@ func NewRouter(d Deps) http.Handler {
 			r.Use(auth.RequireAdmin(d.Sessions))
 			r.Post("/auth/logout", adminH.Logout)
 			r.Get("/me", adminH.Me)
+
+			// Products
+			r.Get("/products", productH.List)
+			r.Post("/products", productH.Create)
+			r.Get("/products/{id}", productH.Get)
+			r.Put("/products/{id}", productH.Update)
+			r.Delete("/products/{id}", productH.Delete)
+
+			// Options + option values
+			r.Post("/products/{id}/options", productH.AddOption)
+			r.Delete("/options/{optionId}", productH.DeleteOption)
+			r.Post("/options/{optionId}/values", productH.AddOptionValue)
+			r.Delete("/option-values/{valueId}", productH.DeleteOptionValue)
+
+			// Variants
+			r.Post("/products/{id}/variants", productH.AddVariant)
+			r.Put("/variants/{variantId}", productH.UpdateVariant)
+			r.Delete("/variants/{variantId}", productH.DeleteVariant)
 		})
+	})
+
+	// Storefront (public read)
+	r.Route("/api/storefront", func(r chi.Router) {
+		r.Get("/products", storefrontProductsList(d.DB))
+		r.Get("/products/{handle}", storefrontProductByHandle(d.DB))
 	})
 
 	// Customer

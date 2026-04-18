@@ -14,6 +14,7 @@ import (
 	"github.com/3mg/shop/backend/internal/platform"
 	"github.com/3mg/shop/backend/internal/server"
 	"github.com/3mg/shop/backend/internal/session"
+	"github.com/3mg/shop/backend/internal/storage"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -41,6 +42,12 @@ func main() {
 
 	store := session.NewStore(db, cfg.SessionTTL, cfg.SessionCookieDomain, cfg.SessionCookieSecure)
 
+	stor, err := storage.New(ctx, cfg.S3())
+	if err != nil {
+		log.Error("storage init", "err", err)
+		os.Exit(1)
+	}
+
 	// Background GC for expired sessions
 	gcCtx, cancelGC := context.WithCancel(ctx)
 	defer cancelGC()
@@ -51,6 +58,7 @@ func main() {
 		Log:      log,
 		DB:       db,
 		Sessions: store,
+		Storage:  stor,
 	})
 
 	srv := &http.Server{
