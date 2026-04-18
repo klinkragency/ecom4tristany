@@ -78,6 +78,11 @@ tasks:
     cmds:
       - cd {{.BACKEND_DIR}} && go run ./cmd/seed-admin {{.CLI_ARGS}}
 
+  r2:setup:
+    desc: Apply CORS policy to the R2 bucket (run once after changing S3_* env)
+    cmds:
+      - cd {{.BACKEND_DIR}} && go run ./cmd/r2-setup
+
   # ─── Test ──────────────────────────────────────────────────────────────
   test:
     desc: Run all tests (Go + frontends)
