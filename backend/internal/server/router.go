@@ -77,6 +77,10 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/media/{mediaId}", productH.UpdateMedia)
 			r.Delete("/media/{mediaId}", productH.DeleteMedia)
 
+			// CSV import / export
+			r.Get("/catalog/exports/products", productH.ExportCSV)
+			r.Post("/catalog/imports/products", productH.ImportCSVHandler)
+
 			// Collections
 			collH := collection.NewHandler(d.DB)
 			r.Get("/collections", collH.List)
