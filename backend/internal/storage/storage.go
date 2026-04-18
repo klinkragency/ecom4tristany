@@ -63,12 +63,11 @@ func New(ctx context.Context, cfg config.S3Config) (Storage, error) {
 	}, nil
 }
 
-func (s *s3Storage) PresignPut(ctx context.Context, key, contentType string, maxBytes int64, ttl time.Duration) (string, error) {
+func (s *s3Storage) PresignPut(ctx context.Context, key, contentType string, ttl time.Duration) (string, error) {
 	req, err := s.presigner.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket:        aws.String(s.bucket),
-		Key:           aws.String(key),
-		ContentType:   aws.String(contentType),
-		ContentLength: aws.Int64(maxBytes),
+		Bucket:      aws.String(s.bucket),
+		Key:         aws.String(key),
+		ContentType: aws.String(contentType),
 	}, s3.WithPresignExpires(ttl))
 	if err != nil {
 		return "", err
@@ -80,10 +79,33 @@ func (s *s3Storage) PublicURL(key string) string {
 	return s.publicURLBase + "/" + strings.TrimLeft(key, "/")
 }
 
+func (s *s3Storage) HeadObject(ctx context.Context, key string) (bool, error) {
+	_, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		// HeadObject returns a 404 as an error. Treat as "not found" without surfacing.
+		var apiErr interface{ ErrorCode() string }
+		if ok := errAs(err, &apiErr); ok {
+			if apiErr.ErrorCode() == "NotFound" || apiErr.ErrorCode() == "NoSuchKey" {
+				return false, nil
+			}
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *s3Storage) Delete(ctx context.Context, key string) error {
 	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 	return err
+}
+
+// errAs is a tiny wrapper to avoid importing errors in the hot path of storage.go.
+func errAs(err error, target any) bool {
+	return errorsAs(err, target)
 }
