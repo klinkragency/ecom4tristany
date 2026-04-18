@@ -74,13 +74,6 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
 }
 
 function Toolbar({ editor }: { editor: Editor }) {
-  const btn = (active: boolean) =>
-    `px-2 py-1 text-sm rounded border ${
-      active
-        ? 'bg-[color:var(--color-accent)] text-white border-[color:var(--color-accent)]'
-        : 'border-[color:var(--color-border)] bg-white hover:bg-gray-50'
-    }`;
-
   function toggleLink() {
     const prev = editor.getAttributes('link').href as string | undefined;
     const url = window.prompt('URL (leave empty to remove)', prev ?? 'https://');
@@ -94,84 +87,83 @@ function Toolbar({ editor }: { editor: Editor }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1" role="toolbar" aria-label="Text formatting">
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={btn(editor.isActive('bold'))}
-        aria-label="Bold"
-      >
+      <TBtn active={editor.isActive('bold')} onRun={() => editor.chain().focus().toggleBold().run()} label="Bold">
         <b>B</b>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={btn(editor.isActive('italic'))}
-        aria-label="Italic"
-      >
+      </TBtn>
+      <TBtn active={editor.isActive('italic')} onRun={() => editor.chain().focus().toggleItalic().run()} label="Italic">
         <i>I</i>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={btn(editor.isActive('strike'))}
-        aria-label="Strikethrough"
-      >
+      </TBtn>
+      <TBtn active={editor.isActive('strike')} onRun={() => editor.chain().focus().toggleStrike().run()} label="Strikethrough">
         <s>S</s>
-      </button>
+      </TBtn>
       <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={btn(editor.isActive('heading', { level: 2 }))}
-        aria-label="Heading 2"
+      <TBtn
+        active={editor.isActive('heading', { level: 2 })}
+        onRun={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        label="Heading 2"
       >
         H2
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={btn(editor.isActive('heading', { level: 3 }))}
-        aria-label="Heading 3"
+      </TBtn>
+      <TBtn
+        active={editor.isActive('heading', { level: 3 })}
+        onRun={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        label="Heading 3"
       >
         H3
-      </button>
+      </TBtn>
       <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={btn(editor.isActive('bulletList'))}
-        aria-label="Bullet list"
-      >
+      <TBtn active={editor.isActive('bulletList')} onRun={() => editor.chain().focus().toggleBulletList().run()} label="Bullet list">
         • List
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={btn(editor.isActive('orderedList'))}
-        aria-label="Ordered list"
-      >
+      </TBtn>
+      <TBtn active={editor.isActive('orderedList')} onRun={() => editor.chain().focus().toggleOrderedList().run()} label="Ordered list">
         1. List
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={btn(editor.isActive('blockquote'))}
-        aria-label="Blockquote"
-      >
+      </TBtn>
+      <TBtn active={editor.isActive('blockquote')} onRun={() => editor.chain().focus().toggleBlockquote().run()} label="Blockquote">
         ❝
-      </button>
+      </TBtn>
       <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
-      <button type="button" onClick={toggleLink} className={btn(editor.isActive('link'))} aria-label="Link">
+      <TBtn active={editor.isActive('link')} onRun={toggleLink} label="Link">
         Link
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-        className={btn(false)}
-        aria-label="Clear formatting"
+      </TBtn>
+      <TBtn
+        active={false}
+        onRun={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+        label="Clear formatting"
       >
         Clear
-      </button>
+      </TBtn>
     </div>
+  );
+}
+
+// TBtn wraps a toolbar button with `onMouseDown={preventDefault}` so clicks
+// don't steal focus from the editor (which would blow away the user's selection
+// before the formatting command runs — the classic Tiptap toolbar gotcha).
+function TBtn({
+  active,
+  onRun,
+  label,
+  children,
+}: {
+  active: boolean;
+  onRun: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  const cls = `px-2 py-1 text-sm rounded border ${
+    active
+      ? 'bg-[color:var(--color-accent)] text-white border-[color:var(--color-accent)]'
+      : 'border-[color:var(--color-border)] bg-white hover:bg-gray-50'
+  }`;
+  return (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onRun}
+      className={cls}
+      aria-label={label}
+    >
+      {children}
+    </button>
   );
 }
