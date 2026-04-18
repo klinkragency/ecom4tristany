@@ -15,6 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
             <Link href="/" className="text-lg font-semibold">Shop</Link>
             <nav className="flex items-center gap-4 text-sm">
+              <Link href="/products" className="hover:underline">Products</Link>
+              <Link href="/collections" className="hover:underline">Collections</Link>
               <Link href="/account" className="hover:underline">Account</Link>
             </nav>
           </div>

@@ -66,3 +66,38 @@ export type Product = {
 export function formatPrice(cents: number, currency = 'EUR'): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
 }
+
+export type CollectionListItem = {
+  id: string;
+  handle: string;
+  title: string;
+  isRulesBased: boolean;
+  productCount: number;
+  imageUrl: string;
+  updatedAt: string;
+};
+
+export type CollectionListPage = {
+  items: CollectionListItem[];
+  nextCursor?: string;
+};
+
+export type CollectionProductRef = {
+  id: string;
+  handle: string;
+  title: string;
+  status: string;
+  minPriceCents: number;
+  maxPriceCents: number;
+  primaryImageUrl: string;
+};
+
+export type StorefrontCollection = {
+  id: string;
+  handle: string;
+  title: string;
+  descriptionHtml: string;
+  imageUrl: string;
+  isRulesBased: boolean;
+  products: CollectionProductRef[];
+};
