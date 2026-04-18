@@ -30,6 +30,10 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   // `active` states. We don't cache the active set — we query the DOM on render.
   const [, bump] = useState(0);
   const rebump = useCallback(() => bump((n) => n + 1), []);
+  // Track editor focus so toolbar active states only reflect reality when the
+  // editor actually has the selection — otherwise queryCommandState returns
+  // stale data that can flip the B/I/S buttons for no visible reason.
+  const [hasFocus, setHasFocus] = useState(false);
 
   // Push external `value` into the DOM ONLY when it differs from what's on screen
   // AND the editor is not focused. Otherwise we'd clobber the caret mid-typing.
@@ -85,12 +89,15 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   }
 
   const isActive = (cmd: string) => {
+    if (!hasFocus) return false;
     try {
       return document.queryCommandState(cmd);
     } catch {
       return false;
     }
   };
+  const block = hasFocus ? queryBlock() : '';
+  const linkHref = hasFocus ? currentLinkHref() : null;
 
   return (
     <div className="space-y-2">
@@ -99,8 +106,8 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <TBtn active={isActive('italic')} onRun={() => runCmd('italic')} label="Italic"><i>I</i></TBtn>
         <TBtn active={isActive('strikeThrough')} onRun={() => runCmd('strikeThrough')} label="Strikethrough"><s>S</s></TBtn>
         <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
-        <TBtn active={queryBlock() === 'h2'} onRun={() => toggleHeading(2)} label="Heading 2">H2</TBtn>
-        <TBtn active={queryBlock() === 'h3'} onRun={() => toggleHeading(3)} label="Heading 3">H3</TBtn>
+        <TBtn active={block === 'h2'} onRun={() => toggleHeading(2)} label="Heading 2">H2</TBtn>
+        <TBtn active={block === 'h3'} onRun={() => toggleHeading(3)} label="Heading 3">H3</TBtn>
         <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
         <TBtn
           active={isActive('insertUnorderedList')}
@@ -113,12 +120,12 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
           label="Ordered list"
         >1. List</TBtn>
         <TBtn
-          active={queryBlock() === 'blockquote'}
+          active={block === 'blockquote'}
           onRun={() => runCmd('formatBlock', 'blockquote')}
           label="Blockquote"
         >❝</TBtn>
         <span className="w-px h-5 bg-[color:var(--color-border)] mx-1" />
-        <TBtn active={!!currentLinkHref()} onRun={toggleLink} label="Link">Link</TBtn>
+        <TBtn active={!!linkHref} onRun={toggleLink} label="Link">Link</TBtn>
         <TBtn active={false} onRun={clearFormat} label="Clear formatting">Clear</TBtn>
       </div>
 
@@ -131,7 +138,8 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         style={{ minHeight }}
         data-placeholder={placeholder ?? 'Start typing…'}
         onInput={() => { emit(); rebump(); }}
-        onBlur={emit}
+        onFocus={() => { setHasFocus(true); rebump(); }}
+        onBlur={() => { setHasFocus(false); emit(); rebump(); }}
         onKeyUp={rebump}
         onMouseUp={rebump}
       />
