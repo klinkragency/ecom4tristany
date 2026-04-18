@@ -29,7 +29,9 @@ test('admin creates product with options + variants, storefront renders it', asy
   // Create new
   await page.getByRole('link', { name: /add product/i }).click();
   await page.getByLabel('Title').fill(title);
-  await page.getByLabel(/Description/).fill('<p><strong>Warm hoodie</strong> for cold days.</p>');
+  // Tiptap uses a contentEditable div (.ProseMirror), not a textarea.
+  await page.locator('.ProseMirror').first().click();
+  await page.locator('.ProseMirror').first().pressSequentially('Warm hoodie for cold days.');
   await page.locator('select').first().selectOption('active');
   await page.getByLabel('Vendor').fill('ACME');
   await page.getByLabel('Product type').fill('Apparel');
