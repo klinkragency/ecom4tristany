@@ -1,0 +1,19 @@
+{
+  "name": "shop-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "admin",
+    "storefront",
+    "packages/*",
+    "e2e"
+  ],
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "prettier": "^3.3.3"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
+}
