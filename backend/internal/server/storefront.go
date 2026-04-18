@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/product"
 
@@ -50,5 +51,48 @@ func storefrontProductByHandle(db *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		httpx.JSON(w, http.StatusOK, p)
+	}
+}
+
+func storefrontCollectionsList(db *pgxpool.Pool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		limit, _ := strconv.Atoi(q.Get("limit"))
+		page, err := collection.List(r.Context(), db, collection.ListParams{
+			Search: q.Get("q"),
+			Limit:  limit,
+			Cursor: q.Get("cursor"),
+		})
+		if err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "list_error", err.Error())
+			return
+		}
+		httpx.JSON(w, http.StatusOK, page)
+	}
+}
+
+func storefrontCollectionByHandle(db *pgxpool.Pool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handle := chi.URLParam(r, "handle")
+		c, err := collection.LoadByHandle(r.Context(), db, handle)
+		if err != nil {
+			if errors.Is(err, collection.ErrNotFound) {
+				httpx.Error(w, http.StatusNotFound, "not_found", "collection not found")
+				return
+			}
+			httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+			return
+		}
+		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+		products, err := collection.ListProducts(r.Context(), db, c, true, limit)
+		if err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "products_error", err.Error())
+			return
+		}
+		type resp struct {
+			*collection.Collection
+			Products []collection.ProductRef `json:"products"`
+		}
+		httpx.JSON(w, http.StatusOK, resp{Collection: c, Products: products})
 	}
 }

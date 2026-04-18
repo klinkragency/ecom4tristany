@@ -7,6 +7,7 @@ import (
 
 	"github.com/3mg/shop/backend/internal/admin"
 	"github.com/3mg/shop/backend/internal/auth"
+	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/httpx"
@@ -75,6 +76,19 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/products/{id}/media/reorder", productH.ReorderMedia)
 			r.Put("/media/{mediaId}", productH.UpdateMedia)
 			r.Delete("/media/{mediaId}", productH.DeleteMedia)
+
+			// Collections
+			collH := collection.NewHandler(d.DB)
+			r.Get("/collections", collH.List)
+			r.Post("/collections", collH.Create)
+			r.Get("/collections/{id}", collH.Get)
+			r.Put("/collections/{id}", collH.Update)
+			r.Delete("/collections/{id}", collH.Delete)
+			r.Post("/collections/{id}/products", collH.AttachProducts)
+			r.Delete("/collections/{id}/products/{productId}", collH.DetachProduct)
+			r.Post("/collections/{id}/products/reorder", collH.ReorderProducts)
+			r.Post("/collections/{id}/rules", collH.AddRule)
+			r.Delete("/rules/{ruleId}", collH.DeleteRule)
 		})
 	})
 
@@ -82,6 +96,8 @@ func NewRouter(d Deps) http.Handler {
 	r.Route("/api/storefront", func(r chi.Router) {
 		r.Get("/products", storefrontProductsList(d.DB))
 		r.Get("/products/{handle}", storefrontProductByHandle(d.DB))
+		r.Get("/collections", storefrontCollectionsList(d.DB))
+		r.Get("/collections/{handle}", storefrontCollectionByHandle(d.DB))
 	})
 
 	// Customer

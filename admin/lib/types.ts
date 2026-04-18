@@ -82,3 +82,76 @@ export type Product = {
 export function formatPrice(cents: number, currency = 'EUR'): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
 }
+
+// ─── Collections ─────────────────────────────────────────────────────────
+
+export type CollectionRule = {
+  id: string;
+  field: 'title' | 'vendor' | 'product_type' | 'tag' | 'price' | 'inventory' | 'status';
+  operator:
+    | 'equals'
+    | 'not_equals'
+    | 'contains'
+    | 'not_contains'
+    | 'starts_with'
+    | 'ends_with'
+    | 'greater_than'
+    | 'less_than'
+    | 'in_stock'
+    | 'out_of_stock';
+  value: string;
+  position: number;
+};
+
+export type SortOrder =
+  | 'manual'
+  | 'best_selling'
+  | 'price_asc'
+  | 'price_desc'
+  | 'alpha_asc'
+  | 'alpha_desc'
+  | 'created_desc';
+
+export type CollectionProductRef = {
+  id: string;
+  handle: string;
+  title: string;
+  status: string;
+  minPriceCents: number;
+  maxPriceCents: number;
+  primaryImageUrl: string;
+  position: number;
+};
+
+export type Collection = {
+  id: string;
+  handle: string;
+  title: string;
+  descriptionHtml: string;
+  imageUrl: string;
+  isRulesBased: boolean;
+  matchAll: boolean;
+  sortOrder: SortOrder;
+  seoTitle: string;
+  seoDescription: string;
+  publishedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  rules: CollectionRule[];
+  products: CollectionProductRef[];
+};
+
+export type CollectionListItem = {
+  id: string;
+  handle: string;
+  title: string;
+  isRulesBased: boolean;
+  productCount: number;
+  imageUrl: string;
+  updatedAt: string;
+};
+
+export type CollectionListPage = {
+  items: CollectionListItem[];
+  nextCursor?: string;
+};

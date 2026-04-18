@@ -19,8 +19,9 @@ func buildRuleSQL(rules []Rule, matchAll bool, startArgIdx int) (string, []any, 
 	next := startArgIdx
 	placeholder := func(v any) string {
 		args = append(args, v)
+		ph := "$" + strconv.Itoa(next)
 		next++
-		return "$" + strconv.Itoa(next)
+		return ph
 	}
 
 	for _, r := range rules {
