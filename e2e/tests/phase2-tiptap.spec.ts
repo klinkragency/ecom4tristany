@@ -26,8 +26,8 @@ test('Tiptap: admin writes bold + heading, backend sanitizes script, storefront 
 
   await page.getByLabel('Title').fill(title);
 
-  // Type into the Tiptap editor, then select-all and toggle bold.
-  const editor = page.locator('.ProseMirror').first();
+  // Type into the contentEditable editor, then select-all and toggle bold.
+  const editor = page.locator('.rte-editor').first();
   await editor.click();
   await editor.pressSequentially('Warm hoodie description.');
   await page.keyboard.press('ControlOrMeta+a');
