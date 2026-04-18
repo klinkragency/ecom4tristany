@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import type { Collection } from '@/lib/types';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function NewCollectionPage() {
   const router = useRouter();
@@ -66,12 +67,12 @@ export default function NewCollectionPage() {
             />
           </label>
           <label className="block">
-            <div className="text-sm font-medium mb-1">Description (HTML)</div>
-            <textarea
-              rows={3}
+            <div className="text-sm font-medium mb-1">Description</div>
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
+              onChange={setDescription}
+              placeholder="Describe the collection…"
+              minHeight={140}
             />
           </label>
         </div>

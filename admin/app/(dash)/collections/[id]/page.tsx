@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Collection, type CollectionRule, type SortOrder } from '@/lib/types';
 import ProductPicker from './ProductPicker';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const FIELD_LABELS: Record<CollectionRule['field'], string> = {
   title: 'Title',
@@ -189,12 +190,12 @@ export default function EditCollectionPage() {
               className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
             />
           </Field>
-          <Field label="Description (HTML)">
-            <textarea
-              rows={3}
+          <Field label="Description">
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
+              onChange={setDescription}
+              placeholder="Describe the collection…"
+              minHeight={140}
             />
           </Field>
           <Field label="Sort order">

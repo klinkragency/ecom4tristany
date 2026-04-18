@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import type { Product } from '@/lib/types';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -66,13 +67,12 @@ export default function NewProductPage() {
               className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
             />
           </Field>
-          <Field label="Description (plain HTML; Tiptap coming in Phase 2c)">
-            <textarea
-              rows={4}
+          <Field label="Description">
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
-              placeholder="<p>Soft cotton tee…</p>"
+              onChange={setDescription}
+              placeholder="Describe the product…"
+              minHeight={160}
             />
           </Field>
         </Card>

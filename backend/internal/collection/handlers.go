@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/3mg/shop/backend/internal/htmlx"
 	"github.com/3mg/shop/backend/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -117,7 +118,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
         INSERT INTO collections (handle, title, description_html, image_url, is_rules_based, match_all, sort_order)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id
-    `, handle, req.Title, req.DescriptionHTML, req.ImageURL, req.IsRulesBased, matchAll, req.SortOrder).Scan(&id)
+    `, handle, req.Title, htmlx.Sanitize(req.DescriptionHTML), req.ImageURL, req.IsRulesBased, matchAll, req.SortOrder).Scan(&id)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "insert_error", err.Error())
 		return
@@ -159,7 +160,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		add("title", *req.Title)
 	}
 	if req.DescriptionHTML != nil {
-		add("description_html", *req.DescriptionHTML)
+		add("description_html", htmlx.Sanitize(*req.DescriptionHTML))
 	}
 	if req.ImageURL != nil {
 		add("image_url", *req.ImageURL)

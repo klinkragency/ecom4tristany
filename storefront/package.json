@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "isomorphic-dompurify": "^3.9.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

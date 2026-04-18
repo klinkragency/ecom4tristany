@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
 import MediaUploader from './MediaUploader';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -151,12 +152,12 @@ export default function EditProductPage() {
               className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
             />
           </Field>
-          <Field label="Description (HTML)">
-            <textarea
-              rows={5}
+          <Field label="Description">
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
+              onChange={setDescription}
+              placeholder="Describe the product…"
+              minHeight={200}
             />
           </Field>
         </Card>

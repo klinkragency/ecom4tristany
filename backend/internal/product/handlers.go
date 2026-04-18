@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/3mg/shop/backend/internal/htmlx"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/storage"
 
@@ -106,7 +107,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
         INSERT INTO products (handle, title, description_html, status, vendor, product_type)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id
-    `, handle, req.Title, req.DescriptionHTML, req.Status, req.Vendor, req.ProductType).Scan(&id)
+    `, handle, req.Title, htmlx.Sanitize(req.DescriptionHTML), req.Status, req.Vendor, req.ProductType).Scan(&id)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "insert_error", err.Error())
 		return
@@ -183,7 +184,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		add("title", *req.Title)
 	}
 	if req.DescriptionHTML != nil {
-		add("description_html", *req.DescriptionHTML)
+		clean := htmlx.Sanitize(*req.DescriptionHTML)
+		add("description_html", clean)
 	}
 	if req.Status != nil {
 		if *req.Status != "draft" && *req.Status != "active" && *req.Status != "archived" {
