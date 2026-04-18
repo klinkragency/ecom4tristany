@@ -68,6 +68,13 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/products/{id}/variants", productH.AddVariant)
 			r.Put("/variants/{variantId}", productH.UpdateVariant)
 			r.Delete("/variants/{variantId}", productH.DeleteVariant)
+
+			// Media
+			r.Post("/products/{id}/media/presign", productH.PresignMediaUpload)
+			r.Post("/products/{id}/media", productH.AttachMedia)
+			r.Post("/products/{id}/media/reorder", productH.ReorderMedia)
+			r.Put("/media/{mediaId}", productH.UpdateMedia)
+			r.Delete("/media/{mediaId}", productH.DeleteMedia)
 		})
 	})
 
