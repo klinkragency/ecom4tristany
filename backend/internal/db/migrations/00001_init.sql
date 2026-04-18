@@ -2,10 +2,11 @@
 -- +goose StatementBegin
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE admin_users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email           CITEXT_STUB TEXT NOT NULL UNIQUE,
+    email           CITEXT NOT NULL UNIQUE,
     password_hash   TEXT NOT NULL,
     name            TEXT NOT NULL,
     role            TEXT NOT NULL DEFAULT 'owner',
@@ -15,7 +16,7 @@ CREATE TABLE admin_users (
 
 CREATE TABLE customers (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email               TEXT NOT NULL UNIQUE,
+    email               CITEXT NOT NULL UNIQUE,
     password_hash       TEXT NOT NULL,
     first_name          TEXT NOT NULL DEFAULT '',
     last_name           TEXT NOT NULL DEFAULT '',
