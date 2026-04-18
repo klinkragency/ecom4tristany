@@ -16,3 +16,34 @@ html, body {
   color: var(--color-text);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
+/* Tiptap editor: plain-text baseline. Marks only apply when the user toggles them. */
+.tiptap-editor {
+  font-weight: 400;
+}
+.tiptap-editor p { margin: 0.5em 0; font-weight: 400; }
+.tiptap-editor p:first-child { margin-top: 0; }
+.tiptap-editor p:last-child  { margin-bottom: 0; }
+.tiptap-editor strong, .tiptap-editor b { font-weight: 700; }
+.tiptap-editor em, .tiptap-editor i { font-style: italic; }
+.tiptap-editor s { text-decoration: line-through; }
+.tiptap-editor h2 { font-size: 1.25rem; font-weight: 700; margin: 0.75em 0 0.25em; }
+.tiptap-editor h3 { font-size: 1.1rem;  font-weight: 600; margin: 0.75em 0 0.25em; }
+.tiptap-editor ul, .tiptap-editor ol { padding-left: 1.5em; margin: 0.5em 0; }
+.tiptap-editor ul { list-style: disc; }
+.tiptap-editor ol { list-style: decimal; }
+.tiptap-editor blockquote {
+  border-left: 3px solid #d1d5db;
+  padding-left: 0.75em;
+  margin: 0.5em 0;
+  color: #4b5563;
+}
+.tiptap-editor a { color: #2563eb; text-decoration: underline; }
+/* Placeholder */
+.tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
