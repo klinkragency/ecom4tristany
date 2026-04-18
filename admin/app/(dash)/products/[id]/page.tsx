@@ -475,7 +475,11 @@ function VariantRow({
   }
 
   return (
-    <div className="grid grid-cols-[1.5fr_1fr_1fr_auto_auto] gap-2 items-center border border-[color:var(--color-border)] rounded p-2 text-sm">
+    <div
+      data-testid="variant-row"
+      data-variant-label={describeVariant(product, variant)}
+      className="grid grid-cols-[1.5fr_1fr_1fr_auto_auto] gap-2 items-center border border-[color:var(--color-border)] rounded p-2 text-sm"
+    >
       <div className="font-medium">{describeVariant(product, variant)}</div>
       <input
         placeholder="SKU"

@@ -43,21 +43,25 @@ test('admin creates product with options + variants, storefront renders it', asy
   await page.getByPlaceholder('Option name (e.g. Size)').fill('Size');
   await page.getByPlaceholder('Values, comma-separated (e.g. S, M, L)').fill('S, M, L');
   await page.getByRole('button', { name: /^Add$/ }).click();
-  await expect(page.getByText('Size', { exact: true })).toBeVisible();
-  await expect(page.getByText('S', { exact: true })).toBeVisible();
+  // "Options (1 / 3)" card heading is enough to confirm the option was added.
+  await expect(page.getByRole('heading', { name: /Options \(1 \/ 3\)/ })).toBeVisible();
 
-  // Add one new variant (Size M @ €29.99) and delete the default variant.
-  // Default variant is labelled "Default" in VariantRow.
-  const sizeSelect = page.locator('select').filter({ hasText: 'Size' }).first();
+  // Add one new variant (Size M @ €29.99) then delete the default variant.
+  // The <select> for the Size option inside the "Add variant" section.
+  const sizeSelect = page.locator('select').filter({ hasText: 'Size…' });
   await sizeSelect.selectOption({ label: 'M' });
   await page.getByPlaceholder('SKU').last().fill(`HOODIE-${suffix}-M`);
   await page.getByPlaceholder('Price').last().fill('29.99');
-  await page.getByRole('button', { name: /add variant/i }).click();
+  await page.getByRole('button', { name: /^Add variant$/ }).click();
 
-  // Delete the default variant
-  const defaultRow = page.locator('div:has-text("Default")').filter({ has: page.getByText('Default', { exact: true }) }).first();
+  // Wait for the variant count to show 2 variants, then delete "Default".
+  await expect(page.getByRole('heading', { name: /Variants \(2\)/ })).toBeVisible();
   page.once('dialog', (d) => d.accept());
-  await defaultRow.getByRole('button', { name: /delete/i }).click();
+  await page
+    .locator('[data-variant-label="Default"]')
+    .getByRole('button', { name: /^Delete$/ })
+    .click();
+  await expect(page.getByRole('heading', { name: /Variants \(1\)/ })).toBeVisible();
 
   // Update handle to a stable one so the storefront test below is predictable.
   const handleInput = page.getByLabel('Handle (URL slug)');
