@@ -18,9 +18,12 @@ import (
 // (Cloudflare R2 in prod, MinIO in dev).
 type Storage interface {
 	// PresignPut returns a time-limited URL the browser can PUT to directly.
-	PresignPut(ctx context.Context, objectKey, contentType string, maxBytes int64, ttl time.Duration) (string, error)
+	// The browser MUST send a Content-Type header matching `contentType`.
+	PresignPut(ctx context.Context, objectKey, contentType string, ttl time.Duration) (string, error)
 	// PublicURL returns the canonical public URL for an object key.
 	PublicURL(objectKey string) string
+	// HeadObject returns true if the object exists.
+	HeadObject(ctx context.Context, objectKey string) (bool, error)
 	// Delete removes an object by key.
 	Delete(ctx context.Context, objectKey string) error
 }
