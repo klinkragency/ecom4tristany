@@ -16,15 +16,17 @@ services:
       timeout: 3s
       retries: 10
 
-  # Mailpit: local SMTP + webmail UI for inspecting transactional emails in dev.
-  # Backend sends to 1025 (SMTP), browse captured messages at http://localhost:8025.
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: shop_mailpit
-    ports:
-      - "1025:1025"   # SMTP in
-      - "8025:8025"   # web UI
-    restart: unless-stopped
+# Mailpit (local SMTP + webmail UI for inspecting transactional emails in dev)
+# lives either in Docker or native install (`brew install mailpit`).
+# SMTP on 1025, UI at http://localhost:8025. If you don't have mailpit natively,
+# uncomment this block:
+#  mailpit:
+#    image: axllent/mailpit:latest
+#    container_name: shop_mailpit
+#    ports:
+#      - "1025:1025"   # SMTP in
+#      - "8025:8025"   # web UI
+#    restart: unless-stopped
 
 # Object storage uses Cloudflare R2 — see S3_* vars in .env.
 

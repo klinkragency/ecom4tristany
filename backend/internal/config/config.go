@@ -29,6 +29,16 @@ type Config struct {
 	// Commerce
 	ShopCurrency   string
 	ShopVATPercent int
+	ShopName       string
+	ShopPublicURL  string
+
+	// Email (SMTP)
+	SMTPHost      string
+	SMTPPort      int
+	SMTPUser      string
+	SMTPPass      string
+	EmailFrom     string
+	EmailFromName string
 }
 
 func Load() (*Config, error) {
@@ -51,6 +61,15 @@ func Load() (*Config, error) {
 
 		ShopCurrency:   getenv("SHOP_CURRENCY", "EUR"),
 		ShopVATPercent: getenvInt("SHOP_VAT_PERCENT", 20),
+		ShopName:       getenv("SHOP_NAME", "Shop"),
+		ShopPublicURL:  getenv("SHOP_PUBLIC_URL", "http://localhost:3000"),
+
+		SMTPHost:      getenv("SMTP_HOST", "localhost"),
+		SMTPPort:      getenvInt("SMTP_PORT", 1025),
+		SMTPUser:      getenv("SMTP_USER", ""),
+		SMTPPass:      getenv("SMTP_PASS", ""),
+		EmailFrom:     getenv("EMAIL_FROM", "no-reply@shop.test"),
+		EmailFromName: getenv("EMAIL_FROM_NAME", "Shop"),
 	}
 
 	if cfg.DatabaseURL == "" {
