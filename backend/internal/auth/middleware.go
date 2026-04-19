@@ -24,6 +24,25 @@ func RequireCustomer(store *session.Store) func(http.Handler) http.Handler {
 	return requireSession(store, session.TypeCustomer)
 }
 
+// OptionalCustomer loads the customer session into the request context if a
+// valid cookie is present, but does NOT reject requests that have no session.
+// Use this on endpoints that work for both guests and logged-in customers
+// (e.g. the cart) and need to know the customer when present.
+func OptionalCustomer(store *session.Store) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if token, ok := session.CookieFromRequest(r, session.TypeCustomer); ok {
+				if sess, err := store.Get(r.Context(), token); err == nil && sess.UserType == session.TypeCustomer {
+					ctx := context.WithValue(r.Context(), ctxSession, sess)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func requireSession(store *session.Store, userType session.UserType) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

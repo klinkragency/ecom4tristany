@@ -7,6 +7,7 @@ import (
 
 	"github.com/3mg/shop/backend/internal/admin"
 	"github.com/3mg/shop/backend/internal/auth"
+	"github.com/3mg/shop/backend/internal/cart"
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
@@ -115,12 +116,24 @@ func NewRouter(d Deps) http.Handler {
 		})
 	})
 
-	// Storefront (public read)
+	// Storefront (public)
 	r.Route("/api/storefront", func(r chi.Router) {
 		r.Get("/products", storefrontProductsList(d.DB))
 		r.Get("/products/{handle}", storefrontProductByHandle(d.DB))
 		r.Get("/collections", storefrontCollectionsList(d.DB))
 		r.Get("/collections/{handle}", storefrontCollectionByHandle(d.DB))
+
+		// Cart (guests + authenticated customers).
+		cartH := cart.NewHandler(d.DB, d.Cfg)
+		r.Group(func(r chi.Router) {
+			r.Use(auth.OptionalCustomer(d.Sessions))
+			r.Use(auth.CSRF())
+			r.Get("/cart", cartH.Get)
+			r.Post("/cart/items", cartH.Add)
+			r.Put("/cart/items/{itemId}", cartH.Update)
+			r.Delete("/cart/items/{itemId}", cartH.Remove)
+			r.Post("/cart/clear", cartH.Clear)
+		})
 	})
 
 	// Customer
