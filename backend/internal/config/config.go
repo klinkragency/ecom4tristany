@@ -20,6 +20,15 @@ type Config struct {
 	CORSOrigins         []string
 	RateLimitRPS        int
 	RateLimitLoginRPM   int
+
+	// Stripe
+	StripeSecretKey      string
+	StripePublishableKey string
+	StripeWebhookSecret  string
+
+	// Commerce
+	ShopCurrency   string
+	ShopVATPercent int
 }
 
 func Load() (*Config, error) {
@@ -35,6 +44,13 @@ func Load() (*Config, error) {
 		CORSOrigins:         splitCSV(getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")),
 		RateLimitRPS:        getenvInt("RATE_LIMIT_RPS", 20),
 		RateLimitLoginRPM:   getenvInt("RATE_LIMIT_LOGIN_RPM", 10),
+
+		StripeSecretKey:      getenv("STRIPE_SECRET_KEY", ""),
+		StripePublishableKey: getenv("STRIPE_PUBLISHABLE_KEY", ""),
+		StripeWebhookSecret:  getenv("STRIPE_WEBHOOK_SECRET", ""),
+
+		ShopCurrency:   getenv("SHOP_CURRENCY", "EUR"),
+		ShopVATPercent: getenvInt("SHOP_VAT_PERCENT", 20),
 	}
 
 	if cfg.DatabaseURL == "" {
