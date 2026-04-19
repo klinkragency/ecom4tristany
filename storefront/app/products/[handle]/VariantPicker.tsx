@@ -1,15 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { addToCart, ApiError } from '@/lib/cart';
+import { cartStore } from '@/lib/cart-store';
 import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
 
 export default function VariantPicker({ product }: { product: Product }) {
+  const router = useRouter();
   const initialValues = useMemo<Record<string, string>>(() => {
     const first = product.variants[0];
     return first ? first.optionValues : {};
   }, [product]);
   const [selected, setSelected] = useState<Record<string, string>>(initialValues);
   const [qty, setQty] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const variant = useMemo<ProductVariant | undefined>(() => {
     if (product.options.length === 0) return product.variants[0];
@@ -17,6 +23,21 @@ export default function VariantPicker({ product }: { product: Product }) {
       product.options.every((o) => v.optionValues[o.id] === selected[o.id]),
     );
   }, [product, selected]);
+
+  async function onAdd() {
+    if (!variant) return;
+    setAdding(true);
+    setError(null);
+    try {
+      const cart = await addToCart(variant.id, qty);
+      cartStore.set({ cart });
+      router.push('/cart');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not add to cart');
+    } finally {
+      setAdding(false);
+    }
+  }
 
   return (
     <div>
@@ -58,13 +79,18 @@ export default function VariantPicker({ product }: { product: Product }) {
           className="w-20 px-3 py-2 rounded border border-[color:var(--color-border)]"
         />
         <button
-          disabled
-          title="Cart + checkout arrive in Phase 3"
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
+          onClick={onAdd}
+          disabled={adding || !variant}
+          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)] disabled:opacity-50"
         >
-          Add to cart (Phase 3)
+          {adding ? 'Adding…' : 'Add to cart'}
         </button>
       </div>
+      {error && (
+        <div className="mt-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

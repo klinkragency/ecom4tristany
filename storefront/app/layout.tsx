@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import CartLink from '@/components/CartLink';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-4 text-sm">
               <Link href="/products" className="hover:underline">Products</Link>
               <Link href="/collections" className="hover:underline">Collections</Link>
+              <CartLink />
               <Link href="/account" className="hover:underline">Account</Link>
             </nav>
           </div>
