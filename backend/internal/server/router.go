@@ -14,6 +14,7 @@ import (
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/inventory"
+	"github.com/3mg/shop/backend/internal/order"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/product"
 	"github.com/3mg/shop/backend/internal/session"
@@ -116,6 +117,14 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/transfers/{id}/ship", invH.ShipTransfer)
 			r.Post("/transfers/{id}/receive", invH.ReceiveTransfer)
 			r.Post("/transfers/{id}/cancel", invH.CancelTransfer)
+
+			// Orders (admin view + lifecycle actions).
+			orderH := order.NewHandler(d.DB)
+			r.Get("/orders", orderH.List)
+			r.Get("/orders/{id}", orderH.Get)
+			r.Post("/orders/{id}/cancel", orderH.Cancel)
+			r.Put("/orders/{id}/note", orderH.SetNote)
+			r.Put("/orders/{id}/tags", orderH.SetTags)
 		})
 	})
 
