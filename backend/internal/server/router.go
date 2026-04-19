@@ -135,6 +135,21 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/customers/{id}/note", custAdminH.AdminSetNote)
 			r.Put("/customers/{id}/tags", custAdminH.AdminSetTags)
 			r.Post("/customers/{id}/store-credit", custAdminH.AdminGrantCredit)
+
+			// GDPR (admin-side)
+			r.Get("/customers/{id}/data-export", custAdminH.AdminDataExport)
+			r.Post("/customers/{id}/erase", custAdminH.AdminAccountErase)
+
+			// Merge duplicates
+			r.Post("/customers/{id}/merge", custAdminH.AdminMerge)
+
+			// Customer segments (saved filters)
+			r.Get("/segments", custAdminH.ListSegments)
+			r.Post("/segments", custAdminH.CreateSegment)
+			r.Get("/segments/{id}", custAdminH.GetSegment)
+			r.Put("/segments/{id}", custAdminH.UpdateSegment)
+			r.Delete("/segments/{id}", custAdminH.DeleteSegment)
+			r.Get("/segments/{id}/customers", custAdminH.PreviewSegment)
 		})
 	})
 
@@ -203,6 +218,10 @@ func NewRouter(d Deps) http.Handler {
 
 			// Store credit ledger
 			r.Get("/store-credit", custH.MyStoreCredit)
+
+			// GDPR (customer self-service)
+			r.Get("/data-export", custH.MyDataExport)
+			r.Post("/account/erase", custH.MyAccountErase)
 		})
 	})
 
