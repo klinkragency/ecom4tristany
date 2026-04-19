@@ -101,3 +101,31 @@ export type StorefrontCollection = {
   isRulesBased: boolean;
   products: CollectionProductRef[];
 };
+
+// ─── Cart ───────────────────────────────────────────────────────────────
+
+export type CartItem = {
+  id: string;
+  variantId: string;
+  productHandle: string;
+  productTitle: string;
+  variantTitle: string;
+  sku: string;
+  imageUrl: string;
+  unitPriceCents: number;
+  quantity: number;
+  lineTotalCents: number;
+  addedAt: string;
+  available: boolean;
+};
+
+export type Cart = {
+  id: string;
+  customerId?: string | null;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+  items: CartItem[];
+  subtotalCents: number;
+  totalQuantity: number;
+};
