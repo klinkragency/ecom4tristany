@@ -145,6 +145,8 @@ func NewRouter(d Deps) http.Handler {
 			r.Use(auth.CSRF())
 			r.Post("/checkout/init", checkoutH.Init)
 		})
+		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
+		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
 	})
 
 	// Stripe webhook — no CSRF, no session; Stripe authenticates via the
