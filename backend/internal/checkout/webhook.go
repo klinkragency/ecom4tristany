@@ -27,8 +27,18 @@ func (h *Handler) StripeWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sigHeader := r.Header.Get("Stripe-Signature")
-	event, err := webhook.ConstructEvent(body, sigHeader, h.pay.WebhookSecret())
+	// IgnoreAPIVersionMismatch: the account is pinned to a newer Stripe API
+	// version than stripe-go ships with. We parse only the fields we care about
+	// (metadata.order_id, refunds) so the schema drift doesn't matter for us.
+	event, err := webhook.ConstructEventWithOptions(body, sigHeader, h.pay.WebhookSecret(), webhook.ConstructEventOptions{
+		IgnoreAPIVersionMismatch: true,
+	})
 	if err != nil {
+		slog.Warn("stripe webhook signature rejected",
+			"err", err,
+			"secret_prefix", firstN(h.pay.WebhookSecret(), 15),
+			"sig_prefix", firstN(sigHeader, 40),
+			"body_len", len(body))
 		http.Error(w, "invalid signature", http.StatusBadRequest)
 		return
 	}
@@ -137,6 +147,13 @@ func (h *Handler) markOrderPaid(r *http.Request, orderID, paymentIntentID string
     `, orderID)
 
 	return tx.Commit(ctx)
+}
+
+func firstN(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n]
 }
 
 // handleChargeRefunded picks up refunds created outside our admin (Dashboard

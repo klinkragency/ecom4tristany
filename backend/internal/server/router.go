@@ -120,11 +120,21 @@ func NewRouter(d Deps) http.Handler {
 
 			// Orders (admin view + lifecycle actions).
 			orderH := order.NewHandler(d.DB)
+			refundH := order.NewRefundHandler(orderH, d.Pay)
 			r.Get("/orders", orderH.List)
 			r.Get("/orders/{id}", orderH.Get)
 			r.Post("/orders/{id}/cancel", orderH.Cancel)
 			r.Put("/orders/{id}/note", orderH.SetNote)
 			r.Put("/orders/{id}/tags", orderH.SetTags)
+			r.Post("/orders/{id}/refunds", refundH.Create)
+
+			// Customers (admin view + CRM actions).
+			custAdminH := customer.NewHandler(d.DB, d.Sessions)
+			r.Get("/customers", custAdminH.AdminList)
+			r.Get("/customers/{id}", custAdminH.AdminGet)
+			r.Put("/customers/{id}/note", custAdminH.AdminSetNote)
+			r.Put("/customers/{id}/tags", custAdminH.AdminSetTags)
+			r.Post("/customers/{id}/store-credit", custAdminH.AdminGrantCredit)
 		})
 	})
 
@@ -173,6 +183,23 @@ func NewRouter(d Deps) http.Handler {
 			r.Use(auth.RequireCustomer(d.Sessions))
 			r.Post("/auth/logout", custH.Logout)
 			r.Get("/me", custH.Me)
+
+			// Extended profile + store credit
+			r.Get("/profile", custH.MeExtended)
+			r.Put("/profile", custH.UpdateProfile)
+
+			// Address book
+			r.Get("/addresses", custH.ListAddresses)
+			r.Post("/addresses", custH.CreateAddress)
+			r.Put("/addresses/{id}", custH.UpdateAddress)
+			r.Delete("/addresses/{id}", custH.DeleteAddress)
+
+			// Order history (customer-facing)
+			r.Get("/orders", custH.ListMyOrders)
+			r.Get("/orders/{id}", custH.GetMyOrder)
+
+			// Store credit ledger
+			r.Get("/store-credit", custH.MyStoreCredit)
 		})
 	})
 
