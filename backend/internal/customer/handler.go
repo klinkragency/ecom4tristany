@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/3mg/shop/backend/internal/auth"
+	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/session"
 
@@ -18,10 +19,18 @@ import (
 type Handler struct {
 	db       *pgxpool.Pool
 	sessions *session.Store
+	cfg      *config.Config
 }
 
 func NewHandler(db *pgxpool.Pool, sessions *session.Store) *Handler {
 	return &Handler{db: db, sessions: sessions}
+}
+
+// NewHandlerWithConfig is used on the storefront where password reset needs
+// the shop URL + email sender configuration. The plain NewHandler stays to
+// keep admin-side callers unchanged.
+func NewHandlerWithConfig(db *pgxpool.Pool, sessions *session.Store, cfg *config.Config) *Handler {
+	return &Handler{db: db, sessions: sessions, cfg: cfg}
 }
 
 type RegisterReq struct {

@@ -173,11 +173,14 @@ func NewRouter(d Deps) http.Handler {
 	r.Post("/api/webhooks/stripe", checkout.NewHandler(d.DB, d.Cfg, d.Pay).StripeWebhook)
 
 	// Customer
-	custH := customer.NewHandler(d.DB, d.Sessions)
+	custH := customer.NewHandlerWithConfig(d.DB, d.Sessions, d.Cfg)
 	r.Route("/api/customer", func(r chi.Router) {
 		r.Use(auth.CSRF())
 		r.Post("/auth/register", custH.Register)
 		r.Post("/auth/login", custH.Login)
+		// Password reset — public (no session required)
+		r.Post("/auth/password-reset/request", custH.RequestPasswordReset)
+		r.Post("/auth/password-reset/confirm", custH.ConfirmPasswordReset)
 
 		r.Group(func(r chi.Router) {
 			r.Use(auth.RequireCustomer(d.Sessions))

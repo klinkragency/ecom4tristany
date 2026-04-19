@@ -27,29 +27,39 @@ func NewRefundHandler(h *Handler, pay *payments.Client) *RefundHandler {
 }
 
 type RefundReq struct {
-	AmountCents int    `json:"amountCents"`           // 0 = refund full remaining
-	Reason      string `json:"reason"`                // receipt-only; plain text
+	AmountCents int    `json:"amountCents"`  // 0 = refund full remaining
+	Reason      string `json:"reason"`       // internal note; free text
 	Note        string `json:"note"`
 	// Stripe's own reason codes (one of: duplicate, fraudulent, requested_by_customer).
-	// If empty we omit; Stripe defaults it to NULL.
 	StripeReason string `json:"stripeReason"`
+	// RefundTo chooses the destination. "card" (default) reverses the Stripe
+	// charge. "store_credit" adds balance to the customer's store-credit
+	// account instead (no Stripe call — requires order.customer_id).
+	RefundTo string `json:"refundTo"`
 }
 
 // Create issues a refund against the order's Stripe payment. Supports full or
-// partial amounts. Records a row in `refunds`, updates order financial_status,
-// logs an order_event.
+// partial amounts, and optionally refunds to store credit instead of the card.
+// Records a row in `refunds`, updates order financial_status, logs an event.
 func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
-	if !h.pay.Enabled() {
-		httpx.Error(w, http.StatusServiceUnavailable, "payments_disabled",
-			"Stripe not configured — set STRIPE_SECRET_KEY")
-		return
-	}
 	id := chi.URLParam(r, "id")
 	sess, _ := auth.SessionFromContext(r.Context())
 
 	var req RefundReq
 	if err := httpx.DecodeJSON(r, &req); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "invalid_body", err.Error())
+		return
+	}
+	if req.RefundTo == "" {
+		req.RefundTo = "card"
+	}
+	if req.RefundTo != "card" && req.RefundTo != "store_credit" {
+		httpx.Error(w, http.StatusBadRequest, "invalid_refund_to", "refundTo must be 'card' or 'store_credit'")
+		return
+	}
+	if req.RefundTo == "card" && !h.pay.Enabled() {
+		httpx.Error(w, http.StatusServiceUnavailable, "payments_disabled",
+			"Stripe not configured — set STRIPE_SECRET_KEY")
 		return
 	}
 
@@ -59,6 +69,7 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		refunded   int
 		financial  string
 		currency   string
+		customerID *string
 		paymentRef string
 		paymentID  string
 	}
@@ -67,11 +78,12 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
         SELECT o.total_cents, COALESCE(o.currency, 'EUR'),
                COALESCE((SELECT SUM(amount_cents) FROM refunds WHERE order_id = o.id), 0) AS refunded,
                o.financial_status,
+               o.customer_id,
                COALESCE((SELECT provider_ref FROM payments WHERE order_id = o.id AND provider = 'stripe' AND status = 'succeeded' ORDER BY created_at DESC LIMIT 1), ''),
                COALESCE((SELECT id::text FROM payments WHERE order_id = o.id AND provider = 'stripe' AND status = 'succeeded' ORDER BY created_at DESC LIMIT 1), '')
         FROM orders o
         WHERE o.id = $1
-    `, id).Scan(&o.total, &o.currency, &o.refunded, &o.financial, &o.paymentRef, &o.paymentID)
+    `, id).Scan(&o.total, &o.currency, &o.refunded, &o.financial, &o.customerID, &o.paymentRef, &o.paymentID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			httpx.Error(w, http.StatusNotFound, "not_found", "order not found")
@@ -80,8 +92,12 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
 	}
-	if o.paymentRef == "" {
+	if req.RefundTo == "card" && o.paymentRef == "" {
 		httpx.Error(w, http.StatusConflict, "no_payment", "no captured Stripe payment on this order")
+		return
+	}
+	if req.RefundTo == "store_credit" && o.customerID == nil {
+		httpx.Error(w, http.StatusConflict, "no_customer", "cannot refund to store credit for a guest order")
 		return
 	}
 
@@ -104,11 +120,15 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call Stripe.
-	stripeRefund, err := h.pay.Refund(o.paymentRef, int64(amount))
-	if err != nil {
-		httpx.Error(w, http.StatusBadGateway, "stripe_error", err.Error())
-		return
+	// Call Stripe only for card refunds.
+	stripeRefundID := ""
+	if req.RefundTo == "card" {
+		stripeRefund, err := h.pay.Refund(o.paymentRef, int64(amount))
+		if err != nil {
+			httpx.Error(w, http.StatusBadGateway, "stripe_error", err.Error())
+			return
+		}
+		stripeRefundID = stripeRefund.ID
 	}
 
 	adminID := ""
@@ -123,13 +143,33 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// For store-credit refunds, leave provider_ref NULL. The existing partial
+	// unique index already allows multiple NULLs so this doesn't collide.
+	var providerRef any
+	if stripeRefundID != "" {
+		providerRef = stripeRefundID
+	}
 	_, err = tx.Exec(r.Context(), `
         INSERT INTO refunds (order_id, payment_id, provider_ref, amount_cents, currency, reason, note, created_by)
         VALUES ($1, NULLIF($2, '')::uuid, $3, $4, $5, $6, $7, NULLIF($8, '')::uuid)
-    `, id, o.paymentID, stripeRefund.ID, amount, o.currency, req.Reason, req.Note, adminID)
+    `, id, o.paymentID, providerRef, amount, o.currency,
+		refundReasonLabel(req.RefundTo, req.Reason), req.Note, adminID)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "refund_insert", err.Error())
 		return
+	}
+
+	// Store-credit refund: also credit the customer's account via the ledger.
+	if req.RefundTo == "store_credit" && o.customerID != nil {
+		_, err = tx.Exec(r.Context(), `
+            INSERT INTO store_credit_ledger (customer_id, delta_cents, reason, note, order_id, admin_id)
+            VALUES ($1, $2, 'refund', $3, $4, NULLIF($5, '')::uuid)
+        `, *o.customerID, amount,
+			fmt.Sprintf("Refund for order %s", id), id, adminID)
+		if err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "ledger_insert", err.Error())
+			return
+		}
 	}
 
 	newRefunded := o.refunded + amount
@@ -148,7 +188,8 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
         VALUES ($1, 'refunded', NULLIF($2, '')::uuid, $3)
     `, id, adminID, map[string]any{
 		"amount_cents":  amount,
-		"stripe_refund": stripeRefund.ID,
+		"stripe_refund": stripeRefundID,
+		"refund_to":     req.RefundTo,
 		"reason":        req.Reason,
 		"note":          req.Note,
 	})
@@ -168,6 +209,19 @@ func (h *RefundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, o2)
+}
+
+// refundReasonLabel prefixes the human reason so finance reports can tell
+// card and credit refunds apart without joining back to the order.
+func refundReasonLabel(refundTo, userReason string) string {
+	prefix := "card_refund"
+	if refundTo == "store_credit" {
+		prefix = "store_credit_refund"
+	}
+	if userReason == "" {
+		return prefix
+	}
+	return prefix + ": " + userReason
 }
 
 // deriveAfterRefund computes the new (financial_status, status) pair based on

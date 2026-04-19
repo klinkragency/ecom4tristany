@@ -261,8 +261,11 @@ function RefundModal({
   const [amountStr, setAmountStr] = useState((refundable / 100).toFixed(2));
   const [reason, setReason] = useState<'' | 'duplicate' | 'fraudulent' | 'requested_by_customer'>('requested_by_customer');
   const [note, setNote] = useState('');
+  const [refundTo, setRefundTo] = useState<'card' | 'store_credit'>('card');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const canRefundToCredit = !!order.customerId;
 
   async function submit() {
     setSubmitting(true);
@@ -280,7 +283,8 @@ function RefundModal({
           amountCents,
           reason: note,
           note,
-          stripeReason: reason || undefined,
+          refundTo,
+          stripeReason: refundTo === 'card' ? (reason || undefined) : undefined,
         }),
       });
       onDone();
@@ -303,6 +307,41 @@ function RefundModal({
           <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>
         )}
 
+        <div className="block">
+          <div className="font-medium mb-1">Refund to</div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setRefundTo('card')}
+              className={`px-3 py-2 text-sm rounded border ${
+                refundTo === 'card'
+                  ? 'border-[color:var(--color-accent)] bg-[color:var(--color-accent)] text-white'
+                  : 'border-[color:var(--color-border)] bg-white hover:bg-gray-50'
+              }`}
+            >
+              Original payment method
+            </button>
+            <button
+              type="button"
+              disabled={!canRefundToCredit}
+              onClick={() => setRefundTo('store_credit')}
+              title={canRefundToCredit ? 'Add back to the customer\u2019s store credit' : 'Guest order — no customer account'}
+              className={`px-3 py-2 text-sm rounded border disabled:opacity-50 disabled:cursor-not-allowed ${
+                refundTo === 'store_credit'
+                  ? 'border-[color:var(--color-accent)] bg-[color:var(--color-accent)] text-white'
+                  : 'border-[color:var(--color-border)] bg-white hover:bg-gray-50'
+              }`}
+            >
+              Store credit
+            </button>
+          </div>
+          {refundTo === 'store_credit' && (
+            <p className="text-xs text-[color:var(--color-text-muted)] mt-1">
+              No Stripe refund fee — money is added to the customer&rsquo;s balance.
+            </p>
+          )}
+        </div>
+
         <label className="block">
           <div className="font-medium mb-1">Amount ({order.currency})</div>
           <input
@@ -316,19 +355,21 @@ function RefundModal({
           />
         </label>
 
-        <label className="block">
-          <div className="font-medium mb-1">Reason (Stripe)</div>
-          <select
-            value={reason}
-            onChange={(e) => setReason(e.target.value as typeof reason)}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
-          >
-            <option value="requested_by_customer">Requested by customer</option>
-            <option value="duplicate">Duplicate</option>
-            <option value="fraudulent">Fraudulent</option>
-            <option value="">Unspecified</option>
-          </select>
-        </label>
+        {refundTo === 'card' && (
+          <label className="block">
+            <div className="font-medium mb-1">Reason (Stripe)</div>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value as typeof reason)}
+              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+            >
+              <option value="requested_by_customer">Requested by customer</option>
+              <option value="duplicate">Duplicate</option>
+              <option value="fraudulent">Fraudulent</option>
+              <option value="">Unspecified</option>
+            </select>
+          </label>
+        )}
 
         <label className="block">
           <div className="font-medium mb-1">Internal note (optional)</div>

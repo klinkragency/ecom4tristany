@@ -69,6 +69,8 @@ export default function LoginPage() {
       </form>
       <p className="text-sm text-[color:var(--color-text-muted)] mt-3">
         No account? <Link href="/account/register" className="underline">Register</Link>
+        {' · '}
+        <Link href="/account/password-reset" className="underline">Forgot password?</Link>
       </p>
     </section>
   );
