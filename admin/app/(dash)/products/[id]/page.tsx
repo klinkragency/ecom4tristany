@@ -7,6 +7,7 @@ import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
 import MediaUploader from './MediaUploader';
 import RichTextEditor from '@/components/RichTextEditor';
+import InventorySection from './InventorySection';
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -168,6 +169,7 @@ export default function EditProductPage() {
 
         <OptionsEditor product={product} onChanged={refetch} onError={setError} />
         <VariantsEditor product={product} onChanged={refetch} onError={setError} />
+        <InventorySection productId={product.id} />
 
         <Card title="Organization">
           <div className="grid grid-cols-2 gap-3">

@@ -11,6 +11,7 @@ import (
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/inventory"
 	"github.com/3mg/shop/backend/internal/product"
 	"github.com/3mg/shop/backend/internal/session"
 	"github.com/3mg/shop/backend/internal/storage"
@@ -93,6 +94,24 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/collections/{id}/products/reorder", collH.ReorderProducts)
 			r.Post("/collections/{id}/rules", collH.AddRule)
 			r.Delete("/rules/{ruleId}", collH.DeleteRule)
+
+			// Inventory — locations + levels + transfers
+			invH := inventory.NewHandler(d.DB)
+			r.Get("/locations", invH.ListLocations)
+			r.Post("/locations", invH.CreateLocation)
+			r.Put("/locations/{id}", invH.UpdateLocation)
+			r.Delete("/locations/{id}", invH.DeleteLocation)
+
+			r.Get("/products/{id}/inventory", invH.ProductMatrix)
+			r.Post("/inventory/set", invH.SetLevels)
+			r.Post("/inventory/adjust", invH.Adjust)
+
+			r.Get("/transfers", invH.ListTransfers)
+			r.Post("/transfers", invH.CreateTransfer)
+			r.Get("/transfers/{id}", invH.GetTransfer)
+			r.Post("/transfers/{id}/ship", invH.ShipTransfer)
+			r.Post("/transfers/{id}/receive", invH.ReceiveTransfer)
+			r.Post("/transfers/{id}/cancel", invH.CancelTransfer)
 		})
 	})
 

@@ -155,3 +155,65 @@ export type CollectionListPage = {
   items: CollectionListItem[];
   nextCursor?: string;
 };
+
+// ─── Inventory ──────────────────────────────────────────────────────────
+
+export type Location = {
+  id: string;
+  name: string;
+  isActive: boolean;
+  isFulfillment: boolean;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InventoryCell = { onHand: number; committed: number; incoming: number };
+
+export type InventoryMatrixLocation = { id: string; name: string; active: boolean };
+
+export type InventoryMatrixVariant = {
+  id: string;
+  sku: string;
+  label: string;
+  trackInventory: boolean;
+  levels: Record<string, InventoryCell>; // locationId -> cell
+  totalOnHand: number;
+};
+
+export type InventoryMatrix = {
+  productId: string;
+  locations: InventoryMatrixLocation[];
+  variants: InventoryMatrixVariant[];
+};
+
+export type TransferStatus = 'draft' | 'in_transit' | 'received' | 'cancelled';
+
+export type TransferItem = {
+  variantId: string;
+  sku: string;
+  label: string;
+  quantity: number;
+};
+
+export type Transfer = {
+  id: string;
+  fromLocationId: string;
+  toLocationId: string;
+  fromName: string;
+  toName: string;
+  status: TransferStatus;
+  note: string;
+  createdById: string;
+  createdAt: string;
+  shippedAt?: string | null;
+  receivedAt?: string | null;
+  items: TransferItem[];
+  totalUnits: number;
+};
