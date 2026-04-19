@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.2.0",
+    "@stripe/stripe-js": "^9.2.0",
     "@tailwindcss/typography": "^0.5.19",
     "isomorphic-dompurify": "^3.9.0",
     "next": "^15.1.0",

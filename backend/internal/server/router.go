@@ -8,11 +8,13 @@ import (
 	"github.com/3mg/shop/backend/internal/admin"
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/cart"
+	"github.com/3mg/shop/backend/internal/checkout"
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/inventory"
+	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/product"
 	"github.com/3mg/shop/backend/internal/session"
 	"github.com/3mg/shop/backend/internal/storage"
@@ -27,6 +29,7 @@ type Deps struct {
 	DB       *pgxpool.Pool
 	Sessions *session.Store
 	Storage  storage.Storage
+	Pay      *payments.Client
 }
 
 func NewRouter(d Deps) http.Handler {
@@ -134,7 +137,19 @@ func NewRouter(d Deps) http.Handler {
 			r.Delete("/cart/items/{itemId}", cartH.Remove)
 			r.Post("/cart/clear", cartH.Clear)
 		})
+
+		// Checkout — init PaymentIntent given current cart + addresses.
+		checkoutH := checkout.NewHandler(d.DB, d.Cfg, d.Pay)
+		r.Group(func(r chi.Router) {
+			r.Use(auth.OptionalCustomer(d.Sessions))
+			r.Use(auth.CSRF())
+			r.Post("/checkout/init", checkoutH.Init)
+		})
 	})
+
+	// Stripe webhook — no CSRF, no session; Stripe authenticates via the
+	// Stripe-Signature header (verified with STRIPE_WEBHOOK_SECRET).
+	r.Post("/api/webhooks/stripe", checkout.NewHandler(d.DB, d.Cfg, d.Pay).StripeWebhook)
 
 	// Customer
 	custH := customer.NewHandler(d.DB, d.Sessions)
