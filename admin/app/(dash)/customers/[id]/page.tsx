@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type CustomerDetail, type FinancialStatus } from '@/lib/types';
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
   pending: 'bg-gray-100 text-gray-800',
@@ -18,11 +20,14 @@ const FIN_BADGE: Record<FinancialStatus, string> = {
 
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params.id;
   const [c, setC] = useState<CustomerDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [grantOpen, setGrantOpen] = useState(false);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [eraseOpen, setEraseOpen] = useState(false);
 
   async function load() {
     try {
@@ -179,9 +184,51 @@ export default function CustomerDetailPage() {
         <Card title="Tags">
           <TagsField initial={c.tags} onSave={saveTags} busy={busy} />
         </Card>
+
+        <div className="rounded border border-red-200 bg-red-50/50 p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-red-800">Privacy & admin tools</h2>
+          <p className="text-xs text-red-900/70">GDPR rights of access and erasure. Erasure is permanent.</p>
+          <div className="flex flex-col gap-1.5">
+            <a
+              href={`${API}/api/admin/customers/${id}/data-export`}
+              className="px-3 py-1.5 text-xs rounded border border-[color:var(--color-border)] bg-white hover:bg-gray-50 text-center"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Export data (GDPR)
+            </a>
+            <button
+              onClick={() => setMergeOpen(true)}
+              className="px-3 py-1.5 text-xs rounded border border-[color:var(--color-border)] bg-white hover:bg-gray-50"
+            >
+              Merge duplicate into this customer
+            </button>
+            <button
+              onClick={() => setEraseOpen(true)}
+              className="px-3 py-1.5 text-xs rounded border border-red-300 bg-white text-red-700 hover:bg-red-100"
+            >
+              Erase account (anonymize)
+            </button>
+          </div>
+        </div>
       </aside>
 
       {grantOpen && <GrantModal customerId={id} currency={c.storeCreditCurrency} onClose={() => setGrantOpen(false)} onDone={async () => { setGrantOpen(false); await load(); }} />}
+      {mergeOpen && (
+        <MergeModal
+          targetId={id}
+          onClose={() => setMergeOpen(false)}
+          onDone={async () => { setMergeOpen(false); await load(); }}
+        />
+      )}
+      {eraseOpen && (
+        <EraseModal
+          customerId={id}
+          email={c.email}
+          onClose={() => setEraseOpen(false)}
+          onDone={() => router.push('/customers')}
+        />
+      )}
     </section>
   );
 }
@@ -225,6 +272,157 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
     <div className="space-y-2">
       <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm" />
       <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-[color:var(--color-border)] disabled:opacity-50">Save tags</button>
+    </div>
+  );
+}
+
+type CustomerSearchItem = { id: string; email: string; firstName: string; lastName: string };
+
+function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: () => void; onDone: () => void }) {
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState<CustomerSearchItem[]>([]);
+  const [selected, setSelected] = useState<CustomerSearchItem | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (q.length < 2) { setResults([]); return; }
+    const ctl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const data = await api<{ items: CustomerSearchItem[] }>(
+          `/api/admin/customers?q=${encodeURIComponent(q)}&limit=10`,
+          { signal: ctl.signal },
+        );
+        setResults(data.items.filter((x) => x.id !== targetId));
+      } catch { /* ignore aborted */ }
+    }, 200);
+    return () => { clearTimeout(t); ctl.abort(); };
+  }, [q, targetId]);
+
+  async function submit() {
+    if (!selected) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api(`/api/admin/customers/${targetId}/merge`, {
+        method: 'POST',
+        body: JSON.stringify({ sourceId: selected.id }),
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Merge failed');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+      <div className="w-full max-w-lg rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+        <h2 className="font-semibold">Merge duplicate customer into this one</h2>
+        <p className="text-xs text-[color:var(--color-text-muted)]">
+          The selected customer&rsquo;s orders, addresses, tags, and store credit will move here. The other account will be deleted. This cannot be undone.
+        </p>
+        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        <input
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setSelected(null); }}
+          placeholder="Search by email or name (min 2 chars)"
+          className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+        />
+        {selected ? (
+          <div className="rounded border border-[color:var(--color-border)] px-3 py-2 bg-gray-50 flex items-center justify-between">
+            <div>
+              <div className="font-medium">{selected.email}</div>
+              <div className="text-xs text-[color:var(--color-text-muted)]">{selected.firstName} {selected.lastName}</div>
+            </div>
+            <button onClick={() => setSelected(null)} className="text-xs underline">Clear</button>
+          </div>
+        ) : results.length > 0 ? (
+          <ul className="border border-[color:var(--color-border)] rounded max-h-48 overflow-y-auto divide-y divide-[color:var(--color-border)]">
+            {results.map((r) => (
+              <li key={r.id}>
+                <button
+                  onClick={() => setSelected(r)}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50"
+                >
+                  <div className="font-medium text-xs">{r.email}</div>
+                  <div className="text-xs text-[color:var(--color-text-muted)]">{r.firstName} {r.lastName}</div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={!selected || submitting}
+            className="px-3 py-2 rounded bg-red-700 text-white disabled:opacity-50"
+          >
+            {submitting ? 'Merging…' : 'Merge & delete source'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EraseModal({ customerId, email, onClose, onDone }: { customerId: string; email: string; onClose: () => void; onDone: () => void }) {
+  const [confirm, setConfirm] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (confirm !== email) {
+      setError('Type the email exactly to confirm.');
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api(`/api/admin/customers/${customerId}/erase`, {
+        method: 'POST',
+        body: JSON.stringify({ note: 'Admin-initiated GDPR erasure' }),
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erasure failed');
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+        <h2 className="font-semibold text-red-800">Erase customer account</h2>
+        <p className="text-xs text-[color:var(--color-text-muted)]">
+          This anonymizes the customer row, deletes their addresses, invalidates sessions,
+          and redacts personal data from past order snapshots. Orders themselves are kept
+          (legal/tax retention).
+        </p>
+        <p className="text-xs">
+          To confirm, type <span className="font-mono bg-gray-100 px-1">{email}</span> below:
+        </p>
+        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        <input
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          autoComplete="off"
+        />
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={submitting || confirm !== email}
+            className="px-3 py-2 rounded bg-red-700 text-white disabled:opacity-50"
+          >
+            {submitting ? 'Erasing…' : 'Erase account'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

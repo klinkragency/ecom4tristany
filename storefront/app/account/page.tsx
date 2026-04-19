@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type CustomerProfile, type MyOrderListItem, type SavedAddress } from '@/lib/types';
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+
 const FIN_BADGE: Record<string, string> = {
   pending: 'bg-gray-100 text-gray-800',
   paid: 'bg-green-100 text-green-800',
@@ -134,9 +136,95 @@ export default function AccountPage() {
               <ProfileEdit profile={profile} onDone={async () => { setEditingProfile(false); await load(); }} saving={saving} setSaving={setSaving} setError={setError} />
             )}
           </Card>
+
+          <PrivacyCard />
         </aside>
       </div>
     </section>
+  );
+}
+
+function PrivacyCard() {
+  const [eraseOpen, setEraseOpen] = useState(false);
+  return (
+    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-2">
+      <h2 className="text-sm font-semibold">Privacy</h2>
+      <p className="text-xs text-[color:var(--color-text-muted)]">
+        Your rights under the GDPR.
+      </p>
+      <a
+        href={`${API}/api/customer/data-export`}
+        className="block px-3 py-1.5 text-xs rounded border border-[color:var(--color-border)] text-center hover:bg-gray-50"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Download my data
+      </a>
+      <button
+        onClick={() => setEraseOpen(true)}
+        className="w-full px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50"
+      >
+        Delete my account
+      </button>
+      {eraseOpen && <SelfEraseModal onClose={() => setEraseOpen(false)} />}
+    </div>
+  );
+}
+
+function SelfEraseModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api('/api/customer/account/erase', {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      });
+      router.replace('/account/login?erased=1');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Deletion failed');
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+        <h2 className="font-semibold text-red-800">Delete your account</h2>
+        <p className="text-xs text-[color:var(--color-text-muted)]">
+          This will anonymize your profile and delete your addresses and saved preferences.
+          Your past orders will be retained for tax and legal reasons, but all personal
+          information on them will be removed. This cannot be undone.
+        </p>
+        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        <label className="block">
+          <div className="font-medium mb-1">Re-enter your password to confirm</div>
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          />
+        </label>
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={submitting || password.length < 8}
+            className="px-3 py-2 rounded bg-red-700 text-white disabled:opacity-50"
+          >
+            {submitting ? 'Deleting…' : 'Delete account'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
