@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/3mg/shop/backend/internal/config"
+	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/platform"
 	"github.com/3mg/shop/backend/internal/server"
 	"github.com/3mg/shop/backend/internal/session"
@@ -53,12 +54,18 @@ func main() {
 	defer cancelGC()
 	go runSessionGC(gcCtx, store, log)
 
+	pay := payments.NewClient(cfg.StripeSecretKey, cfg.StripeWebhookSecret)
+	if !pay.Enabled() {
+		log.Warn("stripe disabled — set STRIPE_SECRET_KEY to enable payments")
+	}
+
 	h := server.NewRouter(server.Deps{
 		Cfg:      cfg,
 		Log:      log,
 		DB:       db,
 		Sessions: store,
 		Storage:  stor,
+		Pay:      pay,
 	})
 
 	srv := &http.Server{
