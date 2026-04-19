@@ -2,11 +2,14 @@ package checkout
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/webhook"
 )
@@ -64,11 +67,15 @@ func (h *Handler) StripeWebhook(w http.ResponseWriter, r *http.Request) {
         `, pi.ID)
 		log.Info("payment failed", "pi", pi.ID)
 
-	case "charge.refunded", "refund.created", "refund.updated":
-		// Refunds created via Dashboard → ensure we reflect them. Admin-initiated
-		// refunds are also recorded directly by our refund handler; idempotency
-		// via the payments.provider_ref UNIQUE index prevents double counting.
-		log.Info("refund event")
+	case "charge.refunded":
+		// charge.refunded fires when ANY refund lands on a charge (dashboard or API).
+		// We look up the order via the charge's PaymentIntent → metadata.order_id
+		// and insert a refund row if we don't already have one with that id.
+		if err := h.handleChargeRefunded(r, event.Data.Raw); err != nil {
+			log.Error("handleChargeRefunded", "err", err)
+			http.Error(w, "internal", http.StatusInternalServerError)
+			return
+		}
 
 	default:
 		log.Debug("ignored event")
@@ -125,4 +132,78 @@ func (h *Handler) markOrderPaid(r *http.Request, orderID, paymentIntentID string
     `, orderID)
 
 	return tx.Commit(ctx)
+}
+
+// handleChargeRefunded picks up refunds created outside our admin (Dashboard
+// or Stripe CLI) and makes them visible in our order history. Idempotent via
+// the refunds.provider_ref UNIQUE index.
+func (h *Handler) handleChargeRefunded(r *http.Request, raw []byte) error {
+	ctx := r.Context()
+	var charge stripe.Charge
+	if err := json.Unmarshal(raw, &charge); err != nil {
+		return err
+	}
+	pi := ""
+	if charge.PaymentIntent != nil {
+		pi = charge.PaymentIntent.ID
+	}
+	if pi == "" {
+		return nil
+	}
+	// Find the order via PaymentIntent → order_id in metadata.
+	var orderID string
+	err := h.db.QueryRow(ctx,
+		`SELECT order_id FROM payments WHERE provider = 'stripe' AND provider_ref = $1`, pi,
+	).Scan(&orderID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+	// Iterate through each refund on the charge.
+	if charge.Refunds == nil {
+		return nil
+	}
+	for _, ref := range charge.Refunds.Data {
+		// Idempotency check.
+		var exists bool
+		if err := h.db.QueryRow(ctx,
+			`SELECT EXISTS (SELECT 1 FROM refunds WHERE provider_ref = $1)`, ref.ID,
+		).Scan(&exists); err != nil {
+			return err
+		}
+		if exists {
+			continue
+		}
+		_, err := h.db.Exec(ctx, `
+            INSERT INTO refunds (order_id, provider_ref, amount_cents, currency, reason, note)
+            VALUES ($1, $2, $3, $4, 'stripe_dashboard', '')
+        `, orderID, ref.ID, int(ref.Amount), strings.ToUpper(string(ref.Currency)))
+		if err != nil {
+			return err
+		}
+	}
+	// Recompute financial_status.
+	var total, refunded int
+	var fs string
+	err = h.db.QueryRow(ctx, `
+        SELECT total_cents, COALESCE((SELECT SUM(amount_cents) FROM refunds WHERE order_id = $1), 0), financial_status
+        FROM orders WHERE id = $1
+    `, orderID).Scan(&total, &refunded, &fs)
+	if err != nil {
+		return err
+	}
+	newFin := fs
+	newStatus := fs
+	switch {
+	case refunded >= total:
+		newFin, newStatus = "refunded", "refunded"
+	case refunded > 0:
+		newFin, newStatus = "partially_refunded", "partially_refunded"
+	}
+	_, err = h.db.Exec(ctx, `
+        UPDATE orders SET financial_status = $1, status = $2, updated_at = now() WHERE id = $3
+    `, newFin, newStatus, orderID)
+	return err
 }

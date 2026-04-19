@@ -16,8 +16,17 @@ services:
       timeout: 3s
       retries: 10
 
+  # Mailpit: local SMTP + webmail UI for inspecting transactional emails in dev.
+  # Backend sends to 1025 (SMTP), browse captured messages at http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: shop_mailpit
+    ports:
+      - "1025:1025"   # SMTP in
+      - "8025:8025"   # web UI
+    restart: unless-stopped
+
 # Object storage uses Cloudflare R2 — see S3_* vars in .env.
-# No local object-storage container is needed.
 
 volumes:
   postgres_data:

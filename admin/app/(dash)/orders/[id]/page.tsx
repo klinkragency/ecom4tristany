@@ -29,6 +29,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
 
   async function load() {
     try {
@@ -215,7 +216,7 @@ export default function OrderDetailPage() {
           <TagsField initial={order.tags} onSave={saveTags} busy={busy} />
         </Card>
 
-        {order.status !== 'cancelled' && order.financialStatus !== 'paid' && (
+        {order.status !== 'cancelled' && order.financialStatus !== 'paid' && order.financialStatus !== 'partially_refunded' && order.financialStatus !== 'refunded' && (
           <button
             onClick={cancel}
             disabled={busy}
@@ -224,13 +225,135 @@ export default function OrderDetailPage() {
             Cancel order
           </button>
         )}
-        {order.financialStatus === 'paid' && (
-          <div className="text-xs text-[color:var(--color-text-muted)] italic">
-            Paid orders must be refunded before cancelling (refunds land in Phase 3d).
-          </div>
+
+        {(order.financialStatus === 'paid' || order.financialStatus === 'partially_refunded') && (
+          <button
+            onClick={() => setRefundOpen(true)}
+            disabled={busy || order.totalRefundedCents >= order.totalCents}
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50"
+          >
+            Issue refund
+          </button>
         )}
       </aside>
+
+      {refundOpen && (
+        <RefundModal
+          order={order}
+          onClose={() => setRefundOpen(false)}
+          onDone={async () => { setRefundOpen(false); await load(); }}
+        />
+      )}
     </section>
+  );
+}
+
+function RefundModal({
+  order,
+  onClose,
+  onDone,
+}: {
+  order: Order;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const refundable = order.totalCents - order.totalRefundedCents;
+  const [amountStr, setAmountStr] = useState((refundable / 100).toFixed(2));
+  const [reason, setReason] = useState<'' | 'duplicate' | 'fraudulent' | 'requested_by_customer'>('requested_by_customer');
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setSubmitting(true);
+    setError(null);
+    const amountCents = Math.round(parseFloat(amountStr) * 100);
+    if (!amountCents || amountCents <= 0 || amountCents > refundable) {
+      setError(`Enter an amount between 0.01 and ${(refundable / 100).toFixed(2)}`);
+      setSubmitting(false);
+      return;
+    }
+    try {
+      await api(`/api/admin/orders/${order.id}/refunds`, {
+        method: 'POST',
+        body: JSON.stringify({
+          amountCents,
+          reason: note,
+          note,
+          stripeReason: reason || undefined,
+        }),
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Refund failed');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+        <h2 className="font-semibold">Issue refund</h2>
+        <p className="text-[color:var(--color-text-muted)]">
+          Refundable: {formatPrice(refundable, order.currency)} of {formatPrice(order.totalCents, order.currency)}
+        </p>
+
+        {error && (
+          <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>
+        )}
+
+        <label className="block">
+          <div className="font-medium mb-1">Amount ({order.currency})</div>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            max={(refundable / 100).toFixed(2)}
+            value={amountStr}
+            onChange={(e) => setAmountStr(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          />
+        </label>
+
+        <label className="block">
+          <div className="font-medium mb-1">Reason (Stripe)</div>
+          <select
+            value={reason}
+            onChange={(e) => setReason(e.target.value as typeof reason)}
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+          >
+            <option value="requested_by_customer">Requested by customer</option>
+            <option value="duplicate">Duplicate</option>
+            <option value="fraudulent">Fraudulent</option>
+            <option value="">Unspecified</option>
+          </select>
+        </label>
+
+        <label className="block">
+          <div className="font-medium mb-1">Internal note (optional)</div>
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Damaged on arrival…"
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          />
+        </label>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={submitting}
+            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
+          >
+            {submitting ? 'Refunding…' : 'Issue refund'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
