@@ -19,8 +19,20 @@ func NewClient(secretKey, webhookSecret string) *Client {
 	return &Client{secretKey: secretKey, webhookSecret: webhookSecret}
 }
 
-func (c *Client) Enabled() bool            { return c.secretKey != "" }
-func (c *Client) WebhookSecret() string    { return c.webhookSecret }
+// Enabled reports whether Stripe is configured with a real-looking secret key.
+// Rejects the env-var placeholders so a mis-configured deploy fails loudly at
+// the checkout endpoint instead of hitting Stripe and getting a 401.
+func (c *Client) Enabled() bool {
+	if c.secretKey == "" {
+		return false
+	}
+	if len(c.secretKey) < 7 {
+		return false
+	}
+	prefix := c.secretKey[:7]
+	return prefix == "sk_test" || prefix == "sk_live"
+}
+func (c *Client) WebhookSecret() string { return c.webhookSecret }
 
 // CreatePaymentIntent creates a PaymentIntent for the given order total.
 // `amountCents` is the smallest currency unit (cents for EUR). `orderID` is
