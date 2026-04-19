@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3mg/shop/backend/internal/email"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/webhook"
@@ -53,6 +55,9 @@ func (h *Handler) StripeWebhook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Info("order paid", "order_id", orderID)
+		// Fire the confirmation email asynchronously — failure to deliver
+		// must never block the webhook ack.
+		email.SendOrderConfirmation(r.Context(), h.db, h.cfg, orderID)
 
 	case "payment_intent.payment_failed":
 		var pi stripe.PaymentIntent
