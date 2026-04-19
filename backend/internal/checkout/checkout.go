@@ -55,15 +55,16 @@ type Address struct {
 }
 
 type InitResp struct {
-	OrderID       string `json:"orderId"`
-	OrderNumber   string `json:"orderNumber"`
-	ClientSecret  string `json:"clientSecret"`
-	PublishableKey string `json:"publishableKey"`
-	Currency      string `json:"currency"`
-	SubtotalCents int    `json:"subtotalCents"`
-	ShippingCents int    `json:"shippingCents"`
-	TaxCents      int    `json:"taxCents"`
-	TotalCents    int    `json:"totalCents"`
+	OrderID          string `json:"orderId"`
+	OrderNumber      string `json:"orderNumber"`
+	ClientSecret     string `json:"clientSecret"`
+	PublishableKey   string `json:"publishableKey"`
+	Currency         string `json:"currency"`
+	SubtotalCents    int    `json:"subtotalCents"`
+	ShippingCents    int    `json:"shippingCents"`
+	TaxCents         int    `json:"taxCents"`
+	StoreCreditCents int    `json:"storeCreditCents"`
+	TotalCents       int    `json:"totalCents"`
 }
 
 // Init validates the customer's cart, creates a pending order + Stripe
@@ -133,7 +134,7 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	shipping := FlatShippingCents
 	gross := subtotal + shipping
 	tax := BackSolveVAT(gross, h.cfg.ShopVATPercent)
-	total := gross // already TTC
+	total := gross // tax-inclusive grand total
 
 	// Determine customer_id if authenticated.
 	var customerID *string
@@ -141,6 +142,28 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 		cid := uuidString(sess.UserID.Bytes)
 		customerID = &cid
 	}
+
+	// Store credit — auto-apply if the customer has a balance. Keep at least
+	// €1 on the Stripe charge (Payment Intent minimum) so we never have to
+	// skip Stripe entirely for now.
+	const minStripeCharge = 100 // cents
+	storeCreditApplied := 0
+	if customerID != nil {
+		var balance int
+		_ = h.db.QueryRow(r.Context(),
+			`SELECT COALESCE(balance_cents, 0) FROM store_credit_accounts WHERE customer_id = $1`,
+			*customerID,
+		).Scan(&balance)
+		if balance > 0 && total > minStripeCharge {
+			max := total - minStripeCharge
+			if balance < max {
+				storeCreditApplied = balance
+			} else {
+				storeCreditApplied = max
+			}
+		}
+	}
+	chargeTotal := total - storeCreditApplied
 
 	tx, err := h.db.Begin(r.Context())
 	if err != nil {
@@ -152,12 +175,13 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	var orderID, orderNumber string
 	err = tx.QueryRow(r.Context(), `
         INSERT INTO orders (customer_id, email, phone, currency,
-                            subtotal_cents, discount_cents, tax_cents, shipping_cents, total_cents,
+                            subtotal_cents, discount_cents, tax_cents, shipping_cents,
+                            store_credit_cents, total_cents,
                             note, ip, user_agent)
-        VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9, $10, $11, $12)
         RETURNING id, number
     `, customerID, req.Email, req.Phone, h.cfg.ShopCurrency,
-		subtotal, tax, shipping, total,
+		subtotal, tax, shipping, storeCreditApplied, chargeTotal,
 		req.Note, clientIP(r), r.UserAgent(),
 	).Scan(&orderID, &orderNumber)
 	if err != nil {
@@ -217,9 +241,10 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create PaymentIntent AFTER the order is persisted so we can put the
-	// order_id into its metadata. If this fails we leave a pending order
-	// record — webhook flow won't trigger, so customer can retry.
-	pi, err := h.pay.CreatePaymentIntent(int64(total), strings.ToLower(h.cfg.ShopCurrency), orderID, req.Email)
+	// order_id into its metadata. Amount = charge total (already minus any
+	// store credit). If this fails we leave a pending order record — webhook
+	// flow won't trigger, so the customer can retry.
+	pi, err := h.pay.CreatePaymentIntent(int64(chargeTotal), strings.ToLower(h.cfg.ShopCurrency), orderID, req.Email)
 	if err != nil {
 		httpx.Error(w, http.StatusBadGateway, "stripe_error", err.Error())
 		return
@@ -229,22 +254,23 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	_, err = h.db.Exec(r.Context(), `
         INSERT INTO payments (order_id, provider, provider_ref, status, amount_cents, currency)
         VALUES ($1, 'stripe', $2, $3, $4, $5)
-    `, orderID, pi.ID, string(pi.Status), total, strings.ToUpper(h.cfg.ShopCurrency))
+    `, orderID, pi.ID, string(pi.Status), chargeTotal, strings.ToUpper(h.cfg.ShopCurrency))
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "payment_insert", err.Error())
 		return
 	}
 
 	httpx.JSON(w, http.StatusOK, InitResp{
-		OrderID:        orderID,
-		OrderNumber:    orderNumber,
-		ClientSecret:   pi.ClientSecret,
-		PublishableKey: h.cfg.StripePublishableKey,
-		Currency:       h.cfg.ShopCurrency,
-		SubtotalCents:  subtotal,
-		ShippingCents:  shipping,
-		TaxCents:       tax,
-		TotalCents:     total,
+		OrderID:          orderID,
+		OrderNumber:      orderNumber,
+		ClientSecret:     pi.ClientSecret,
+		PublishableKey:   h.cfg.StripePublishableKey,
+		Currency:         h.cfg.ShopCurrency,
+		SubtotalCents:    subtotal,
+		ShippingCents:    shipping,
+		TaxCents:         tax,
+		StoreCreditCents: storeCreditApplied,
+		TotalCents:       chargeTotal,
 	})
 }
 

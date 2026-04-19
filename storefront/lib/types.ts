@@ -129,3 +129,45 @@ export type Cart = {
   subtotalCents: number;
   totalQuantity: number;
 };
+
+// ─── Customer account ──────────────────────────────────────────────────
+
+export type CustomerProfile = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  marketingConsent: boolean;
+  storeCreditCents: number;
+  storeCreditCurrency: string;
+};
+
+export type SavedAddress = {
+  id: string;
+  label: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  isDefaultShipping: boolean;
+  isDefaultBilling: boolean;
+};
+
+export type MyOrderListItem = {
+  id: string;
+  number: string;
+  status: string;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  totalCents: number;
+  currency: string;
+  createdAt: string;
+  itemsCount: number;
+};

@@ -329,3 +329,82 @@ export type Order = {
   events: OrderEvent[];
   totalRefundedCents: number;
 };
+
+// ─── Customers (admin) ──────────────────────────────────────────────────
+
+export type CustomerAddress = {
+  id: string;
+  label: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  isDefaultShipping: boolean;
+  isDefaultBilling: boolean;
+};
+
+export type CustomerListItem = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  orderCount: number;
+  totalSpentCents: number;
+  currency: string;
+  lastOrderAt?: string | null;
+  createdAt: string;
+  tags: string[];
+};
+
+export type CustomerListPage = {
+  items: CustomerListItem[];
+  total: number;
+};
+
+export type LedgerEntry = {
+  id: string;
+  deltaCents: number;
+  reason: string;
+  note: string;
+  orderId?: string | null;
+  createdAt: string;
+};
+
+export type CustomerDetail = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  marketingConsent: boolean;
+  note: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  orderCount: number;
+  totalSpentCents: number;
+  avgOrderCents: number;
+  lastOrderAt?: string | null;
+  storeCreditCents: number;
+  storeCreditCurrency: string;
+  addresses: CustomerAddress[];
+  recentOrders: {
+    id: string;
+    number: string;
+    status: string;
+    financialStatus: FinancialStatus;
+    fulfillmentStatus: FulfillmentStatus;
+    totalCents: number;
+    currency: string;
+    createdAt: string;
+    itemsCount: number;
+  }[];
+  ledgerEntries: LedgerEntry[];
+};
