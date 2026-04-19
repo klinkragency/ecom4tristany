@@ -217,3 +217,115 @@ export type Transfer = {
   items: TransferItem[];
   totalUnits: number;
 };
+
+// ─── Orders ──────────────────────────────────────────────────────────────
+
+export type OrderStatus =
+  | 'pending' | 'paid' | 'partially_paid'
+  | 'fulfilled' | 'partially_fulfilled'
+  | 'cancelled' | 'refunded' | 'partially_refunded';
+
+export type FinancialStatus =
+  | 'pending' | 'authorized' | 'paid' | 'partially_paid'
+  | 'refunded' | 'partially_refunded' | 'voided';
+
+export type FulfillmentStatus = 'unfulfilled' | 'partial' | 'fulfilled' | 'restocked';
+
+export type OrderListItem = {
+  id: string;
+  number: string;
+  email: string;
+  customerName: string;
+  status: OrderStatus;
+  financialStatus: FinancialStatus;
+  fulfillmentStatus: FulfillmentStatus;
+  totalCents: number;
+  currency: string;
+  createdAt: string;
+  itemsCount: number;
+};
+
+export type OrderListPage = {
+  items: OrderListItem[];
+  nextCursor?: string;
+  total: number;
+};
+
+export type OrderLineItem = {
+  id: string;
+  variantId?: string | null;
+  productId?: string | null;
+  productTitle: string;
+  variantTitle: string;
+  sku: string;
+  imageUrl: string;
+  unitPriceCents: number;
+  quantity: number;
+  discountCents: number;
+  taxCents: number;
+  totalCents: number;
+};
+
+export type OrderAddress = {
+  firstName: string;
+  lastName: string;
+  company: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+};
+
+export type OrderPayment = {
+  id: string;
+  provider: string;
+  providerRef: string;
+  status: string;
+  amountCents: number;
+  currency: string;
+  brand: string;
+  last4: string;
+  createdAt: string;
+};
+
+export type OrderEvent = {
+  id: string;
+  kind: string;
+  adminId?: string | null;
+  payload?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type Order = {
+  id: string;
+  number: string;
+  customerId?: string | null;
+  customerName: string;
+  email: string;
+  phone: string;
+  currency: string;
+  status: OrderStatus;
+  financialStatus: FinancialStatus;
+  fulfillmentStatus: FulfillmentStatus;
+  subtotalCents: number;
+  discountCents: number;
+  taxCents: number;
+  shippingCents: number;
+  totalCents: number;
+  note: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string | null;
+  cancelledAt?: string | null;
+  fulfilledAt?: string | null;
+  lineItems: OrderLineItem[];
+  shippingAddress?: OrderAddress | null;
+  billingAddress?: OrderAddress | null;
+  payments: OrderPayment[];
+  events: OrderEvent[];
+  totalRefundedCents: number;
+};
