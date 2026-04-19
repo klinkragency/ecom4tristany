@@ -48,9 +48,11 @@ test('Inventory matrix: set levels on a product, matrix persists the numbers', a
 
   // Inventory section renders; change the Black variant's on_hand at Main.
   await expect(page.getByRole('heading', { name: /Inventory \(/ })).toBeVisible();
-  // Find the first row (Black) and its first stock input; set to 42.
+  // Fresh random value so we always produce a diff against whatever previous
+  // runs left in the DB (the "Save inventory" button is disabled when !dirty).
+  const target = String(1 + Math.floor(Math.random() * 900));
   const firstInput = page.locator('table input[type="number"]').first();
-  await firstInput.fill('42');
+  await firstInput.fill(target);
   await page.getByRole('button', { name: /save inventory/i }).click();
   await expect(page.getByText(/Saved/)).toBeVisible({ timeout: 10_000 });
 
@@ -59,5 +61,5 @@ test('Inventory matrix: set levels on a product, matrix persists the numbers', a
   await page.getByPlaceholder(/search/i).fill('coffee-mug-csv');
   await page.getByPlaceholder(/search/i).press('Enter');
   await page.getByRole('link', { name: /Coffee mug/ }).first().click();
-  await expect(page.locator('table input[type="number"]').first()).toHaveValue('42');
+  await expect(page.locator('table input[type="number"]').first()).toHaveValue(target);
 });
