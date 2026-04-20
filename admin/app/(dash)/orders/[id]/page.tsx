@@ -221,6 +221,84 @@ export default function OrderDetailPage() {
           )}
         </Card>
 
+        {/* Fulfillments */}
+        <Card title={`Fulfillments (${fulfillments.length})`}>
+          {fulfillments.length === 0 ? (
+            <p className="text-sm text-[color:var(--color-text-muted)]">Nothing shipped yet.</p>
+          ) : (
+            <ul className="space-y-3 text-sm">
+              {fulfillments.map((f) => (
+                <li key={f.id} className="border border-[color:var(--color-border)] rounded p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">#{f.number}</span>
+                    <span className={`text-xs rounded px-1.5 py-0.5 ${f.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{f.status}</span>
+                    {f.carrier && <span className="text-xs text-[color:var(--color-text-muted)]">via {f.carrier}</span>}
+                    {f.trackingNumber && (
+                      <span className="text-xs font-mono text-[color:var(--color-text-muted)]">
+                        {f.trackingUrl ? <a href={f.trackingUrl} target="_blank" rel="noreferrer" className="underline">{f.trackingNumber}</a> : f.trackingNumber}
+                      </span>
+                    )}
+                    <span className="text-xs text-[color:var(--color-text-muted)] ml-auto">
+                      {f.shippedAt ? new Date(f.shippedAt).toLocaleString() : new Date(f.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <ul className="text-xs text-[color:var(--color-text-muted)]">
+                    {f.items.map((it) => (
+                      <li key={it.id}>
+                        {it.quantity} × {it.productTitle}{it.variantTitle && ` — ${it.variantTitle}`}
+                      </li>
+                    ))}
+                  </ul>
+                  {f.status !== 'cancelled' && (
+                    <button
+                      onClick={async () => {
+                        if (!confirm('Cancel this fulfillment and restock?')) return;
+                        try {
+                          await api(`/api/admin/fulfillments/${f.id}/cancel`, { method: 'POST' });
+                          await load();
+                        } catch (err) {
+                          setError(err instanceof ApiError ? err.message : 'Cancel failed');
+                        }
+                      }}
+                      className="mt-2 text-xs text-red-700 hover:underline"
+                    >
+                      Cancel fulfillment
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {order.fulfillmentStatus !== 'fulfilled' && order.status !== 'cancelled' && order.financialStatus === 'paid' && (
+            <button
+              onClick={() => setFulfillOpen(true)}
+              className="mt-3 text-xs px-3 py-1.5 rounded border border-[color:var(--color-border)] hover:bg-gray-50"
+            >
+              + Fulfill items
+            </button>
+          )}
+        </Card>
+
+        {/* Returns */}
+        {returnsList.length > 0 && (
+          <Card title={`Returns (${returnsList.length})`}>
+            <ul className="space-y-2 text-sm">
+              {returnsList.map((r) => (
+                <li key={r.id} className="border border-[color:var(--color-border)] rounded p-2 flex items-center gap-2">
+                  <Link href={`/returns/${r.id}`} className="font-medium hover:underline">{r.rmaNumber}</Link>
+                  <span className="text-xs rounded px-1.5 py-0.5 bg-gray-100 text-gray-800">{r.status}</span>
+                  <span className="flex-1 text-xs text-[color:var(--color-text-muted)]">
+                    {r.items.length} line{r.items.length === 1 ? '' : 's'} · {formatPrice(r.estimatedCents, r.currency)}
+                  </span>
+                  <span className="text-xs text-[color:var(--color-text-muted)]">
+                    {new Date(r.requestedAt).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
         {/* Timeline */}
         <Card title="Timeline">
           {order.events.length === 0 ? (
@@ -299,7 +377,158 @@ export default function OrderDetailPage() {
           onDone={async () => { setRefundOpen(false); await load(); }}
         />
       )}
+      {fulfillOpen && (
+        <FulfillModal
+          order={order}
+          locations={locations}
+          fulfillments={fulfillments}
+          onClose={() => setFulfillOpen(false)}
+          onDone={async () => { setFulfillOpen(false); await load(); }}
+        />
+      )}
     </section>
+  );
+}
+
+function FulfillModal({
+  order, locations, fulfillments, onClose, onDone,
+}: {
+  order: Order;
+  locations: LocationOption[];
+  fulfillments: Fulfillment[];
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  // For each order line, compute how much is left to fulfill.
+  const alreadyByLine = new Map<string, number>();
+  for (const f of fulfillments) {
+    if (f.status === 'cancelled') continue;
+    for (const it of f.items) {
+      alreadyByLine.set(it.orderLineItemId, (alreadyByLine.get(it.orderLineItemId) ?? 0) + it.quantity);
+    }
+  }
+  const fulfillable = order.lineItems.map((li) => ({
+    id: li.id,
+    title: li.productTitle + (li.variantTitle ? ` — ${li.variantTitle}` : ''),
+    sku: li.sku,
+    remaining: Math.max(0, li.quantity - (alreadyByLine.get(li.id) ?? 0)),
+  }));
+
+  const [qtyByLine, setQtyByLine] = useState<Record<string, number>>(
+    Object.fromEntries(fulfillable.map((l) => [l.id, l.remaining])),
+  );
+  const [locationId, setLocationId] = useState(locations[0]?.id ?? '');
+  const [carrier, setCarrier] = useState('Colissimo');
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingUrl, setTrackingUrl] = useState('');
+  const [notify, setNotify] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setSubmitting(true);
+    setError(null);
+    const items = Object.entries(qtyByLine)
+      .filter(([, q]) => q > 0)
+      .map(([orderLineItemId, q]) => ({ orderLineItemId, quantity: q }));
+    if (items.length === 0) {
+      setError('Select at least one item to fulfill.');
+      setSubmitting(false);
+      return;
+    }
+    try {
+      await api(`/api/admin/orders/${order.id}/fulfillments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          locationId, carrier, trackingNumber, trackingUrl, notifyCustomer: notify, items,
+        }),
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Fulfill failed');
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+      <div className="w-full max-w-xl rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+        <h2 className="font-semibold">Fulfill items</h2>
+        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+
+        <ul className="divide-y divide-[color:var(--color-border)] border border-[color:var(--color-border)] rounded">
+          {fulfillable.map((l) => (
+            <li key={l.id} className="flex items-center gap-3 px-3 py-2">
+              <div className="flex-1">
+                <div className="font-medium">{l.title}</div>
+                {l.sku && <div className="text-xs text-[color:var(--color-text-muted)]">SKU {l.sku}</div>}
+                <div className="text-xs text-[color:var(--color-text-muted)]">Remaining: {l.remaining}</div>
+              </div>
+              <input
+                type="number"
+                min={0}
+                max={l.remaining}
+                value={qtyByLine[l.id] ?? 0}
+                onChange={(e) => {
+                  const v = Math.max(0, Math.min(l.remaining, Number(e.target.value)));
+                  setQtyByLine((s) => ({ ...s, [l.id]: v }));
+                }}
+                disabled={l.remaining === 0}
+                className="w-20 px-2 py-1 rounded border border-[color:var(--color-border)] text-sm"
+              />
+            </li>
+          ))}
+        </ul>
+
+        <label className="block">
+          <div className="font-medium mb-1">Ship from</div>
+          <select value={locationId} onChange={(e) => setLocationId(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white">
+            <option value="">— No location (inventory not decremented) —</option>
+            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block">
+            <div className="font-medium mb-1">Carrier</div>
+            <input value={carrier} onChange={(e) => setCarrier(e.target.value)}
+              list="carriers"
+              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+            <datalist id="carriers">
+              <option value="Colissimo" />
+              <option value="La Poste" />
+              <option value="DHL" />
+              <option value="UPS" />
+              <option value="FedEx" />
+              <option value="Chronopost" />
+              <option value="Mondial Relay" />
+            </datalist>
+          </label>
+          <label className="block">
+            <div className="font-medium mb-1">Tracking number</div>
+            <input value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)}
+              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono" />
+          </label>
+        </div>
+        <label className="block">
+          <div className="font-medium mb-1">Tracking URL (optional)</div>
+          <input value={trackingUrl} onChange={(e) => setTrackingUrl(e.target.value)}
+            placeholder="https://www.laposte.fr/outils/suivre-vos-envois?code=..."
+            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+        </label>
+        <label className="flex items-center gap-2 text-xs">
+          <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+          Email the customer a shipping notification
+        </label>
+        <div className="flex justify-end gap-2 pt-2">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button onClick={submit} disabled={submitting}
+            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+            {submitting ? 'Shipping…' : 'Ship items'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

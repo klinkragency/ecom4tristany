@@ -35,16 +35,36 @@ type OrderDetail = {
   };
 };
 
+type ReturnSummary = {
+  id: string;
+  rmaNumber: string;
+  status: string;
+  requestedAt: string;
+};
+
 export default function MyOrderPage() {
   const params = useParams<{ id: string }>();
   const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [returns, setReturns] = useState<ReturnSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [returnOpen, setReturnOpen] = useState(false);
 
-  useEffect(() => {
-    api<OrderDetail>(`/api/customer/orders/${params.id}`)
-      .then(setOrder)
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Load failed'));
-  }, [params.id]);
+  async function load() {
+    try {
+      const [o, r] = await Promise.all([
+        api<OrderDetail>(`/api/customer/orders/${params.id}`),
+        api<{ items: ReturnSummary[] }>(`/api/customer/returns`).catch(() => ({ items: [] })),
+      ]);
+      setOrder(o);
+      // Client-side filter: only returns for this order.
+      setReturns((r.items ?? []).filter((x: ReturnSummary & { orderId?: string }) =>
+        (x as unknown as { orderId: string }).orderId === o.id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Load failed');
+    }
+  }
+
+  useEffect(() => { load(); }, [params.id]);
 
   if (!order) {
     return (
