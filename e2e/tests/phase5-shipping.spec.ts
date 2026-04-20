@@ -18,20 +18,28 @@ async function adminLogin(page: import('@playwright/test').Page) {
 
 test('Shipping settings: admin can create a zone + rate, storefront can quote it', async ({ page, browser }) => {
   await adminLogin(page);
+
+  // Clear pre-existing zones via the admin API so the test is idempotent.
+  // Run the HTTP calls from inside the browser page so cookies + CSRF match.
+  await page.goto(`${ADMIN}/settings/shipping`);
+  await page.evaluate(async (api) => {
+    const csrf = await fetch('/api/csrf', { credentials: 'include' }).then((r) => r.json());
+    const list = await fetch(`${api}/api/admin/shipping/zones`, { credentials: 'include' }).then((r) => r.json());
+    for (const z of list.items ?? []) {
+      await fetch(`${api}/api/admin/shipping/zones/${z.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'X-CSRF-Token': csrf.csrfToken },
+      });
+    }
+  }, API);
+  await page.reload();
+
   await page.goto(`${ADMIN}/settings/shipping`);
   await expect(page.getByRole('heading', { name: /^Shipping$/ })).toBeVisible();
 
   const zoneName = `France ${Date.now()}`;
   const country = 'FR';
-
-  // If a zone already covers FR (from a previous run), delete it first.
-  const deleteButtons = page.locator('li', { has: page.getByText(country, { exact: false }) })
-    .getByRole('button', { name: /^Delete$/ });
-  while (await deleteButtons.count() > 0) {
-    page.once('dialog', (d) => d.accept());
-    await deleteButtons.first().click();
-    await page.waitForTimeout(300);
-  }
 
   // Create zone.
   await page.getByRole('button', { name: /new zone/i }).click();
