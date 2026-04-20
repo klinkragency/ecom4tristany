@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addToCart, ApiError } from '@/lib/cart';
 import { cartStore } from '@/lib/cart-store';
+import { track } from '@/lib/analytics';
 import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
 
 export default function VariantPicker({ product }: { product: Product }) {
@@ -31,6 +32,12 @@ export default function VariantPicker({ product }: { product: Product }) {
     try {
       const cart = await addToCart(variant.id, qty);
       cartStore.set({ cart });
+      track('cart_add', {
+        productId: product.id,
+        variantId: variant.id,
+        cartId: cart.id,
+        payload: { quantity: qty, unitPriceCents: variant.priceCents },
+      });
       router.push('/cart');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not add to cart');

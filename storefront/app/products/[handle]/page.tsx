@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import VariantPicker from './VariantPicker';
 import SafeHtml from './SafeHtml';
+import ProductViewTracker from './ProductViewTracker';
 import type { Product } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -24,6 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 grid md:grid-cols-2 gap-10">
+      <ProductViewTracker productId={product.id} />
       <Gallery product={product} />
       <div>
         <div className="text-sm text-[color:var(--color-text-muted)] mb-1">

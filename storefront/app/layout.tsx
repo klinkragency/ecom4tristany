@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import CartLink from '@/components/CartLink';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col">
+        <AnalyticsTracker />
         <header className="border-b border-[color:var(--color-border)]">
           <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
             <Link href="/" className="text-lg font-semibold">Shop</Link>
