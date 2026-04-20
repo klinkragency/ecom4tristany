@@ -27,4 +27,15 @@ export async function clearCart(): Promise<Cart> {
   return api<Cart>('/api/storefront/cart/clear', { method: 'POST' });
 }
 
+export async function applyDiscount(code: string): Promise<Cart> {
+  return api<Cart>('/api/storefront/cart/discount', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export async function removeDiscount(): Promise<Cart> {
+  return api<Cart>('/api/storefront/cart/discount', { method: 'DELETE' });
+}
+
 export { ApiError };

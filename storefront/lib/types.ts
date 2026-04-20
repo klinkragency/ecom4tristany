@@ -128,6 +128,11 @@ export type Cart = {
   items: CartItem[];
   subtotalCents: number;
   totalQuantity: number;
+  discountCode?: string;
+  discountTitle?: string;
+  discountCents: number;
+  freeShipping: boolean;
+  discountError?: string;
 };
 
 // ─── Customer account ──────────────────────────────────────────────────

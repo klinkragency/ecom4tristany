@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { updateItem, removeItem, ApiError } from '@/lib/cart';
+import { updateItem, removeItem, applyDiscount, removeDiscount, ApiError } from '@/lib/cart';
 import { cartStore, useCart } from '@/lib/cart-store';
 import { formatPrice } from '@/lib/types';
 
@@ -99,10 +99,23 @@ export default function CartPage() {
 
       <div className="mt-6 flex justify-end">
         <div className="w-full max-w-xs text-sm">
+          <DiscountCodeField cart={cart} setError={setError} />
           <div className="flex justify-between py-1">
             <span className="text-[color:var(--color-text-muted)]">Subtotal</span>
             <span className="font-medium">{formatPrice(cart.subtotalCents)}</span>
           </div>
+          {cart.discountCents > 0 && (
+            <div className="flex justify-between py-1 text-green-800">
+              <span>{cart.discountTitle || 'Discount'}</span>
+              <span>−{formatPrice(cart.discountCents)}</span>
+            </div>
+          )}
+          {cart.freeShipping && (
+            <div className="flex justify-between py-1 text-green-800 text-xs">
+              <span>Free shipping applied at checkout</span>
+              <span>✓</span>
+            </div>
+          )}
           <div className="text-xs text-[color:var(--color-text-muted)] pb-3">
             Shipping and taxes calculated at checkout.
           </div>
@@ -110,10 +123,79 @@ export default function CartPage() {
             href="/checkout"
             className="block w-full text-center px-4 py-2 rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)]"
           >
-            Checkout — {formatPrice(cart.subtotalCents)}
+            Checkout — {formatPrice(cart.subtotalCents - cart.discountCents)}
           </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+function DiscountCodeField({
+  cart, setError,
+}: {
+  cart: { discountCode?: string; discountTitle?: string; discountError?: string };
+  setError: (s: string | null) => void;
+}) {
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const hasCode = !!cart.discountCode;
+
+  async function apply() {
+    setBusy(true);
+    setError(null);
+    try {
+      const next = await applyDiscount(code.trim());
+      cartStore.set({ cart: next });
+      setCode('');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Invalid code');
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function remove() {
+    setBusy(true);
+    try {
+      const next = await removeDiscount();
+      cartStore.set({ cart: next });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Remove failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (hasCode) {
+    return (
+      <div className="mb-3 p-3 rounded border border-[color:var(--color-border)] bg-gray-50">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs">{cart.discountCode}</span>
+          {cart.discountTitle && <span className="text-xs text-[color:var(--color-text-muted)] flex-1">{cart.discountTitle}</span>}
+          <button onClick={remove} disabled={busy} className="text-xs text-red-700 hover:underline">Remove</button>
+        </div>
+        {cart.discountError && (
+          <div className="mt-1 text-xs text-red-700">{cart.discountError}</div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="mb-3 flex gap-2">
+      <input
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') apply(); }}
+        placeholder="Discount code"
+        className="flex-1 px-3 py-2 rounded border border-[color:var(--color-border)] text-sm font-mono uppercase"
+      />
+      <button
+        onClick={apply}
+        disabled={busy || !code.trim()}
+        className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50"
+      >
+        {busy ? '…' : 'Apply'}
+      </button>
+    </div>
   );
 }

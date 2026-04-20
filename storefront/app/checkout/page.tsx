@@ -17,6 +17,9 @@ type InitResponse = {
   publishableKey: string;
   currency: string;
   subtotalCents: number;
+  discountCents: number;
+  discountCode?: string;
+  discountTitle?: string;
   shippingCents: number;
   taxCents: number;
   totalCents: number;
@@ -261,6 +264,12 @@ export default function CheckoutPage() {
               <span className="text-[color:var(--color-text-muted)]">Subtotal</span>
               <span>{formatPrice(initResp?.subtotalCents ?? cart?.subtotalCents ?? 0)}</span>
             </div>
+            {((initResp?.discountCents ?? cart?.discountCents) ?? 0) > 0 && (
+              <div className="flex justify-between text-green-800">
+                <span>{initResp?.discountTitle || cart?.discountTitle || 'Discount'}</span>
+                <span>−{formatPrice(initResp?.discountCents ?? cart?.discountCents ?? 0)}</span>
+              </div>
+            )}
             {initResp && (
               <div className="flex justify-between">
                 <span className="text-[color:var(--color-text-muted)]">Shipping</span>

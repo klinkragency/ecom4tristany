@@ -12,6 +12,14 @@ type Cart struct {
 	Items          []Item     `json:"items"`
 	SubtotalCents  int        `json:"subtotalCents"`
 	TotalQuantity  int        `json:"totalQuantity"`
+
+	// Discount preview. Populated by the handler using the discount engine
+	// so the storefront can show the pre-checkout price + any error.
+	DiscountCode      string `json:"discountCode,omitempty"`
+	DiscountTitle     string `json:"discountTitle,omitempty"`
+	DiscountCents     int    `json:"discountCents"`
+	FreeShipping      bool   `json:"freeShipping"`
+	DiscountError     string `json:"discountError,omitempty"`
 }
 
 type Item struct {
