@@ -65,6 +65,12 @@ export default function CheckoutSuccessPage() {
         if (o.financialStatus === 'paid' || attempts > 20) {
           setPolling(false);
           cartStore.set({ cart: null });
+          if (o.financialStatus === 'paid') {
+            track('checkout_completed', {
+              orderId: o.id,
+              payload: { totalCents: o.totalCents, orderNumber: o.number },
+            });
+          }
           return;
         }
         setTimeout(pollOnce, 1500);
