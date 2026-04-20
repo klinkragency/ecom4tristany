@@ -17,10 +17,28 @@ export default function EditDiscountPage() {
     (async () => {
       try {
         const d = await api<Partial<DiscountPayload> & { code?: string | null }>(`/api/admin/discounts/${id}`);
+        // Only copy the fields DiscountPayload expects — leaves server-managed
+        // ones (id, createdAt, updatedAt, usageCount) out of the save payload.
         setInitial({
           ...EMPTY_DISCOUNT,
-          ...d,
           code: d.code ?? '',
+          title: d.title ?? '',
+          kind: (d.kind as DiscountPayload['kind']) ?? EMPTY_DISCOUNT.kind,
+          valuePercent: d.valuePercent ?? null,
+          valueCents: d.valueCents ?? null,
+          scope: (d.scope as DiscountPayload['scope']) ?? EMPTY_DISCOUNT.scope,
+          eligibility: (d.eligibility as DiscountPayload['eligibility']) ?? EMPTY_DISCOUNT.eligibility,
+          usageLimit: d.usageLimit ?? null,
+          usageLimitPerCustomer: d.usageLimitPerCustomer ?? null,
+          minSubtotalCents: d.minSubtotalCents ?? 0,
+          bogoBuyQuantity: d.bogoBuyQuantity ?? null,
+          bogoGetQuantity: d.bogoGetQuantity ?? null,
+          bogoGetDiscountPercent: d.bogoGetDiscountPercent ?? null,
+          bogoBuyScope: d.bogoBuyScope ?? null,
+          bogoGetScope: d.bogoGetScope ?? null,
+          active: d.active ?? true,
+          startsAt: d.startsAt ?? null,
+          endsAt: d.endsAt ?? null,
           productIds: d.productIds ?? [],
           collectionIds: d.collectionIds ?? [],
           buyProductIds: d.buyProductIds ?? [],
@@ -28,7 +46,7 @@ export default function EditDiscountPage() {
           getProductIds: d.getProductIds ?? [],
           getCollectionIds: d.getCollectionIds ?? [],
           segmentIds: d.segmentIds ?? [],
-        } as DiscountPayload);
+        });
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Load failed');
       }
