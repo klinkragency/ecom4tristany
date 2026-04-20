@@ -18,6 +18,7 @@ import (
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/product"
 	"github.com/3mg/shop/backend/internal/session"
+	"github.com/3mg/shop/backend/internal/shipping"
 	"github.com/3mg/shop/backend/internal/storage"
 
 	"github.com/go-chi/chi/v5"

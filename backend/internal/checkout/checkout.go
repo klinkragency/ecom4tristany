@@ -11,7 +11,7 @@ import (
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/session"
-	"github.com/3mg/shop/backend/internal/shipping"
+	shipping_ "github.com/3mg/shop/backend/internal/shipping"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,7 +38,8 @@ type InitReq struct {
 	Shipping Address `json:"shipping"`
 	Billing  Address `json:"billing"`
 	// When true, reuse the shipping address for billing.
-	BillingSameAsShipping bool `json:"billingSameAsShipping"`
+	BillingSameAsShipping bool   `json:"billingSameAsShipping"`
+	ShippingRateID        string `json:"shippingRateId"`
 	Note                  string `json:"note"`
 }
 
@@ -129,10 +130,44 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 
 	// Totals (tax-inclusive prices).
 	subtotal := 0
+	weightGrams := 0
 	for _, l := range lines {
 		subtotal += l.unitPriceCents * l.quantity
+		weightGrams += l.weightGrams * l.quantity
 	}
+
+	// Resolve shipping. Preference order:
+	//   1. Client sent shippingRateId → verify and use (protects against price tampering).
+	//   2. Otherwise, if the destination country has any zone configured, the
+	//      cheapest active rate is used automatically.
+	//   3. If no zones cover the country yet, fall back to FlatShippingCents
+	//      so the checkout still functions during initial setup.
 	shipping := FlatShippingCents
+	shippingMethod := "Standard"
+	if req.ShippingRateID != "" {
+		snap, err := shipping_.Resolve(r.Context(), h.db, req.ShippingRateID, req.Shipping.Country, subtotal, weightGrams)
+		if err != nil {
+			httpx.Error(w, http.StatusBadRequest, "shipping_rate_invalid", err.Error())
+			return
+		}
+		shipping = snap.PriceCents
+		shippingMethod = snap.Name
+	} else {
+		rates, rerr := shipping_.QuoteForCart(r.Context(), h.db, req.Shipping.Country, subtotal, weightGrams)
+		if rerr == nil && len(rates) > 0 {
+			// Pick the cheapest — the storefront is expected to send shippingRateId
+			// from its selector; this only happens when the client forgot.
+			cheapest := rates[0]
+			for _, rt := range rates[1:] {
+				if rt.PriceCents < cheapest.PriceCents {
+					cheapest = rt
+				}
+			}
+			shipping = cheapest.PriceCents
+			shippingMethod = cheapest.Name
+		}
+	}
+
 	gross := subtotal + shipping
 	tax := BackSolveVAT(gross, h.cfg.ShopVATPercent)
 	total := gross // tax-inclusive grand total
@@ -177,12 +212,12 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	err = tx.QueryRow(r.Context(), `
         INSERT INTO orders (customer_id, email, phone, currency,
                             subtotal_cents, discount_cents, tax_cents, shipping_cents,
-                            store_credit_cents, total_cents,
+                            store_credit_cents, total_cents, shipping_method,
                             note, ip, user_agent)
-        VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING id, number
     `, customerID, req.Email, req.Phone, h.cfg.ShopCurrency,
-		subtotal, tax, shipping, storeCreditApplied, chargeTotal,
+		subtotal, tax, shipping, storeCreditApplied, chargeTotal, shippingMethod,
 		req.Note, clientIP(r), r.UserAgent(),
 	).Scan(&orderID, &orderNumber)
 	if err != nil {
@@ -300,6 +335,7 @@ type cartLine struct {
 	sku            string
 	imageURL       string
 	unitPriceCents int
+	weightGrams    int
 	quantity       int
 	available      bool
 }
@@ -320,7 +356,7 @@ func (h *Handler) loadCartLines(ctx context.Context, cartID string) ([]cartLine,
                    (SELECT url FROM product_media WHERE product_id = p.id ORDER BY position LIMIT 1),
                    ''
                ),
-               v.price_cents, ci.quantity,
+               v.price_cents, v.weight_grams, ci.quantity,
                p.status = 'active' AS available
         FROM cart_items ci
         JOIN variants v  ON v.id = ci.variant_id
@@ -335,7 +371,7 @@ func (h *Handler) loadCartLines(ctx context.Context, cartID string) ([]cartLine,
 	for rows.Next() {
 		var l cartLine
 		if err := rows.Scan(&l.variantID, &l.productID, &l.productTitle, &l.variantTitle,
-			&l.sku, &l.imageURL, &l.unitPriceCents, &l.quantity, &l.available); err != nil {
+			&l.sku, &l.imageURL, &l.unitPriceCents, &l.weightGrams, &l.quantity, &l.available); err != nil {
 			return nil, err
 		}
 		out = append(out, l)
