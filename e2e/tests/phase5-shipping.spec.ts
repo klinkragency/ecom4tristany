@@ -80,29 +80,29 @@ test('Shipping settings: admin can create a zone + rate, storefront can quote it
     test.skip(true, 'No variants available to prime cart');
   }
   // Using the storePage context so cookies are attached.
-  const addResp = await storePage.evaluate(async (variantId) => {
-    const csrf = await fetch('/api/csrf', { credentials: 'include' }).then((r) => r.json());
-    const r = await fetch('/api/storefront/cart/items', {
+  const addResp = await storePage.evaluate(async ({ variantId, api }) => {
+    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
+    const r = await fetch(`${api}/api/storefront/cart/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.csrfToken },
       credentials: 'include',
       body: JSON.stringify({ variantId, quantity: 1 }),
     });
     return r.status;
-  }, firstVariantId);
+  }, { variantId: firstVariantId!, api: API });
   expect(addResp).toBe(200);
 
   // Quote.
-  const quote = await storePage.evaluate(async (country) => {
-    const csrf = await fetch('/api/csrf', { credentials: 'include' }).then((r) => r.json());
-    const r = await fetch('/api/storefront/checkout/shipping-quote', {
+  const quote = await storePage.evaluate(async ({ country, api }) => {
+    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
+    const r = await fetch(`${api}/api/storefront/checkout/shipping-quote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.csrfToken },
       credentials: 'include',
       body: JSON.stringify({ country }),
     });
     return { status: r.status, body: await r.json() };
-  }, country);
+  }, { country, api: API });
   expect(quote.status).toBe(200);
   expect(Array.isArray(quote.body.rates)).toBe(true);
   expect(quote.body.rates.length).toBeGreaterThanOrEqual(1);
