@@ -151,6 +151,17 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/segments/{id}", custAdminH.UpdateSegment)
 			r.Delete("/segments/{id}", custAdminH.DeleteSegment)
 			r.Get("/segments/{id}/customers", custAdminH.PreviewSegment)
+
+			// Shipping zones & rates
+			shipH := shipping.NewHandler(d.DB)
+			r.Get("/shipping/zones", shipH.ListZones)
+			r.Post("/shipping/zones", shipH.CreateZone)
+			r.Get("/shipping/zones/{id}", shipH.GetZone)
+			r.Put("/shipping/zones/{id}", shipH.UpdateZone)
+			r.Delete("/shipping/zones/{id}", shipH.DeleteZone)
+			r.Post("/shipping/zones/{zoneId}/rates", shipH.CreateRate)
+			r.Put("/shipping/rates/{id}", shipH.UpdateRate)
+			r.Delete("/shipping/rates/{id}", shipH.DeleteRate)
 		})
 	})
 
