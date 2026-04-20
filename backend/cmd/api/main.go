@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/3mg/shop/backend/internal/admin"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/platform"
