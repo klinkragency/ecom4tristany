@@ -204,6 +204,10 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/analytics/finance/refunds", finH.RefundsReport)
 			r.Get("/analytics/finance/store-credit", finH.StoreCreditLiability)
 			r.Get("/analytics/finance/payouts", finH.Payouts)
+
+			// PostHog (server-side proxy)
+			phH := analytics.NewPostHogHandler(d.Cfg)
+			r.Get("/analytics/posthog/overview", phH.Overview)
 		})
 	})
 
