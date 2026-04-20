@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { cartStore } from '@/lib/cart-store';
+import { track } from '@/lib/analytics';
 import { formatPrice } from '@/lib/types';
 
 type Order = {
