@@ -255,6 +255,12 @@ func NewRouter(d Deps) http.Handler {
 			// GDPR (customer self-service)
 			r.Get("/data-export", custH.MyDataExport)
 			r.Post("/account/erase", custH.MyAccountErase)
+
+			// Returns (customer self-service)
+			custRetH := returns.NewHandler(d.DB, d.Cfg, d.Pay)
+			r.Get("/returns", custRetH.CustomerList)
+			r.Post("/returns", custRetH.CustomerRequest)
+			r.Get("/returns/{id}", custRetH.CustomerGet)
 		})
 	})
 
