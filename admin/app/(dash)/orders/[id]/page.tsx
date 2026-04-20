@@ -23,6 +23,43 @@ const FUL_BADGE: Record<FulfillmentStatus, string> = {
   restocked: 'bg-gray-100 text-gray-800',
 };
 
+type LocationOption = { id: string; name: string };
+type Fulfillment = {
+  id: string;
+  number: number;
+  carrier: string;
+  trackingNumber: string;
+  trackingUrl: string;
+  status: string;
+  shippedAt: string | null;
+  createdAt: string;
+  locationName: string;
+  items: { id: string; orderLineItemId: string; productTitle: string; variantTitle: string; sku: string; quantity: number }[];
+};
+type ReturnLine = {
+  id: string;
+  orderLineItemId: string;
+  productTitle: string;
+  variantTitle: string;
+  sku: string;
+  unitPriceCents: number;
+  quantity: number;
+  reason: string;
+  note: string;
+  restocked: boolean;
+};
+type ReturnRow = {
+  id: string;
+  rmaNumber: string;
+  status: string;
+  customerNote: string;
+  adminNote: string;
+  requestedAt: string;
+  items: ReturnLine[];
+  currency: string;
+  estimatedCents: number;
+};
+
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -30,16 +67,34 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
+  const [fulfillments, setFulfillments] = useState<Fulfillment[]>([]);
+  const [returnsList, setReturnsList] = useState<ReturnRow[]>([]);
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [fulfillOpen, setFulfillOpen] = useState(false);
 
   async function load() {
     try {
-      setOrder(await api<Order>(`/api/admin/orders/${id}`));
+      const [o, f, ret] = await Promise.all([
+        api<Order>(`/api/admin/orders/${id}`),
+        api<{ items: Fulfillment[] }>(`/api/admin/orders/${id}/fulfillments`),
+        api<{ items: ReturnRow[] }>(`/api/admin/returns?orderId=${id}`).catch(() => ({ items: [] })),
+      ]);
+      setOrder(o);
+      setFulfillments(f.items ?? []);
+      setReturnsList((ret.items ?? []).filter((r) => r !== null));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Load failed');
     }
   }
 
-  useEffect(() => { load(); }, [id]);
+  async function loadLocations() {
+    try {
+      const list = await api<LocationOption[]>('/api/admin/locations');
+      setLocations(list);
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { load(); loadLocations(); }, [id]);
 
   async function cancel() {
     if (!confirm('Cancel this order?')) return;

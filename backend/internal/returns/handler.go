@@ -198,7 +198,8 @@ func (h *Handler) CustomerGet(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AdminList(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
-	items, err := listReturns(r.Context(), h.db, nil, status)
+	orderID := r.URL.Query().Get("orderId")
+	items, err := listReturnsAdmin(r.Context(), h.db, status, orderID)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
@@ -716,6 +717,21 @@ func estimatedRefundCents(ctx context.Context, db *pgxpool.Pool, returnID string
 	return total, err
 }
 
+// listReturnsAdmin is like listReturns but takes an orderId filter instead of
+// a customerID filter — what the admin UI wants.
+func listReturnsAdmin(ctx context.Context, db *pgxpool.Pool, status, orderID string) ([]ReturnDTO, error) {
+	where := []string{"1=1"}
+	args := []any{}
+	next := func(v any) string { args = append(args, v); return fmt.Sprintf("$%d", len(args)) }
+	if status != "" {
+		where = append(where, "r.status = "+next(status))
+	}
+	if orderID != "" {
+		where = append(where, "r.order_id = "+next(orderID))
+	}
+	return queryReturns(ctx, db, where, args)
+}
+
 func listReturns(ctx context.Context, db *pgxpool.Pool, customerID *string, status string) ([]ReturnDTO, error) {
 	where := []string{"1=1"}
 	args := []any{}
@@ -726,6 +742,10 @@ func listReturns(ctx context.Context, db *pgxpool.Pool, customerID *string, stat
 	if status != "" {
 		where = append(where, "r.status = "+next(status))
 	}
+	return queryReturns(ctx, db, where, args)
+}
+
+func queryReturns(ctx context.Context, db *pgxpool.Pool, where []string, args []any) ([]ReturnDTO, error) {
 	sql := `
         SELECT r.id, r.order_id, o.number, r.rma_number, r.status,
                r.customer_note, r.admin_note, r.refund_id,
