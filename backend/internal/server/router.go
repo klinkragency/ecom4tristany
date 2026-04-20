@@ -10,6 +10,7 @@ import (
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/cart"
 	"github.com/3mg/shop/backend/internal/checkout"
+	"github.com/3mg/shop/backend/internal/cms"
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
@@ -208,6 +209,23 @@ func NewRouter(d Deps) http.Handler {
 			// PostHog (server-side proxy)
 			phH := analytics.NewPostHogHandler(d.Cfg)
 			r.Get("/analytics/posthog/overview", phH.Overview)
+
+			// CMS — pages, menus, blog
+			cmsH := cms.NewHandler(d.DB)
+			blogH := cms.NewBlogHandler(d.DB, d.Cfg)
+			r.Get("/content/pages", cmsH.AdminListPages)
+			r.Post("/content/pages", cmsH.AdminCreatePage)
+			r.Get("/content/pages/{id}", cmsH.AdminGetPage)
+			r.Put("/content/pages/{id}", cmsH.AdminUpdatePage)
+			r.Delete("/content/pages/{id}", cmsH.AdminDeletePage)
+			r.Get("/content/menus", cmsH.AdminListMenus)
+			r.Get("/content/menus/{id}", cmsH.AdminGetMenu)
+			r.Put("/content/menus/{id}", cmsH.AdminUpdateMenu)
+			r.Get("/content/blog", blogH.AdminList)
+			r.Post("/content/blog", blogH.AdminCreate)
+			r.Get("/content/blog/{id}", blogH.AdminGet)
+			r.Put("/content/blog/{id}", blogH.AdminUpdate)
+			r.Delete("/content/blog/{id}", blogH.AdminDelete)
 		})
 	})
 
@@ -242,6 +260,15 @@ func NewRouter(d Deps) http.Handler {
 		})
 		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
 		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
+
+		// CMS (public reads)
+		cmsH := cms.NewHandler(d.DB)
+		blogH := cms.NewBlogHandler(d.DB, d.Cfg)
+		r.Get("/pages/{slug}", cmsH.StorefrontPageBySlug)
+		r.Get("/menus/{handle}", cmsH.StorefrontMenuByHandle)
+		r.Get("/blog", blogH.StorefrontList)
+		r.Get("/blog/feed.xml", blogH.StorefrontFeed)
+		r.Get("/blog/{slug}", blogH.StorefrontBySlug)
 
 		// Analytics ingest (storefront events). No CSRF — the endpoint is
 		// read-only semantically (can't change shop state) and tracker scripts
