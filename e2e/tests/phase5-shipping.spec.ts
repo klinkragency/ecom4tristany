@@ -23,7 +23,7 @@ test('Shipping settings: admin can create a zone + rate, storefront can quote it
   // Run the HTTP calls from inside the browser page so cookies + CSRF match.
   await page.goto(`${ADMIN}/settings/shipping`);
   await page.evaluate(async (api) => {
-    const csrf = await fetch('/api/csrf', { credentials: 'include' }).then((r) => r.json());
+    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
     const list = await fetch(`${api}/api/admin/shipping/zones`, { credentials: 'include' }).then((r) => r.json());
     for (const z of list.items ?? []) {
       await fetch(`${api}/api/admin/shipping/zones/${z.id}`, {
