@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/3mg/shop/backend/internal/admin"
+	"github.com/3mg/shop/backend/internal/analytics"
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/cart"
 	"github.com/3mg/shop/backend/internal/checkout"

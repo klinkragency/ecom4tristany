@@ -78,6 +78,7 @@ export default function DiscountForm({
   const [segments, setSegments] = useState<Segment[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -99,6 +100,15 @@ export default function DiscountForm({
   async function submit() {
     setSaving(true);
     setError(null);
+    setSaved(false);
+    // Client-side guard: the server enforces these too, but catching locally
+    // avoids a silent no-op when the user doesn't notice the error banner.
+    if (!v.title.trim()) {
+      setError('Title is required');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setSaving(false);
+      return;
+    }
     try {
       // Normalise numeric empties to null for the server.
       const cleaned: DiscountPayload = {
@@ -113,8 +123,12 @@ export default function DiscountForm({
         bogoGetScope: v.kind === 'bogo' ? v.bogoGetScope : null,
       };
       await onSave(cleaned);
+      setSaved(true);
+      // Brief visual confirmation then fade out.
+      setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Save failed');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -125,6 +139,7 @@ export default function DiscountForm({
   return (
     <div className="space-y-4 max-w-3xl">
       {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
 
       <Card title="Basics">
         <Field label="Title (admin-facing)" required>
