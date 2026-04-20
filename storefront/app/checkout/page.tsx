@@ -185,6 +185,39 @@ export default function CheckoutPage() {
               {!sameAs && <AddressForm value={billing} onChange={setBilling} />}
             </Card>
 
+            <Card title="Shipping method">
+              {ratesLoading ? (
+                <p className="text-sm text-[color:var(--color-text-muted)]">Loading rates…</p>
+              ) : rates.length === 0 ? (
+                <p className="text-sm text-[color:var(--color-text-muted)]">
+                  {shipping.country
+                    ? `No shipping options configured for ${shipping.country} yet — a default €5 flat rate will be applied.`
+                    : 'Enter a country to see shipping options.'}
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {rates.map((r) => (
+                    <li key={r.id}>
+                      <label className="flex items-center gap-3 border border-[color:var(--color-border)] rounded px-3 py-2 cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          name="rate"
+                          value={r.id}
+                          checked={selectedRateId === r.id}
+                          onChange={() => setSelectedRateId(r.id)}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{r.name}</div>
+                          {r.free && <div className="text-xs text-green-700">Free shipping applied</div>}
+                        </div>
+                        <div className="text-sm font-medium">{formatPrice(r.priceCents)}</div>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
             <button
               type="submit"
               disabled={submitting || !cart || cart.items.length === 0}
