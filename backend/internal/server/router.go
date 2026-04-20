@@ -190,6 +190,7 @@ func NewRouter(d Deps) http.Handler {
 			r.Use(auth.OptionalCustomer(d.Sessions))
 			r.Use(auth.CSRF())
 			r.Post("/checkout/init", checkoutH.Init)
+			r.Post("/checkout/shipping-quote", shipping.NewHandler(d.DB).Quote)
 		})
 		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
 		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
