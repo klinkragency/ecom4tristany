@@ -48,6 +48,19 @@ type TopProduct = {
 
 type FunnelStep = { name: string; count: number };
 
+type PostHog = {
+  from: string;
+  to: string;
+  configured: boolean;
+  dashboardUrl?: string;
+  uniqueVisitors: number;
+  totalEvents: number;
+  pageviews: number;
+  topEvents: { event: string; count: number }[];
+  topPages: { path: string; count: number }[];
+  error?: string;
+};
+
 const RANGES = [
   { label: '7 days', days: 7 },
   { label: '30 days', days: 30 },
@@ -61,6 +74,7 @@ export default function AnalyticsPage() {
   const [sales, setSales] = useState<SalesResp | null>(null);
   const [top, setTop] = useState<TopProduct[]>([]);
   const [funnel, setFunnel] = useState<FunnelStep[]>([]);
+  const [posthog, setPosthog] = useState<PostHog | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -70,16 +84,18 @@ export default function AnalyticsPage() {
       from.setDate(from.getDate() - days);
       const qs = `from=${from.toISOString()}&to=${to.toISOString()}`;
       try {
-        const [s, sa, tp, f] = await Promise.all([
+        const [s, sa, tp, f, ph] = await Promise.all([
           api<Summary>(`/api/admin/analytics/summary?${qs}`),
           api<SalesResp>(`/api/admin/analytics/sales?${qs}&granularity=${granularity}`),
           api<{ items: TopProduct[] }>(`/api/admin/analytics/top-products?${qs}&limit=10`),
           api<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel?${qs}`),
+          api<PostHog>(`/api/admin/analytics/posthog/overview?${qs}`).catch(() => null),
         ]);
         setSummary(s);
         setSales(sa);
         setTop(tp.items ?? []);
         setFunnel(f.steps ?? []);
+        setPosthog(ph);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Load failed');
       }
@@ -158,7 +174,88 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      <PostHogCard data={posthog} />
     </section>
+  );
+}
+
+function PostHogCard({ data }: { data: PostHog | null }) {
+  if (!data) return null;
+  if (!data.configured) {
+    return (
+      <div className="rounded border border-dashed border-[color:var(--color-border)] bg-white p-4 mb-4">
+        <h2 className="text-sm font-semibold mb-1">PostHog</h2>
+        <p className="text-sm text-[color:var(--color-text-muted)]">
+          Not connected. Set <code className="font-mono bg-gray-100 px-1">POSTHOG_API_KEY</code> and{' '}
+          <code className="font-mono bg-gray-100 px-1">POSTHOG_PROJECT_ID</code> in the backend env,
+          then restart the API.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold">PostHog</h2>
+        {data.dashboardUrl && (
+          <a href={data.dashboardUrl} target="_blank" rel="noreferrer" className="text-xs hover:underline">
+            Open in PostHog →
+          </a>
+        )}
+      </div>
+      {data.error && (
+        <div className="mb-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+          {data.error}
+        </div>
+      )}
+      <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
+        <div>
+          <div className="text-xs text-[color:var(--color-text-muted)]">Unique visitors</div>
+          <div className="text-lg font-semibold">{data.uniqueVisitors.toLocaleString()}</div>
+        </div>
+        <div>
+          <div className="text-xs text-[color:var(--color-text-muted)]">Pageviews</div>
+          <div className="text-lg font-semibold">{data.pageviews.toLocaleString()}</div>
+        </div>
+        <div>
+          <div className="text-xs text-[color:var(--color-text-muted)]">Total events</div>
+          <div className="text-lg font-semibold">{data.totalEvents.toLocaleString()}</div>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <h3 className="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wide mb-1">Top events</h3>
+          {data.topEvents.length === 0 ? (
+            <p className="text-xs text-[color:var(--color-text-muted)]">—</p>
+          ) : (
+            <ul className="divide-y divide-[color:var(--color-border)]">
+              {data.topEvents.map((e) => (
+                <li key={e.event} className="flex justify-between py-1">
+                  <span className="font-mono text-xs">{e.event}</span>
+                  <span className="text-xs">{e.count.toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div>
+          <h3 className="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wide mb-1">Top pages</h3>
+          {data.topPages.length === 0 ? (
+            <p className="text-xs text-[color:var(--color-text-muted)]">—</p>
+          ) : (
+            <ul className="divide-y divide-[color:var(--color-border)]">
+              {data.topPages.map((p) => (
+                <li key={p.path} className="flex justify-between py-1">
+                  <span className="truncate pr-2">{p.path}</span>
+                  <span className="text-xs shrink-0">{p.count.toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
