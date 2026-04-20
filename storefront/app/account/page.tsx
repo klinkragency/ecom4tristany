@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { resetIdentity } from '@/lib/analytics';
 import { formatPrice, type CustomerProfile, type MyOrderListItem, type SavedAddress } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -43,6 +44,7 @@ export default function AccountPage() {
   async function logout() {
     try { await api('/api/customer/auth/logout', { method: 'POST' }); }
     finally {
+      resetIdentity();
       router.replace('/account/login');
       router.refresh();
     }

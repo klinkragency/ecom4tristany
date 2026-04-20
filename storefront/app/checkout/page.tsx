@@ -7,6 +7,7 @@ import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { api, ApiError } from '@/lib/api';
 import { cartStore, useCart } from '@/lib/cart-store';
+import { track } from '@/lib/analytics';
 import { formatPrice } from '@/lib/types';
 import PaymentStep from './PaymentStep';
 
@@ -109,6 +110,18 @@ export default function CheckoutPage() {
       router.push('/cart');
     }
   }, [loading, cart, router, initResp]);
+
+  // Emit checkout_started once the user has a real cart to act on.
+  useEffect(() => {
+    if (cart && cart.items.length > 0 && !initResp) {
+      track('checkout_started', {
+        cartId: cart.id,
+        payload: { subtotalCents: cart.subtotalCents },
+      });
+    }
+  // Trigger once per cart (not on every render).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart?.id]);
 
   async function continueToPayment(e: React.FormEvent) {
     e.preventDefault();

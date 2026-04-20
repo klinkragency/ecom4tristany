@@ -8,11 +8,11 @@ import DiscountForm, { EMPTY_DISCOUNT, type DiscountPayload } from '../DiscountF
 export default function NewDiscountPage() {
   const router = useRouter();
   async function save(p: DiscountPayload) {
-    const created = await api<{ id: string }>('/api/admin/discounts', {
+    await api('/api/admin/discounts', {
       method: 'POST',
       body: JSON.stringify(p),
     });
-    router.push(`/discounts/${created.id}`);
+    router.push('/discounts');
   }
   return (
     <section>

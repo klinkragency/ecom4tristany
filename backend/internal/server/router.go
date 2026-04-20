@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/3mg/shop/backend/internal/admin"
+	"github.com/3mg/shop/backend/internal/analytics"
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/cart"
 	"github.com/3mg/shop/backend/internal/checkout"
@@ -191,6 +192,22 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/discounts/{id}", discH.Get)
 			r.Put("/discounts/{id}", discH.Update)
 			r.Delete("/discounts/{id}", discH.Delete)
+
+			// Analytics dashboards
+			anaH := analytics.NewHandler(d.DB)
+			finH := analytics.NewFinanceHandler(d.DB, d.Pay)
+			r.Get("/analytics/summary", anaH.Summary)
+			r.Get("/analytics/sales", anaH.Sales)
+			r.Get("/analytics/top-products", anaH.TopProducts)
+			r.Get("/analytics/funnel", anaH.Funnel)
+			r.Get("/analytics/finance/sales", finH.SalesReport)
+			r.Get("/analytics/finance/refunds", finH.RefundsReport)
+			r.Get("/analytics/finance/store-credit", finH.StoreCreditLiability)
+			r.Get("/analytics/finance/payouts", finH.Payouts)
+
+			// PostHog (server-side proxy)
+			phH := analytics.NewPostHogHandler(d.Cfg)
+			r.Get("/analytics/posthog/overview", phH.Overview)
 		})
 	})
 
@@ -225,6 +242,17 @@ func NewRouter(d Deps) http.Handler {
 		})
 		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
 		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
+
+		// Analytics ingest (storefront events). No CSRF — the endpoint is
+		// read-only semantically (can't change shop state) and tracker scripts
+		// historically don't carry CSRF tokens. The session middleware sets an
+		// anonymous session cookie so funnels can be computed.
+		anaIngest := analytics.NewHandler(d.DB)
+		r.Group(func(r chi.Router) {
+			r.Use(analytics.SessionMiddleware(!d.Cfg.SessionCookieSecure))
+			r.Use(auth.OptionalCustomer(d.Sessions))
+			r.Post("/events", anaIngest.Track)
+		})
 	})
 
 	// Stripe webhook — no CSRF, no session; Stripe authenticates via the

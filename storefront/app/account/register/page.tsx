@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { identify } from '@/lib/analytics';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,10 +20,11 @@ export default function RegisterPage() {
     setError(null);
     setPending(true);
     try {
-      await api('/api/customer/auth/register', {
+      const cust = await api<{ id: string; email: string }>('/api/customer/auth/register', {
         method: 'POST',
         body: JSON.stringify({ email, password, firstName, lastName }),
       });
+      identify(cust.id, { email: cust.email, firstName, lastName });
       router.push('/account');
       router.refresh();
     } catch (err) {
