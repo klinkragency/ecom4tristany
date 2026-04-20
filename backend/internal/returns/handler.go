@@ -89,8 +89,12 @@ type ReturnDTO struct {
 	UpdatedAt    time.Time  `json:"updatedAt"`
 	Items        []LineDTO  `json:"items"`
 	// Computed for convenience on admin screens.
-	Currency      string `json:"currency"`
-	EstimatedCents int    `json:"estimatedCents"`
+	Currency                  string `json:"currency"`
+	EstimatedCents            int    `json:"estimatedCents"`
+	// RemainingRefundableCents is what's left to refund on the underlying
+	// order (order.total_cents − already-refunded). Populated on detail load
+	// so the admin UI can clamp its refund pre-fill.
+	RemainingRefundableCents int `json:"remainingRefundableCents"`
 }
 
 var validReasons = map[string]bool{
@@ -806,7 +810,28 @@ func loadReturn(ctx context.Context, db *pgxpool.Pool, id string) (*ReturnDTO, e
 		return nil, err
 	}
 	d.EstimatedCents, _ = estimatedRefundCents(ctx, db, id)
+	d.RemainingRefundableCents, _ = remainingRefundableCents(ctx, db, d.OrderID)
 	return &d, nil
+}
+
+// remainingRefundableCents = order.total_cents − already-refunded. This is the
+// amount Stripe will accept on a refund call; higher values would fail at the
+// PSP. Used both for validation and for clamping UI pre-fills.
+func remainingRefundableCents(ctx context.Context, db *pgxpool.Pool, orderID string) (int, error) {
+	var total, refunded int
+	err := db.QueryRow(ctx, `
+        SELECT total_cents,
+               COALESCE((SELECT SUM(amount_cents) FROM refunds WHERE order_id = $1), 0)
+        FROM orders WHERE id = $1
+    `, orderID).Scan(&total, &refunded)
+	if err != nil {
+		return 0, err
+	}
+	rem := total - refunded
+	if rem < 0 {
+		rem = 0
+	}
+	return rem, nil
 }
 
 func loadReturnLines(ctx context.Context, db *pgxpool.Pool, returnID string) ([]LineDTO, error) {
