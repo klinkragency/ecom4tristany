@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/config"
+	"github.com/3mg/shop/backend/internal/discount"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/session"
@@ -63,6 +65,9 @@ type InitResp struct {
 	PublishableKey   string `json:"publishableKey"`
 	Currency         string `json:"currency"`
 	SubtotalCents    int    `json:"subtotalCents"`
+	DiscountCents    int    `json:"discountCents"`
+	DiscountCode     string `json:"discountCode,omitempty"`
+	DiscountTitle    string `json:"discountTitle,omitempty"`
 	ShippingCents    int    `json:"shippingCents"`
 	TaxCents         int    `json:"taxCents"`
 	StoreCreditCents int    `json:"storeCreditCents"`
@@ -168,16 +173,66 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	gross := subtotal + shipping
-	tax := BackSolveVAT(gross, h.cfg.ShopVATPercent)
-	total := gross // tax-inclusive grand total
-
-	// Determine customer_id if authenticated.
+	// Determine customer_id if authenticated (needed before discount eval for
+	// per-customer limit + segment-eligibility checks).
 	var customerID *string
 	if sess, ok := auth.SessionFromContext(r.Context()); ok && sess.UserType == session.TypeCustomer {
 		cid := uuidString(sess.UserID.Bytes)
 		customerID = &cid
 	}
+
+	// Resolve the discount code saved on the cart (if any) + any active
+	// automatic discounts. The engine returns per-line + shipping deductions.
+	// If the stored code is no longer valid, we abort checkout with a clear
+	// error so the buyer can fix the cart before paying.
+	var storedCode *string
+	_ = h.db.QueryRow(r.Context(),
+		`SELECT discount_code FROM carts WHERE id = $1`, cartID,
+	).Scan(&storedCode)
+	engineLines := make([]discount.CartLine, 0, len(lines))
+	for i, l := range lines {
+		// Line IDs aren't assigned until the order row is inserted; use the
+		// stable cart-index as a key so we can match back to `lines[i]` after
+		// evaluation.
+		engineLines = append(engineLines, discount.CartLine{
+			LineID:         strconv.Itoa(i),
+			VariantID:      l.variantID,
+			ProductID:      l.productID,
+			UnitPriceCents: l.unitPriceCents,
+			Quantity:       l.quantity,
+		})
+	}
+	discInput := discount.Input{
+		Lines:         engineLines,
+		SubtotalCents: subtotal,
+		ShippingCents: shipping,
+		CustomerID:    customerID,
+	}
+	if storedCode != nil {
+		discInput.Code = *storedCode
+	}
+	discRes, err := discount.Evaluate(r.Context(), h.db, discInput)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "discount_error", err.Error())
+		return
+	}
+	if storedCode != nil && discRes.CodeError != "" {
+		httpx.Error(w, http.StatusBadRequest, "discount_invalid", discRes.CodeError)
+		return
+	}
+
+	discountOff := discRes.TotalOff()
+	shippingAfter := shipping - discRes.ShippingDiscount
+	if shippingAfter < 0 {
+		shippingAfter = 0
+	}
+
+	gross := subtotal - discountOff + shippingAfter
+	if gross < 0 {
+		gross = 0
+	}
+	tax := BackSolveVAT(gross, h.cfg.ShopVATPercent)
+	total := gross // tax-inclusive grand total
 
 	// Store credit — auto-apply if the customer has a balance. Keep at least
 	// €1 on the Stripe charge (Payment Intent minimum) so we never have to
@@ -208,16 +263,26 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Build per-line discount map (line index → cents off) from the engine result.
+	lineDiscountCents := make([]int, len(lines))
+	for _, ld := range discRes.LineDiscounts {
+		if idx, err := strconv.Atoi(ld.LineID); err == nil && idx >= 0 && idx < len(lineDiscountCents) {
+			lineDiscountCents[idx] = ld.Cents
+		}
+	}
+
 	var orderID, orderNumber string
 	err = tx.QueryRow(r.Context(), `
         INSERT INTO orders (customer_id, email, phone, currency,
                             subtotal_cents, discount_cents, tax_cents, shipping_cents,
                             store_credit_cents, total_cents, shipping_method,
+                            discount_code, discount_title,
                             note, ip, user_agent)
-        VALUES ($1, $2, $3, $4, $5, 0, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NULLIF($12,''), $13, $14, $15, $16)
         RETURNING id, number
     `, customerID, req.Email, req.Phone, h.cfg.ShopCurrency,
-		subtotal, tax, shipping, storeCreditApplied, chargeTotal, shippingMethod,
+		subtotal, discountOff, tax, shippingAfter, storeCreditApplied, chargeTotal, shippingMethod,
+		discRes.AppliedCode, discRes.AppliedTitle,
 		req.Note, clientIP(r), r.UserAgent(),
 	).Scan(&orderID, &orderNumber)
 	if err != nil {
@@ -225,20 +290,64 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Line items: snapshot everything.
-	for _, l := range lines {
-		lineTotal := l.unitPriceCents * l.quantity
+	// Line items: snapshot everything including any per-line discount.
+	for i, l := range lines {
+		lineSubtotal := l.unitPriceCents * l.quantity
+		lineDiscount := lineDiscountCents[i]
+		if lineDiscount > lineSubtotal {
+			lineDiscount = lineSubtotal
+		}
+		lineTotal := lineSubtotal - lineDiscount
 		_, err = tx.Exec(r.Context(), `
             INSERT INTO order_line_items (order_id, variant_id, product_id,
                                           product_title, variant_title, sku, image_url,
                                           unit_price_cents, quantity, subtotal_cents,
                                           discount_cents, tax_cents, total_cents)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0, 0, $10)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12)
         `, orderID, l.variantID, l.productID,
 			l.productTitle, l.variantTitle, l.sku, l.imageURL,
-			l.unitPriceCents, l.quantity, lineTotal)
+			l.unitPriceCents, l.quantity, lineSubtotal, lineDiscount, lineTotal)
 		if err != nil {
 			httpx.Error(w, http.StatusInternalServerError, "line_insert", err.Error())
+			return
+		}
+	}
+
+	// Record a discount_usages row per applied discount + bump usage_count.
+	// discount_usages.applied_cents is the total deduction attributable to
+	// that one discount across all lines (plus any shipping discount it
+	// contributed, for free_shipping).
+	perDiscountCents := map[string]int{}
+	for _, ld := range discRes.LineDiscounts {
+		perDiscountCents[ld.DiscountID] += ld.Cents
+	}
+	if discRes.ShippingDiscount > 0 {
+		// Attribute shipping deduction to whichever discount id is in the
+		// applied set with kind free_shipping (engine returns it as applied
+		// even when cents=0 — so add a catch-all here only if exactly one id
+		// applied).
+		// Keep simple: record it against the first applied discount that
+		// isn't already charged with line discounts.
+		for _, id := range discRes.AppliedDiscountIDs {
+			if _, ok := perDiscountCents[id]; !ok {
+				perDiscountCents[id] = discRes.ShippingDiscount
+				break
+			}
+		}
+	}
+	for _, id := range discRes.AppliedDiscountIDs {
+		cents := perDiscountCents[id]
+		if _, err := tx.Exec(r.Context(), `
+            INSERT INTO discount_usages (discount_id, order_id, customer_id, applied_cents, code_snapshot)
+            VALUES ($1, $2, $3, $4, $5)
+        `, id, orderID, customerID, cents, discRes.AppliedCode); err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "usage_insert", err.Error())
+			return
+		}
+		if _, err := tx.Exec(r.Context(),
+			`UPDATE discounts SET usage_count = usage_count + 1, updated_at = now() WHERE id = $1`, id,
+		); err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "usage_bump", err.Error())
 			return
 		}
 	}
@@ -303,7 +412,10 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 		PublishableKey:   h.cfg.StripePublishableKey,
 		Currency:         h.cfg.ShopCurrency,
 		SubtotalCents:    subtotal,
-		ShippingCents:    shipping,
+		DiscountCents:    discountOff,
+		DiscountCode:     discRes.AppliedCode,
+		DiscountTitle:    discRes.AppliedTitle,
+		ShippingCents:    shippingAfter,
 		TaxCents:         tax,
 		StoreCreditCents: storeCreditApplied,
 		TotalCents:       chargeTotal,

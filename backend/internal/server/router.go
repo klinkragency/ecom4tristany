@@ -12,6 +12,7 @@ import (
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
+	"github.com/3mg/shop/backend/internal/discount"
 	"github.com/3mg/shop/backend/internal/fulfillment"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/inventory"
@@ -182,6 +183,14 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/shipping/zones/{zoneId}/rates", shipH.CreateRate)
 			r.Put("/shipping/rates/{id}", shipH.UpdateRate)
 			r.Delete("/shipping/rates/{id}", shipH.DeleteRate)
+
+			// Discounts
+			discH := discount.NewHandler(d.DB)
+			r.Get("/discounts", discH.List)
+			r.Post("/discounts", discH.Create)
+			r.Get("/discounts/{id}", discH.Get)
+			r.Put("/discounts/{id}", discH.Update)
+			r.Delete("/discounts/{id}", discH.Delete)
 		})
 	})
 
@@ -202,6 +211,8 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/cart/items/{itemId}", cartH.Update)
 			r.Delete("/cart/items/{itemId}", cartH.Remove)
 			r.Post("/cart/clear", cartH.Clear)
+			r.Post("/cart/discount", cartH.ApplyDiscount)
+			r.Delete("/cart/discount", cartH.RemoveDiscount)
 		})
 
 		// Checkout — init PaymentIntent given current cart + addresses.
