@@ -112,11 +112,21 @@ CREATE TABLE return_line_items (
 );
 CREATE INDEX return_line_items_return_idx ON return_line_items (return_id);
 
+-- Widen inventory_adjustments.reason to cover fulfillment (outbound
+-- decrement) and return_restock (inbound reinstatement). Preserves all
+-- existing reason codes.
+ALTER TABLE inventory_adjustments DROP CONSTRAINT inventory_adjustments_reason_check;
+ALTER TABLE inventory_adjustments ADD CONSTRAINT inventory_adjustments_reason_check
+    CHECK (reason IN ('received','damaged','theft','correction','count','transfer','other','fulfillment','return_restock'));
+
 -- +goose StatementEnd
 
 
 -- +goose Down
 -- +goose StatementBegin
+ALTER TABLE inventory_adjustments DROP CONSTRAINT IF EXISTS inventory_adjustments_reason_check;
+ALTER TABLE inventory_adjustments ADD CONSTRAINT inventory_adjustments_reason_check
+    CHECK (reason IN ('received','damaged','theft','correction','count','transfer','other'));
 DROP TABLE IF EXISTS return_line_items;
 DROP TABLE IF EXISTS returns;
 DROP SEQUENCE IF EXISTS rma_number_seq;
