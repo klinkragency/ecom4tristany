@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3mg/shop/backend/internal/analytics"
 	"github.com/3mg/shop/backend/internal/email"
 
 	"github.com/jackc/pgx/v5"
@@ -146,7 +147,16 @@ func (h *Handler) markOrderPaid(r *http.Request, orderID, paymentIntentID string
         DELETE FROM carts WHERE customer_id = (SELECT customer_id FROM orders WHERE id = $1) AND customer_id IS NOT NULL
     `, orderID)
 
-	return tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	// Record the analytics event outside the transaction — best-effort.
+	var customerID *string
+	_ = h.db.QueryRow(ctx, `SELECT customer_id FROM orders WHERE id = $1`, orderID).Scan(&customerID)
+	_ = analytics.WriteServerEvent(ctx, h.db, "order_paid", &orderID, customerID, map[string]any{
+		"payment_intent_id": paymentIntentID,
+	})
+	return nil
 }
 
 func firstN(s string, n int) string {
