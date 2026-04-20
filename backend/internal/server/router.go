@@ -12,6 +12,7 @@ import (
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/customer"
+	"github.com/3mg/shop/backend/internal/fulfillment"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/inventory"
 	"github.com/3mg/shop/backend/internal/order"
@@ -128,6 +129,13 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/orders/{id}/note", orderH.SetNote)
 			r.Put("/orders/{id}/tags", orderH.SetTags)
 			r.Post("/orders/{id}/refunds", refundH.Create)
+
+			// Fulfillments
+			fulfH := fulfillment.NewHandler(d.DB, d.Cfg)
+			r.Get("/orders/{id}/fulfillments", fulfH.ListForOrder)
+			r.Post("/orders/{id}/fulfillments", fulfH.Create)
+			r.Put("/fulfillments/{fulfillmentId}/tracking", fulfH.UpdateTracking)
+			r.Post("/fulfillments/{fulfillmentId}/cancel", fulfH.Cancel)
 
 			// Customers (admin view + CRM actions).
 			custAdminH := customer.NewHandler(d.DB, d.Sessions)
