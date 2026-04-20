@@ -87,6 +87,7 @@ export default function MenuEditor() {
     setMenu({ ...menu, items });
   }
   function addItem(parent?: Item) {
+    if (!menu) return;
     const next: Item = { label: 'New item', linkType: 'url', target: '', openInNewTab: false, children: [] };
     if (parent) {
       parent.children = [...(parent.children ?? []), next];
@@ -96,6 +97,7 @@ export default function MenuEditor() {
     }
   }
   function removeAt(path: number[]) {
+    if (!menu) return;
     const items = structuredClone(menu.items);
     let arr = items;
     for (let i = 0; i < path.length - 1; i++) {
@@ -105,6 +107,7 @@ export default function MenuEditor() {
     setItems(items);
   }
   function moveAt(path: number[], delta: -1 | 1) {
+    if (!menu) return;
     const items = structuredClone(menu.items);
     let arr = items;
     for (let i = 0; i < path.length - 1; i++) {
@@ -117,6 +120,7 @@ export default function MenuEditor() {
     setItems(items);
   }
   function patchAt(path: number[], patch: Partial<Item>) {
+    if (!menu) return;
     const items = structuredClone(menu.items);
     let arr = items;
     for (let i = 0; i < path.length - 1; i++) {
