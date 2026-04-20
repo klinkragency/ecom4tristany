@@ -241,7 +241,11 @@ function RefundModal({
   onClose: () => void;
   onRefund: (amountCents: number, refundTo: string, note: string) => Promise<void>;
 }) {
-  const [amountStr, setAmountStr] = useState((ret.estimatedCents / 100).toFixed(2));
+  // Pre-fill with the smaller of estimated return value and what's still
+  // refundable on the card — exceeding the card charge total would fail at Stripe.
+  const maxRefundable = ret.remainingRefundableCents ?? ret.estimatedCents;
+  const defaultCents = Math.min(ret.estimatedCents, maxRefundable);
+  const [amountStr, setAmountStr] = useState((defaultCents / 100).toFixed(2));
   const [refundTo, setRefundTo] = useState<'card' | 'store_credit'>('card');
   const [note, setNote] = useState('');
   return (
@@ -252,6 +256,13 @@ function RefundModal({
           <div className="font-medium mb-1">Amount ({ret.currency})</div>
           <input type="number" step="0.01" value={amountStr} onChange={(e) => setAmountStr(e.target.value)}
             className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+          {ret.estimatedCents > maxRefundable && (
+            <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
+              Return value is {formatPrice(ret.estimatedCents, ret.currency)}, but only{' '}
+              {formatPrice(maxRefundable, ret.currency)} is left refundable on the original charge
+              (the rest was covered by store credit or already refunded).
+            </div>
+          )}
         </label>
         <label className="block">
           <div className="font-medium mb-1">Refund to</div>
