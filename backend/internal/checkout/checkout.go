@@ -11,6 +11,7 @@ import (
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/session"
+	"github.com/3mg/shop/backend/internal/shipping"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
