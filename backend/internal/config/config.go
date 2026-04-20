@@ -39,6 +39,12 @@ type Config struct {
 	SMTPPass      string
 	EmailFrom     string
 	EmailFromName string
+
+	// PostHog (server-side — personal API key, distinct from the public
+	// NEXT_PUBLIC_POSTHOG_KEY the storefront uses to capture events).
+	PostHogAPIKey    string
+	PostHogProjectID string
+	PostHogHost      string
 }
 
 func Load() (*Config, error) {
@@ -70,6 +76,10 @@ func Load() (*Config, error) {
 		SMTPPass:      getenv("SMTP_PASS", ""),
 		EmailFrom:     getenv("EMAIL_FROM", "no-reply@shop.test"),
 		EmailFromName: getenv("EMAIL_FROM_NAME", "Shop"),
+
+		PostHogAPIKey:    getenv("POSTHOG_API_KEY", ""),
+		PostHogProjectID: getenv("POSTHOG_PROJECT_ID", ""),
+		PostHogHost:      getenv("POSTHOG_HOST", "https://us.posthog.com"),
 	}
 
 	if cfg.DatabaseURL == "" {
