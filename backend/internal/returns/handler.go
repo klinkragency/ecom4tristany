@@ -489,10 +489,19 @@ func (h *Handler) AdminRefund(w http.ResponseWriter, r *http.Request) {
 	}
 	amount := req.AmountCents
 	if amount == 0 {
-		amount, err = estimatedRefundCents(r.Context(), h.db, id)
+		// Auto-estimate: use the return's line-item total but clamp at the
+		// order's refundable remainder. Common case: customer used store
+		// credit at checkout, so order.total_cents (the charge) is less than
+		// the sum of line-item prices — refunding the full line-item amount
+		// would fail at Stripe.
+		est, err := estimatedRefundCents(r.Context(), h.db, id)
 		if err != nil {
 			httpx.Error(w, http.StatusInternalServerError, "estimate_error", err.Error())
 			return
+		}
+		amount = est
+		if amount > remaining {
+			amount = remaining
 		}
 	}
 	if amount > remaining {

@@ -35,6 +35,7 @@ type ReturnDetail = {
   items: Line[];
   currency: string;
   estimatedCents: number;
+  remainingRefundableCents: number;
 };
 
 type LocationOption = { id: string; name: string };
