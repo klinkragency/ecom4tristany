@@ -109,23 +109,25 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var (
-		email string
-		name  string
-		role  string
+		email              string
+		name               string
+		role               string
+		mustChangePassword bool
 	)
 	err := h.db.QueryRow(r.Context(),
-		`SELECT email, name, role FROM admin_users WHERE id = $1`,
+		`SELECT email, name, role, must_change_password FROM admin_users WHERE id = $1`,
 		sess.UserID,
-	).Scan(&email, &name, &role)
+	).Scan(&email, &name, &role, &mustChangePassword)
 	if err != nil {
 		httpx.Error(w, http.StatusNotFound, "not_found", "admin not found")
 		return
 	}
 	httpx.JSON(w, http.StatusOK, AdminDTO{
-		ID:    uuidString(sess.UserID),
-		Email: email,
-		Name:  name,
-		Role:  role,
+		ID:                 uuidString(sess.UserID),
+		Email:              email,
+		Name:               name,
+		Role:               role,
+		MustChangePassword: mustChangePassword,
 	})
 }
 
