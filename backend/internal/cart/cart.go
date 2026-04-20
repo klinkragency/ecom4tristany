@@ -174,7 +174,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusInternalServerError, "identify_error", err.Error())
 		return
 	}
-	cart, err := h.load(r.Context(), cartID)
+	cart, err := h.loadAndEvaluate(r.Context(), cartID)
 	if err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "load_error", err.Error())
 		return
