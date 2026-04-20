@@ -327,14 +327,18 @@ func (h *Handler) Clear(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) load(ctx context.Context, cartID string) (*Cart, error) {
 	c := &Cart{Items: []Item{}}
 	var customerID *string
+	var discountCode *string
 	err := h.db.QueryRow(ctx, `
-        SELECT id, customer_id, currency, created_at, updated_at
+        SELECT id, customer_id, currency, created_at, updated_at, discount_code
         FROM carts WHERE id = $1
-    `, cartID).Scan(&c.ID, &customerID, &c.Currency, &c.CreatedAt, &c.UpdatedAt)
+    `, cartID).Scan(&c.ID, &customerID, &c.Currency, &c.CreatedAt, &c.UpdatedAt, &discountCode)
 	if err != nil {
 		return nil, err
 	}
 	c.CustomerID = customerID
+	if discountCode != nil {
+		c.DiscountCode = *discountCode
+	}
 
 	rows, err := h.db.Query(ctx, `
         SELECT ci.id, ci.variant_id, ci.quantity, ci.added_at,
