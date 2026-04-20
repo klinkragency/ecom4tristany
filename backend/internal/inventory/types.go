@@ -94,13 +94,15 @@ type TransferItem struct {
 
 // Valid reason codes for inventory_adjustments.reason.
 var ValidReasons = map[string]bool{
-	"received":   true,
-	"damaged":    true,
-	"theft":      true,
-	"correction": true,
-	"count":      true,
-	"transfer":   true,
-	"other":      true,
+	"received":       true,
+	"damaged":        true,
+	"theft":          true,
+	"correction":     true,
+	"count":          true,
+	"transfer":       true,
+	"other":          true,
+	"fulfillment":    true,
+	"return_restock": true,
 }
 
 var ValidTransferStatuses = map[string]bool{
