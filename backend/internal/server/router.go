@@ -138,6 +138,17 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/fulfillments/{fulfillmentId}/tracking", fulfH.UpdateTracking)
 			r.Post("/fulfillments/{fulfillmentId}/cancel", fulfH.Cancel)
 
+			// Returns / RMA (admin side)
+			retH := returns.NewHandler(d.DB, d.Cfg, d.Pay)
+			r.Get("/returns", retH.AdminList)
+			r.Post("/returns", retH.AdminCreate)
+			r.Get("/returns/{id}", retH.AdminGet)
+			r.Post("/returns/{id}/approve", retH.AdminApprove)
+			r.Post("/returns/{id}/reject", retH.AdminReject)
+			r.Post("/returns/{id}/receive", retH.AdminReceive)
+			r.Post("/returns/{id}/refund", retH.AdminRefund)
+			r.Post("/returns/{id}/cancel", retH.AdminCancel)
+
 			// Customers (admin view + CRM actions).
 			custAdminH := customer.NewHandler(d.DB, d.Sessions)
 			r.Get("/customers", custAdminH.AdminList)
