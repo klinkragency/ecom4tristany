@@ -224,6 +224,13 @@ func refundReasonLabel(refundTo, userReason string) string {
 	return prefix + ": " + userReason
 }
 
+// DeriveAfterRefund computes the new (financial_status, status) pair based on
+// how much of the total has been refunded. Exported so the returns flow can
+// reuse the same state-machine logic without calling through the HTTP handler.
+func DeriveAfterRefund(total, refunded int, oldFinancial string) (string, string) {
+	return deriveAfterRefund(total, refunded, oldFinancial)
+}
+
 // deriveAfterRefund computes the new (financial_status, status) pair based on
 // how much of the total has been refunded.
 func deriveAfterRefund(total, refunded int, oldFinancial string) (string, string) {
