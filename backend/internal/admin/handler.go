@@ -29,10 +29,11 @@ type LoginReq struct {
 }
 
 type AdminDTO struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-	Role  string `json:"role"`
+	ID                 string `json:"id"`
+	Email              string `json:"email"`
+	Name               string `json:"name"`
+	Role               string `json:"role"`
+	MustChangePassword bool   `json:"mustChangePassword,omitempty"`
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -48,15 +49,16 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id   pgtype.UUID
-		hash string
-		name string
-		role string
+		id                 pgtype.UUID
+		hash               string
+		name               string
+		role               string
+		mustChangePassword bool
 	)
 	err := h.db.QueryRow(r.Context(),
-		`SELECT id, password_hash, name, role FROM admin_users WHERE email = $1`,
+		`SELECT id, password_hash, name, role, must_change_password FROM admin_users WHERE email = $1`,
 		req.Email,
-	).Scan(&id, &hash, &name, &role)
+	).Scan(&id, &hash, &name, &role, &mustChangePassword)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			httpx.Error(w, http.StatusUnauthorized, "invalid_credentials", "invalid credentials")
@@ -76,12 +78,19 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.sessions.SetCookie(w, session.TypeAdmin, token)
+	// Best-effort: update last_login_at. Fire and forget to avoid coupling
+	// login latency to an extra UPDATE.
+	go func(id pgtype.UUID) {
+		_, _ = h.db.Exec(r.Context(),
+			`UPDATE admin_users SET last_login_at = now() WHERE id = $1`, id)
+	}(id)
 
 	httpx.JSON(w, http.StatusOK, AdminDTO{
-		ID:    uuidString(id),
-		Email: req.Email,
-		Name:  name,
-		Role:  role,
+		ID:                 uuidString(id),
+		Email:              req.Email,
+		Name:               name,
+		Role:               role,
+		MustChangePassword: mustChangePassword,
 	})
 }
 
