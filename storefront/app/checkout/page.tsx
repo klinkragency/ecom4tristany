@@ -41,6 +41,14 @@ const EMPTY_ADDRESS: Address = {
   city: '', region: '', postalCode: '', country: 'FR', phone: '',
 };
 
+type QuotedRate = {
+  id: string;
+  name: string;
+  kind: string;
+  priceCents: number;
+  free: boolean;
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, loading } = useCart();
@@ -51,10 +59,46 @@ export default function CheckoutPage() {
   const [billing, setBilling] = useState<Address>(EMPTY_ADDRESS);
   const [sameAs, setSameAs] = useState(true);
 
+  const [rates, setRates] = useState<QuotedRate[]>([]);
+  const [selectedRateId, setSelectedRateId] = useState<string>('');
+  const [ratesLoading, setRatesLoading] = useState(false);
+
   const [initResp, setInitResp] = useState<InitResponse | null>(null);
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Refresh shipping rates whenever the destination country changes.
+  useEffect(() => {
+    const country = shipping.country.trim().toUpperCase();
+    if (country.length !== 2 || !cart || cart.items.length === 0) {
+      setRates([]);
+      return;
+    }
+    let cancelled = false;
+    setRatesLoading(true);
+    (async () => {
+      try {
+        const res = await api<{ rates: QuotedRate[] }>('/api/storefront/checkout/shipping-quote', {
+          method: 'POST',
+          body: JSON.stringify({ country }),
+        });
+        if (cancelled) return;
+        setRates(res.rates);
+        if (res.rates.length > 0 && !res.rates.find((r) => r.id === selectedRateId)) {
+          setSelectedRateId(res.rates[0]!.id);
+        } else if (res.rates.length === 0) {
+          setSelectedRateId('');
+        }
+      } catch {
+        if (!cancelled) setRates([]);
+      } finally {
+        if (!cancelled) setRatesLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shipping.country, cart?.items.length]);
 
   // Redirect if cart is empty (only once we know).
   useEffect(() => {
@@ -76,6 +120,7 @@ export default function CheckoutPage() {
           shipping,
           billing: sameAs ? shipping : billing,
           billingSameAsShipping: sameAs,
+          shippingRateId: selectedRateId || undefined,
         }),
       });
       setInitResp(res);
