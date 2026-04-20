@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // ─── DTOs ───────────────────────────────────────────────────────────────
@@ -365,6 +366,53 @@ func validateRules(rules []SegmentRule) error {
 		}
 	}
 	return nil
+}
+
+// CheckSegmentMembership returns true if the given customer matches the
+// segment's rules. Exposed for cross-package callers (e.g. the discount
+// engine uses it to enforce segment-based eligibility).
+func CheckSegmentMembership(ctx context.Context, db *pgxpool.Pool, segmentID, customerID string) (bool, error) {
+	// Load the segment header.
+	var matchAll bool
+	if err := db.QueryRow(ctx,
+		`SELECT match_all FROM customer_segments WHERE id = $1`, segmentID,
+	).Scan(&matchAll); err != nil {
+		return false, err
+	}
+	// Load the rules.
+	rows, err := db.Query(ctx, `
+        SELECT id, field, operator, value, position
+        FROM customer_segment_rules
+        WHERE segment_id = $1
+        ORDER BY position, id
+    `, segmentID)
+	if err != nil {
+		return false, err
+	}
+	rules := []SegmentRule{}
+	for rows.Next() {
+		var r SegmentRule
+		if err := rows.Scan(&r.ID, &r.Field, &r.Operator, &r.Value, &r.Position); err != nil {
+			rows.Close()
+			return false, err
+		}
+		rules = append(rules, r)
+	}
+	rows.Close()
+
+	clause, args, err := buildSegmentWhere(matchAll, rules)
+	if err != nil {
+		return false, err
+	}
+	// Bind customerID at the end, after whatever params the clause already uses.
+	cidPlaceholder := fmt.Sprintf("$%d", len(args)+1)
+	args = append(args, customerID)
+	var exists bool
+	sql := `SELECT EXISTS (SELECT 1 FROM customers c WHERE c.id = ` + cidPlaceholder + ` AND ` + clause + `)`
+	if err := db.QueryRow(ctx, sql, args...).Scan(&exists); err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 // countMembers runs a COUNT(*) using the same WHERE clause as the preview.
