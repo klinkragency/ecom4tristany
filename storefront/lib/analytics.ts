@@ -1,16 +1,48 @@
-// Client-side analytics tracker. Fires to POST /api/storefront/events —
-// fire-and-forget: failures are swallowed so a dead analytics endpoint
-// never breaks a page load. The backend enriches with the session cookie,
-// IP, user agent, and (if authenticated) customer id.
+// Client-side analytics tracker. Fires to POST /api/storefront/events
+// (our in-house pipeline) AND, if configured, mirrors to PostHog. Both
+// pipelines get every event — they're deliberately parallel:
+//   - Our backend owns conversion/AOV/revenue reconciliation (coupled to
+//     the Postgres orders/refunds ledger).
+//   - PostHog is the product-analytics layer: funnels UI, session replay,
+//     feature flags, cohort tooling.
+//
+// PostHog is optional: leave NEXT_PUBLIC_POSTHOG_KEY empty to disable. The
+// in-house pipeline is unaffected either way.
 //
 // Usage:
-//   import { track, trackPageView } from '@/lib/analytics';
+//   import { track, trackPageView, identify } from '@/lib/analytics';
 //   track('cart_add', { variantId, quantity });
-//
-// The autoPageView() helper (wired into the layout) emits `page_view` on
-// route changes via a tiny Next.js navigation observer.
+//   identify(customerId, { email });
+
+import posthog from 'posthog-js';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+const PH_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? '';
+const PH_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com';
+
+let phInitialised = false;
+function ensurePostHog(): typeof posthog | null {
+  if (!PH_KEY || typeof window === 'undefined') return null;
+  if (!phInitialised) {
+    try {
+      posthog.init(PH_KEY, {
+        api_host: PH_HOST,
+        // Next.js App Router: we fire page_view ourselves on client-side
+        // navigation, so disable PostHog's automatic capture.
+        capture_pageview: false,
+        // Autocapture=false lets our explicit track() calls drive analytics;
+        // flip to true if you want PostHog's auto click/form tracking.
+        autocapture: false,
+        persistence: 'localStorage+cookie',
+      });
+      phInitialised = true;
+    } catch {
+      // Never break page loads because PostHog init failed.
+      return null;
+    }
+  }
+  return posthog;
+}
 
 export type EventKind =
   | 'page_view'
@@ -35,6 +67,21 @@ type TrackOpts = {
 
 export function track(kind: EventKind, opts: TrackOpts = {}): void {
   if (typeof window === 'undefined') return;
+
+  // 1) Mirror to PostHog (if configured). Fire first so SDK-side
+  //    auto-identification runs before any network hop.
+  const ph = ensurePostHog();
+  if (ph) {
+    ph.capture(kind, {
+      productId: opts.productId,
+      variantId: opts.variantId,
+      cartId: opts.cartId,
+      orderId: opts.orderId,
+      ...opts.payload,
+    });
+  }
+
+  // 2) In-house pipeline. Body shape matches the Go TrackReq struct exactly.
   const body = JSON.stringify({
     kind,
     productId: opts.productId,
@@ -63,7 +110,32 @@ export function track(kind: EventKind, opts: TrackOpts = {}): void {
   }).catch(() => { /* swallow */ });
 }
 
+// ─── Identity ───────────────────────────────────────────────────────────
+
+// identify associates the current anonymous session with a known customer
+// in PostHog so cohorts / funnels can correlate pre- and post-login activity.
+// Call this right after a successful login / register.
+export function identify(customerId: string, traits: Record<string, unknown> = {}): void {
+  const ph = ensurePostHog();
+  if (!ph) return;
+  ph.identify(customerId, traits);
+}
+
+// reset clears the PostHog identity — call on logout so the next session
+// starts anonymous again rather than inheriting the previous user.
+export function resetIdentity(): void {
+  const ph = ensurePostHog();
+  if (!ph) return;
+  ph.reset();
+}
+
 export function trackPageView(): void {
+  // Also fire PostHog's native $pageview — keeps session replay timelines
+  // accurate (PostHog associates session events with the latest $pageview).
+  const ph = ensurePostHog();
+  if (ph) {
+    ph.capture('$pageview');
+  }
   track('page_view');
 }
 
