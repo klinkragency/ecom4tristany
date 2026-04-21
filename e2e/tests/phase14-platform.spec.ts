@@ -103,6 +103,9 @@ test('RBAC: staff cannot issue a refund', async ({ page, browser }) => {
   await sp.getByLabel('Email').fill(email);
   await sp.getByLabel('Password').fill('rbacpass123');
   await sp.getByRole('button', { name: /sign in/i }).click();
+  // Wait for the session cookie to be set + the dashboard to render before
+  // firing the CSRF fetch below — otherwise the refund call races the login.
+  await expect(sp.getByRole('heading', { name: /dashboard/i })).toBeVisible();
 
   // Try to hit a refund endpoint — should 403.
   const staffCsrf = await csrf(sp);
