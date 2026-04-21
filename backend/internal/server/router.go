@@ -13,6 +13,7 @@ import (
 	"github.com/3mg/shop/backend/internal/cms"
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
+	"github.com/3mg/shop/backend/internal/currency"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/discount"
 	"github.com/3mg/shop/backend/internal/fulfillment"
@@ -25,6 +26,7 @@ import (
 	"github.com/3mg/shop/backend/internal/session"
 	"github.com/3mg/shop/backend/internal/shipping"
 	"github.com/3mg/shop/backend/internal/storage"
+	"github.com/3mg/shop/backend/internal/tax"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -81,6 +83,16 @@ func NewRouter(d Deps) http.Handler {
 				r.Get("/settings", adminSettingsH.Get)
 				r.Put("/settings", adminSettingsH.Update)
 				r.Get("/audit", adminUsersH.AuditList)
+				// Per-country VAT rates
+				taxH := tax.NewHandler(d.DB)
+				r.Get("/tax-rates", taxH.List)
+				r.Put("/tax-rates", taxH.Upsert)
+				r.Delete("/tax-rates/{country}", taxH.Delete)
+				// Currencies
+				curH := currency.NewHandler(d.DB)
+				r.Get("/currencies", curH.List)
+				r.Put("/currencies", curH.Upsert)
+				r.Delete("/currencies/{code}", curH.Delete)
 			})
 
 			// Products — read + non-destructive writes allowed for staff.
@@ -290,6 +302,10 @@ func NewRouter(d Deps) http.Handler {
 		})
 		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
 		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
+
+		// Currencies (public — for the switcher + price conversion)
+		curPubH := currency.NewHandler(d.DB)
+		r.Get("/currencies", curPubH.StorefrontList)
 
 		// CMS (public reads)
 		cmsH := cms.NewHandler(d.DB)
