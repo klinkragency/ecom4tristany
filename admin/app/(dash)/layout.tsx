@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
+import PasswordChangeGate from './PasswordChangeGate';
 
 const NAV = [
   { href: '/', label: 'Home' },
@@ -21,6 +22,7 @@ const NAV = [
 export default function DashLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[220px_1fr] min-h-screen">
+      <PasswordChangeGate />
       <aside className="border-r border-[color:var(--color-border)] bg-white p-4">
         <div className="font-semibold mb-4 text-sm tracking-wide uppercase">Shop Admin</div>
         <nav className="flex flex-col gap-1">
