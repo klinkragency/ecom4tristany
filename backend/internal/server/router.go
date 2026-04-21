@@ -13,6 +13,7 @@ import (
 	"github.com/3mg/shop/backend/internal/cms"
 	"github.com/3mg/shop/backend/internal/collection"
 	"github.com/3mg/shop/backend/internal/config"
+	"github.com/3mg/shop/backend/internal/currency"
 	"github.com/3mg/shop/backend/internal/customer"
 	"github.com/3mg/shop/backend/internal/discount"
 	"github.com/3mg/shop/backend/internal/fulfillment"
