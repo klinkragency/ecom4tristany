@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { updateItem, removeItem, applyDiscount, removeDiscount, ApiError } from '@/lib/cart';
 import { cartStore, useCart } from '@/lib/cart-store';
-import { formatPrice } from '@/lib/types';
+import { Price } from '@/components/CurrencyProvider';
 
 export default function CartPage() {
   const { cart, loading } = useCart();
@@ -75,7 +75,7 @@ export default function CartPage() {
                 <div className="text-sm text-[color:var(--color-text-muted)]">{it.variantTitle}</div>
               )}
               <div className="text-sm text-[color:var(--color-text-muted)]">
-                {formatPrice(it.unitPriceCents)} each
+                <Price cents={it.unitPriceCents} /> each
                 {!it.available && <span className="text-amber-700 ml-2">· unavailable</span>}
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function CartPage() {
               onChange={(e) => onQtyChange(it.id, Math.max(1, parseInt(e.target.value || '1', 10)))}
               className="w-16 px-2 py-1 rounded border border-[color:var(--color-border)] text-right"
             />
-            <div className="w-24 text-right font-medium">{formatPrice(it.lineTotalCents)}</div>
+            <div className="w-24 text-right font-medium"><Price cents={it.lineTotalCents} /></div>
             <button
               onClick={() => onRemove(it.id)}
               className="text-sm text-red-700 hover:underline"
@@ -102,12 +102,12 @@ export default function CartPage() {
           <DiscountCodeField cart={cart} setError={setError} />
           <div className="flex justify-between py-1">
             <span className="text-[color:var(--color-text-muted)]">Subtotal</span>
-            <span className="font-medium">{formatPrice(cart.subtotalCents)}</span>
+            <span className="font-medium"><Price cents={cart.subtotalCents} /></span>
           </div>
           {cart.discountCents > 0 && (
             <div className="flex justify-between py-1 text-green-800">
               <span>{cart.discountTitle || 'Discount'}</span>
-              <span>−{formatPrice(cart.discountCents)}</span>
+              <span>−<Price cents={cart.discountCents} /></span>
             </div>
           )}
           {cart.freeShipping && (
@@ -123,7 +123,7 @@ export default function CartPage() {
             href="/checkout"
             className="block w-full text-center px-4 py-2 rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)]"
           >
-            Checkout — {formatPrice(cart.subtotalCents - cart.discountCents)}
+            Checkout — <Price cents={cart.subtotalCents - cart.discountCents} />
           </Link>
         </div>
       </div>

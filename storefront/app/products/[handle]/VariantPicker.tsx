@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { addToCart, ApiError } from '@/lib/cart';
 import { cartStore } from '@/lib/cart-store';
 import { track } from '@/lib/analytics';
-import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
+import { type Product, type ProductVariant } from '@/lib/types';
+import { Price } from '@/components/CurrencyProvider';
 
 export default function VariantPicker({ product }: { product: Product }) {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function VariantPicker({ product }: { product: Product }) {
   return (
     <div>
       <div className="text-2xl font-semibold mb-4">
-        {variant ? formatPrice(variant.priceCents) : '—'}
+        {variant ? <Price cents={variant.priceCents} /> : '—'}
       </div>
 
       {product.options.map((o) => (

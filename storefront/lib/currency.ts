@@ -70,7 +70,18 @@ export function formatCurrency(amount: number, c: Currency): string {
 
 // price is the one-shot helper the UI wants: cents → formatted string in
 // the chosen currency. The caller passes the currency it already resolved
-// (via useCurrency() in client components).
+// (via useCurrency() in client components, resolveCurrency() for servers).
 export function price(cents: number, c: Currency = fallbackCurrency): string {
   return formatCurrency(convert(cents, c), c);
+}
+
+// resolveCurrency picks the active currency from a cookie value (or null)
+// against a list. Shared between the Provider (hydration) and Server
+// Components. Pure — no React, no cookie reading.
+export function resolveCurrency(currencies: Currency[], cookieVal: string | null): Currency {
+  if (cookieVal) {
+    const match = currencies.find((c) => c.code === cookieVal);
+    if (match) return match;
+  }
+  return currencies.find((c) => c.isBase) ?? currencies[0] ?? fallbackCurrency;
 }

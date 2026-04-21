@@ -83,6 +83,13 @@ export function usePrice(cents: number | null | undefined): string {
   return priceFn(cents, currency);
 }
 
+// Price wraps usePrice so callers can drop it inside .map() without
+// worrying about rules-of-hooks gotchas.
+export function Price({ cents, className }: { cents: number | null | undefined; className?: string }) {
+  const s = usePrice(cents);
+  return <span className={className}>{s}</span>;
+}
+
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
   const m = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]+)'));
