@@ -303,6 +303,10 @@ func NewRouter(d Deps) http.Handler {
 		// Order lookup (by ID, no auth required — ID is an unguessable UUID).
 		r.Get("/orders/{id}", checkoutH.GetStorefrontOrder)
 
+		// Currencies (public — for the switcher + price conversion)
+		curPubH := currency.NewHandler(d.DB)
+		r.Get("/currencies", curPubH.StorefrontList)
+
 		// CMS (public reads)
 		cmsH := cms.NewHandler(d.DB)
 		blogH := cms.NewBlogHandler(d.DB, d.Cfg)
