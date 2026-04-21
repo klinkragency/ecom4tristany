@@ -6,6 +6,7 @@ const sections = [
   { href: '/settings/audit', title: 'Audit log', sub: 'Every admin action, searchable' },
   { href: '/settings/shipping', title: 'Shipping', sub: 'Zones and rates' },
   { href: '/settings/taxes', title: 'Tax rates', sub: 'VAT per country' },
+  { href: '/settings/currencies', title: 'Currencies', sub: 'Active currencies + exchange rates' },
   { href: '/settings/change-password', title: 'Change my password', sub: '' },
 ];
 
