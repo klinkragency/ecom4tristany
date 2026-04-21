@@ -14,6 +14,7 @@ import (
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/session"
 	shipping_ "github.com/3mg/shop/backend/internal/shipping"
+	tax_ "github.com/3mg/shop/backend/internal/tax"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -231,7 +232,13 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	if gross < 0 {
 		gross = 0
 	}
-	tax := BackSolveVAT(gross, h.cfg.ShopVATPercent)
+	// Pick the VAT rate by destination country if we have one on file,
+	// otherwise fall back to the shop default.
+	vatPercent := h.cfg.ShopVATPercent
+	if p, ok := tax_.ResolvePercent(r.Context(), h.db, req.Shipping.Country); ok {
+		vatPercent = p
+	}
+	tax := BackSolveVAT(gross, vatPercent)
 	total := gross // tax-inclusive grand total
 
 	// Store credit — auto-apply if the customer has a balance. Keep at least
