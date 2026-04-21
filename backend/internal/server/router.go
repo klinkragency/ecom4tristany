@@ -25,6 +25,7 @@ import (
 	"github.com/3mg/shop/backend/internal/session"
 	"github.com/3mg/shop/backend/internal/shipping"
 	"github.com/3mg/shop/backend/internal/storage"
+	"github.com/3mg/shop/backend/internal/tax"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -81,6 +82,11 @@ func NewRouter(d Deps) http.Handler {
 				r.Get("/settings", adminSettingsH.Get)
 				r.Put("/settings", adminSettingsH.Update)
 				r.Get("/audit", adminUsersH.AuditList)
+				// Per-country VAT rates
+				taxH := tax.NewHandler(d.DB)
+				r.Get("/tax-rates", taxH.List)
+				r.Put("/tax-rates", taxH.Upsert)
+				r.Delete("/tax-rates/{country}", taxH.Delete)
 			})
 
 			// Products — read + non-destructive writes allowed for staff.
