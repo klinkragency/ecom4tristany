@@ -2,6 +2,7 @@ package admin
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -49,26 +50,36 @@ func AuditMiddleware(db *pgxpool.Pool) func(http.Handler) http.Handler {
 			next.ServeHTTP(rec, r)
 			_ = start
 
-			// Extract admin + resource after the handler ran (so session is
-			// resolved and the path param is still on the request).
+			// Snapshot everything we need off the request BEFORE the goroutine
+			// starts — r.Context() is cancelled once the response is written,
+			// so we use a detached context for the actual INSERT.
+			sess, _ := auth.SessionFromContext(r.Context())
+			path := r.URL.Path
+			ip := clientIP(r)
+			ua := r.UserAgent()
+			status := rec.status
+
 			go func() {
 				defer func() { _ = recover() }()
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+
 				var adminID any
 				var adminEmail string
-				if sess, ok := auth.SessionFromContext(r.Context()); ok && sess.UserID.Valid {
+				if sess != nil && sess.UserID.Valid {
 					adminID = sess.UserID
-					_ = db.QueryRow(r.Context(),
+					_ = db.QueryRow(ctx,
 						`SELECT email FROM admin_users WHERE id = $1`, sess.UserID,
 					).Scan(&adminEmail)
 				}
-				resType, resID := parseResource(r.URL.Path)
-				_, _ = db.Exec(r.Context(), `
+				resType, resID := parseResource(path)
+				_, _ = db.Exec(ctx, `
                     INSERT INTO admin_audit_log
                       (admin_id, admin_email, method, path, status,
                        resource_type, resource_id, ip, user_agent, payload_redacted)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                `, adminID, adminEmail, m, r.URL.Path, rec.status,
-					resType, resID, clientIP(r), r.UserAgent(), redacted)
+                `, adminID, adminEmail, m, path, status,
+					resType, resID, ip, ua, redacted)
 			}()
 		})
 	}
