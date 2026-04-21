@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/3mg/shop/backend/internal/auth"
+	"github.com/3mg/shop/backend/internal/geo"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/session"
 
@@ -147,15 +148,20 @@ func (h *Handler) Track(w http.ResponseWriter, r *http.Request) {
 		customerID = &cid
 	}
 
+	// Detect country from Cloudflare / proxy headers, or fall back to the
+	// Accept-Language region. Stored on the row once; later events don't
+	// overwrite it — a VPN switch mid-session shouldn't flip the origin.
+	country := geo.DetectCountry(r)
+
 	// Upsert the session row on the first event so we can join analytics to
 	// customers / orders and compute cohorts.
 	if _, err := h.db.Exec(r.Context(), `
-        INSERT INTO analytics_sessions (id, customer_id, ip_first, user_agent)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO analytics_sessions (id, customer_id, ip_first, user_agent, country)
+        VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT (id) DO UPDATE SET
           last_seen = now(),
           customer_id = COALESCE(analytics_sessions.customer_id, EXCLUDED.customer_id)
-    `, sid, customerID, clientIP(r), r.UserAgent()); err != nil {
+    `, sid, customerID, clientIP(r), r.UserAgent(), country); err != nil {
 		httpx.Error(w, http.StatusInternalServerError, "session_upsert", err.Error())
 		return
 	}
