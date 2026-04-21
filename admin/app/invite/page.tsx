@@ -28,7 +28,9 @@ function InviteInner() {
         body: JSON.stringify({ token, password }),
       });
       setDone(true);
-      setTimeout(() => router.push('/login'), 1500);
+      // Auto-login: the backend set an admin session cookie on the response.
+      // Send the invitee straight to the dashboard — no "type your email" step.
+      setTimeout(() => { router.push('/'); router.refresh(); }, 800);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Accept failed');
     } finally {
