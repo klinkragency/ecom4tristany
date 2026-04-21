@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import CartLink from '@/components/CartLink';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import CurrencyProvider from '@/components/CurrencyProvider';
+import CurrencySwitcher from '@/components/CurrencySwitcher';
 import { fetchMenu, hrefFor, type MenuItem } from '@/lib/menu';
+import { fetchCurrencies, COOKIE as CURRENCY_COOKIE } from '@/lib/currency';
 import './globals.css';
 
 export const metadata: Metadata = {
