@@ -15,14 +15,18 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [mainMenu, footerMenu] = await Promise.all([
+  const [mainMenu, footerMenu, currencies, cookieStore] = await Promise.all([
     fetchMenu('main'),
     fetchMenu('footer'),
+    fetchCurrencies(),
+    cookies(),
   ]);
+  const currencyCookie = cookieStore.get(CURRENCY_COOKIE)?.value ?? null;
 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col">
+        <CurrencyProvider currencies={currencies} initialCookie={currencyCookie}>
         <AnalyticsTracker />
         <header className="border-b border-[color:var(--color-border)]">
           <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
@@ -36,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Link href="/collections" className="hover:underline">Collections</Link>
                 </>
               )}
+              <CurrencySwitcher />
               <CartLink />
               <Link href="/account" className="hover:underline">Account</Link>
             </nav>
