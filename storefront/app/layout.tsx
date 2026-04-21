@@ -92,6 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div>© Shop</div>
           </div>
         </footer>
+        </CurrencyProvider>
       </body>
     </html>
   );
