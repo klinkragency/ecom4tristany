@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
+import PasswordChangeGate from './PasswordChangeGate';
+import WhoAmI from './WhoAmI';
 
 const NAV = [
   { href: '/', label: 'Home' },
@@ -21,9 +23,10 @@ const NAV = [
 export default function DashLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[220px_1fr] min-h-screen">
-      <aside className="border-r border-[color:var(--color-border)] bg-white p-4">
+      <PasswordChangeGate />
+      <aside className="border-r border-[color:var(--color-border)] bg-white p-4 flex flex-col">
         <div className="font-semibold mb-4 text-sm tracking-wide uppercase">Shop Admin</div>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 flex-1">
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -34,7 +37,8 @@ export default function DashLayout({ children }: { children: React.ReactNode }) 
             </Link>
           ))}
         </nav>
-        <div className="mt-6">
+        <div className="mt-6 space-y-2">
+          <WhoAmI />
           <LogoutButton />
         </div>
       </aside>

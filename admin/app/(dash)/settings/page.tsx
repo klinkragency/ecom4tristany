@@ -1,16 +1,17 @@
 import Link from 'next/link';
 
 const sections = [
+  { href: '/settings/general', title: 'General', sub: 'Store name, currency, VAT, public URL' },
+  { href: '/settings/users', title: 'Admin users', sub: 'Invite teammates, manage roles' },
+  { href: '/settings/audit', title: 'Audit log', sub: 'Every admin action, searchable' },
   { href: '/settings/shipping', title: 'Shipping', sub: 'Zones and rates' },
+  { href: '/settings/change-password', title: 'Change my password', sub: '' },
 ];
 
 export default function SettingsPage() {
   return (
     <section className="max-w-4xl">
       <h1 className="text-2xl font-semibold mb-4">Settings</h1>
-      <p className="text-sm text-[color:var(--color-text-muted)] mb-4">
-        More sections (store profile, taxes, payments, users, apps) ship in Phase 14.
-      </p>
       <ul className="divide-y divide-[color:var(--color-border)] border border-[color:var(--color-border)] rounded bg-white">
         {sections.map((s) => (
           <li key={s.href}>
@@ -20,7 +21,7 @@ export default function SettingsPage() {
             >
               <div>
                 <div className="font-medium">{s.title}</div>
-                <div className="text-xs text-[color:var(--color-text-muted)]">{s.sub}</div>
+                {s.sub && <div className="text-xs text-[color:var(--color-text-muted)]">{s.sub}</div>}
               </div>
               <span className="text-[color:var(--color-text-muted)]">→</span>
             </Link>

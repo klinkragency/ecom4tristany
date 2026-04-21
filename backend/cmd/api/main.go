@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/3mg/shop/backend/internal/admin"
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/platform"
@@ -39,6 +40,12 @@ func main() {
 	if err := db.Ping(ctx); err != nil {
 		log.Error("db ping", "err", err)
 		os.Exit(1)
+	}
+
+	// Overlay persisted shop settings onto the config struct, so env vars
+	// remain the fallback but the admin UI can override them at runtime.
+	if err := admin.ApplyToConfig(ctx, db, cfg); err != nil {
+		log.Warn("settings overlay failed — env defaults will be used", "err", err)
 	}
 
 	store := session.NewStore(db, cfg.SessionTTL, cfg.SessionCookieDomain, cfg.SessionCookieSecure)

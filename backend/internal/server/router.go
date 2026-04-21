@@ -54,22 +54,45 @@ func NewRouter(d Deps) http.Handler {
 
 	// Admin
 	adminH := admin.NewHandler(d.DB, d.Sessions)
+	adminUsersH := admin.NewUsersHandler(d.DB, d.Cfg, d.Sessions)
+	adminSettingsH := admin.NewSettingsHandler(d.DB, d.Cfg)
 	productH := product.NewHandler(d.DB, d.Storage)
 	r.Route("/api/admin", func(r chi.Router) {
 		r.Use(auth.CSRF())
 		r.Post("/auth/login", adminH.Login)
+		// Invite acceptance is public — the invitee has no session yet.
+		r.Post("/auth/invite/accept", adminUsersH.AcceptInvite)
 
 		r.Group(func(r chi.Router) {
 			r.Use(auth.RequireAdmin(d.Sessions))
+			r.Use(admin.AuditMiddleware(d.DB))
 			r.Post("/auth/logout", adminH.Logout)
 			r.Get("/me", adminH.Me)
+			r.Post("/auth/change-password", adminUsersH.ChangePassword)
 
-			// Products
+			// ── Platform (owner-only) ───────────────────────────────────
+			r.Group(func(r chi.Router) {
+				r.Use(auth.RequireRole(d.DB, auth.RoleOwner))
+				r.Get("/users", adminUsersH.List)
+				r.Post("/users", adminUsersH.Invite)
+				r.Post("/users/{id}/resend-invite", adminUsersH.ResendInvite)
+				r.Put("/users/{id}/role", adminUsersH.SetRole)
+				r.Delete("/users/{id}", adminUsersH.Delete)
+				r.Get("/settings", adminSettingsH.Get)
+				r.Put("/settings", adminSettingsH.Update)
+				r.Get("/audit", adminUsersH.AuditList)
+			})
+
+			// Products — read + non-destructive writes allowed for staff.
 			r.Get("/products", productH.List)
 			r.Post("/products", productH.Create)
 			r.Get("/products/{id}", productH.Get)
 			r.Put("/products/{id}", productH.Update)
-			r.Delete("/products/{id}", productH.Delete)
+			// Destructive actions require admin or owner.
+			r.Group(func(r chi.Router) {
+				r.Use(auth.RequireRole(d.DB, auth.RoleOwner, auth.RoleAdmin))
+				r.Delete("/products/{id}", productH.Delete)
+			})
 
 			// Options + option values
 			r.Post("/products/{id}/options", productH.AddOption)
@@ -132,7 +155,11 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/orders/{id}/cancel", orderH.Cancel)
 			r.Put("/orders/{id}/note", orderH.SetNote)
 			r.Put("/orders/{id}/tags", orderH.SetTags)
-			r.Post("/orders/{id}/refunds", refundH.Create)
+			// Refunds + cancel — not staff.
+			r.Group(func(r chi.Router) {
+				r.Use(auth.RequireRole(d.DB, auth.RoleOwner, auth.RoleAdmin))
+				r.Post("/orders/{id}/refunds", refundH.Create)
+			})
 
 			// Fulfillments
 			fulfH := fulfillment.NewHandler(d.DB, d.Cfg)
@@ -186,13 +213,16 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/shipping/rates/{id}", shipH.UpdateRate)
 			r.Delete("/shipping/rates/{id}", shipH.DeleteRate)
 
-			// Discounts
+			// Discounts — write requires admin or owner.
 			discH := discount.NewHandler(d.DB)
 			r.Get("/discounts", discH.List)
-			r.Post("/discounts", discH.Create)
 			r.Get("/discounts/{id}", discH.Get)
-			r.Put("/discounts/{id}", discH.Update)
-			r.Delete("/discounts/{id}", discH.Delete)
+			r.Group(func(r chi.Router) {
+				r.Use(auth.RequireRole(d.DB, auth.RoleOwner, auth.RoleAdmin))
+				r.Post("/discounts", discH.Create)
+				r.Put("/discounts/{id}", discH.Update)
+				r.Delete("/discounts/{id}", discH.Delete)
+			})
 
 			// Analytics dashboards
 			anaH := analytics.NewHandler(d.DB)
