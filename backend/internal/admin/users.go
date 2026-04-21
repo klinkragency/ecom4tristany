@@ -15,6 +15,7 @@ import (
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/email"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/session"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -25,16 +26,17 @@ import (
 const inviteTTL = 72 * time.Hour
 
 // UsersHandler manages the admin_users table + invite lifecycle. It needs
-// config for the shop URL (invite email links) and SMTP so it can send
-// the invitation message. The plain Handler stays slim; invite plumbing
-// lives here.
+// config for the shop URL (invite email links), SMTP so it can send the
+// invitation message, and the session store so it can auto-log the
+// invitee in after they accept.
 type UsersHandler struct {
-	db  *pgxpool.Pool
-	cfg *config.Config
+	db       *pgxpool.Pool
+	cfg      *config.Config
+	sessions *session.Store
 }
 
-func NewUsersHandler(db *pgxpool.Pool, cfg *config.Config) *UsersHandler {
-	return &UsersHandler{db: db, cfg: cfg}
+func NewUsersHandler(db *pgxpool.Pool, cfg *config.Config, sessions *session.Store) *UsersHandler {
+	return &UsersHandler{db: db, cfg: cfg, sessions: sessions}
 }
 
 // ─── DTOs ───────────────────────────────────────────────────────────────
@@ -375,7 +377,29 @@ func (h *UsersHandler) AcceptInvite(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusInternalServerError, "commit_error", err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
+
+	// Auto-login: create an admin session so the invitee lands directly on
+	// the dashboard, no "remember which email you were invited with" dance.
+	var (
+		adminUUID pgtype.UUID
+		email     string
+		name      string
+		role      string
+	)
+	_ = h.db.QueryRow(r.Context(),
+		`SELECT id, email, name, role FROM admin_users WHERE id = $1`, adminID,
+	).Scan(&adminUUID, &email, &name, &role)
+	if adminUUID.Valid {
+		if token, _, serr := h.sessions.Create(r.Context(), adminUUID, session.TypeAdmin, clientIP(r), r.UserAgent()); serr == nil {
+			h.sessions.SetCookie(w, session.TypeAdmin, token)
+		}
+	}
+	httpx.JSON(w, http.StatusOK, AdminDTO{
+		ID:    uuidString(adminUUID),
+		Email: email,
+		Name:  name,
+		Role:  role,
+	})
 }
 
 // ChangePassword is for the logged-in admin to update their own password.

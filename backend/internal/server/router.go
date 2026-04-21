@@ -54,7 +54,7 @@ func NewRouter(d Deps) http.Handler {
 
 	// Admin
 	adminH := admin.NewHandler(d.DB, d.Sessions)
-	adminUsersH := admin.NewUsersHandler(d.DB, d.Cfg)
+	adminUsersH := admin.NewUsersHandler(d.DB, d.Cfg, d.Sessions)
 	adminSettingsH := admin.NewSettingsHandler(d.DB, d.Cfg)
 	productH := product.NewHandler(d.DB, d.Storage)
 	r.Route("/api/admin", func(r chi.Router) {
