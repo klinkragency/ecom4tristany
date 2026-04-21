@@ -88,6 +88,11 @@ func NewRouter(d Deps) http.Handler {
 				r.Get("/tax-rates", taxH.List)
 				r.Put("/tax-rates", taxH.Upsert)
 				r.Delete("/tax-rates/{country}", taxH.Delete)
+				// Currencies
+				curH := currency.NewHandler(d.DB)
+				r.Get("/currencies", curH.List)
+				r.Put("/currencies", curH.Upsert)
+				r.Delete("/currencies/{code}", curH.Delete)
 			})
 
 			// Products — read + non-destructive writes allowed for staff.
