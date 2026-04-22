@@ -63,6 +63,11 @@ export type Product = {
   media: ProductMedia[];
 };
 
+// formatPrice is the legacy helper. Kept for Server Components that run
+// before the CurrencyProvider is mounted (initial SSR) and places where
+// the price is always in base currency (order receipts, emails). Client
+// components should prefer the usePrice() hook from CurrencyProvider so
+// the display follows the active currency choice.
 export function formatPrice(cents: number, currency = 'EUR'): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
 }

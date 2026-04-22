@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { formatPrice, type ProductListPage } from '@/lib/types';
+import { cookies } from 'next/headers';
+import { type ProductListPage } from '@/lib/types';
+import { fetchCurrencies, resolveCurrency, price, COOKIE as CURRENCY_COOKIE } from '@/lib/currency';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -12,7 +14,12 @@ async function getProducts(): Promise<ProductListPage> {
 }
 
 export default async function ProductsPage() {
-  const page = await getProducts();
+  const [page, currencies, cookieStore] = await Promise.all([
+    getProducts(),
+    fetchCurrencies(),
+    cookies(),
+  ]);
+  const currency = resolveCurrency(currencies, cookieStore.get(CURRENCY_COOKIE)?.value ?? null);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-10">
@@ -46,8 +53,8 @@ export default async function ProductsPage() {
                 <div className="font-medium group-hover:underline">{p.title}</div>
                 <div className="text-sm text-[color:var(--color-text-muted)]">
                   {p.minPriceCents === p.maxPriceCents
-                    ? formatPrice(p.minPriceCents)
-                    : `From ${formatPrice(p.minPriceCents)}`}
+                    ? price(p.minPriceCents, currency)
+                    : `From ${price(p.minPriceCents, currency)}`}
                 </div>
               </Link>
             </li>
