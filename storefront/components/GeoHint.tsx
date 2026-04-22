@@ -73,7 +73,6 @@ export default function GeoHint() {
         <button
           onClick={dismiss}
           className="text-xs hover:underline"
-          aria-label="Dismiss"
         >
           No thanks
         </button>
