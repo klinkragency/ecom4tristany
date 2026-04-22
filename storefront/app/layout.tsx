@@ -5,6 +5,7 @@ import CartLink from '@/components/CartLink';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import CurrencyProvider from '@/components/CurrencyProvider';
 import CurrencySwitcher from '@/components/CurrencySwitcher';
+import GeoHint from '@/components/GeoHint';
 import { fetchMenu, hrefFor, type MenuItem } from '@/lib/menu';
 import { fetchCurrencies, COOKIE as CURRENCY_COOKIE } from '@/lib/currency';
 import './globals.css';
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen flex flex-col">
         <CurrencyProvider currencies={currencies} initialCookie={currencyCookie}>
         <AnalyticsTracker />
+        <GeoHint />
         <header className="border-b border-[color:var(--color-border)]">
           <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
             <Link href="/" className="text-lg font-semibold">Shop</Link>
