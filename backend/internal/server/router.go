@@ -248,6 +248,9 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/analytics/finance/store-credit", finH.StoreCreditLiability)
 			r.Get("/analytics/finance/payouts", finH.Payouts)
 
+			// Live sessions by country (default 5-min window).
+			r.Get("/analytics/sessions-by-country", anaH.SessionsByCountry)
+
 			// PostHog (server-side proxy)
 			phH := analytics.NewPostHogHandler(d.Cfg)
 			r.Get("/analytics/posthog/overview", phH.Overview)
@@ -306,6 +309,9 @@ func NewRouter(d Deps) http.Handler {
 		// Currencies (public — for the switcher + price conversion)
 		curPubH := currency.NewHandler(d.DB)
 		r.Get("/currencies", curPubH.StorefrontList)
+
+		// Geo hint: country of the visitor + suggested currency if active.
+		r.Get("/geo-hint", analytics.NewGeoHintHandler(d.DB).Hint)
 
 		// CMS (public reads)
 		cmsH := cms.NewHandler(d.DB)
