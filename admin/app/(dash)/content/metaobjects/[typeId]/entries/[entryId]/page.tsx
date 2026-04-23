@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import EntryForm, { EMPTY_ENTRY, type EntryPayload } from '../../../EntryForm';
+import EntryForm, { EMPTY_ENTRY, type EntryPayload } from '../../EntryForm';
 import type { FieldDef } from '../../../TypeForm';
 
 export default function EditEntryPage() {
