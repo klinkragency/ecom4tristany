@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Shop" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e5]:
+        - link "Products" [ref=e6] [cursor=pointer]:
+          - /url: /products
+        - link "Saison" [ref=e7] [cursor=pointer]:
+          - /url: /collections/
+        - link "Blog" [ref=e8] [cursor=pointer]:
+          - /url: /blog
+        - combobox "Currency" [ref=e9] [cursor=pointer]:
+          - option "€ EUR" [selected]
+          - option "$ USD"
+          - option "£ GBP"
+          - option "CHF CHF"
+        - link "Cart" [ref=e10] [cursor=pointer]:
+          - /url: /cart
+        - link "Account" [ref=e11] [cursor=pointer]:
+          - /url: /account
+  - main [ref=e12]:
+    - article [ref=e13]:
+      - navigation [ref=e14]:
+        - link "← FAQ" [ref=e15] [cursor=pointer]:
+          - /url: /content/faq_1776968624831
+      - heading "Shipping policy" [level=1] [ref=e16]
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - term [ref=e19]: Question
+          - definition [ref=e20]: Do you ship internationally?
+        - generic [ref=e21]:
+          - term [ref=e22]: Answer
+          - definition [ref=e23]:
+            - paragraph [ref=e25]: Yes, we ship to 30 countries.
+  - contentinfo [ref=e26]:
+    - generic [ref=e28]: © Shop

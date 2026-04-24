@@ -192,6 +192,28 @@ func (h *Handler) DeleteEntry(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) StorefrontList(w http.ResponseWriter, r *http.Request) {
 	typeHandle := chi.URLParam(r, "typeHandle")
+
+	// Fetch type metadata so the storefront can render fields using the
+	// admin-defined schema (rich_text as HTML, color as swatch, etc.).
+	var t MetaType
+	var rawDefs []byte
+	err := h.db.QueryRow(r.Context(), `
+        SELECT id, handle, name, description, field_defs
+        FROM metaobject_types WHERE handle = $1
+    `, typeHandle).Scan(&t.ID, &t.Handle, &t.Name, &t.Description, &rawDefs)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			httpx.Error(w, http.StatusNotFound, "type_not_found", "type not found")
+			return
+		}
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+	_ = json.Unmarshal(rawDefs, &t.FieldDefs)
+	if t.FieldDefs == nil {
+		t.FieldDefs = []FieldDef{}
+	}
+
 	rows, err := h.db.Query(r.Context(), `
         SELECT e.id, e.type_id, t.handle, e.handle, e.name, e.fields,
                e.status, e.published_at, e.position, e.created_at, e.updated_at
@@ -214,7 +236,15 @@ func (h *Handler) StorefrontList(w http.ResponseWriter, r *http.Request) {
 		}
 		items = append(items, *e)
 	}
-	httpx.JSON(w, http.StatusOK, map[string]any{"items": items})
+	httpx.JSON(w, http.StatusOK, map[string]any{
+		"items": items,
+		"type": map[string]any{
+			"handle":      t.Handle,
+			"name":        t.Name,
+			"description": t.Description,
+			"fieldDefs":   t.FieldDefs,
+		},
+	})
 }
 
 func (h *Handler) StorefrontByHandle(w http.ResponseWriter, r *http.Request) {
