@@ -2,20 +2,104 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-text: #111827;
-  --color-text-muted: #6b7280;
-  --color-accent: #0a0a0a;
-  --color-accent-hover: #171717;
+  /* Warm-stone palette: beige main bg, dark-warm sidebar, sand accent.
+     Anchored on Tailwind's "stone" scale for consistency. */
+  --color-bg: #f5f5f4;          /* stone-100 — main canvas */
+  --color-surface: #ffffff;     /* card surface */
+  --color-border: #e7e5e4;      /* stone-200 — hairlines */
+  --color-text: #1c1917;        /* stone-900 — body */
+  --color-text-muted: #78716c;  /* stone-500 — secondary */
+  --color-accent: #1c1917;      /* stone-900 — primary buttons */
+  --color-accent-hover: #292524;/* stone-800 */
+
+  /* Sidebar tokens */
+  --color-sidebar: #1c1917;
+  --color-sidebar-fg: rgba(255, 255, 255, 0.78);
+  --color-sidebar-fg-strong: #ffffff;
+  --color-sidebar-fg-muted: rgba(255, 255, 255, 0.45);
+  --color-sidebar-active-bg: rgba(214, 207, 184, 0.10);
+  --color-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --color-sidebar-accent: #d6cfb8;  /* sand */
+  --color-sidebar-border: rgba(255, 255, 255, 0.06);
+
+  /* Typography */
+  --font-sans: "Inter", "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 html, body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Tabular numbers wherever a class wants them (prices, quantities) */
+.tabular { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* Subtle elevation for cards */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* Sidebar item hover/active states (data-active toggles via JS) */
+.sb-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-sidebar-fg);
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.sb-item:hover { background: var(--color-sidebar-hover-bg); color: var(--color-sidebar-fg-strong); }
+.sb-item[data-active="true"] {
+  background: var(--color-sidebar-active-bg);
+  color: var(--color-sidebar-fg-strong);
+}
+.sb-item[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-sidebar-accent);
+}
+.sb-item .sb-icon {
+  transition: transform 200ms cubic-bezier(.4,0,.2,1);
+}
+.sb-item:hover .sb-icon { transform: scale(1.10) rotate(-2deg); }
+.sb-item[data-active="true"] .sb-icon { transform: scale(1.04); }
+
+/* Section toggle chevron */
+.sb-chevron { transition: transform 200ms ease; }
+.sb-chevron[data-open="true"] { transform: rotate(90deg); }
+
+/* Sub-items collapsible animation */
+.sb-subs {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms cubic-bezier(.4,0,.2,1);
+}
+.sb-subs[data-open="true"] { grid-template-rows: 1fr; }
+.sb-subs > div { overflow: hidden; }
+
+/* Command palette transitions */
+@keyframes cp-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cp-panel { animation: cp-in 160ms cubic-bezier(.4,0,.2,1) both; }
+.cp-backdrop { animation: cp-in 160ms ease both; }
 
 /* Rich-text editor (contentEditable). Normal weight by default; marks only
    apply when the user explicitly toggles them via toolbar or keyboard. */
