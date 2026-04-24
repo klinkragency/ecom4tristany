@@ -4,6 +4,7 @@ const sections = [
   { href: '/content/pages', title: 'Pages', sub: 'About, FAQ, legal…' },
   { href: '/content/menus', title: 'Navigation menus', sub: 'Header and footer links' },
   { href: '/content/blog', title: 'Blog', sub: 'Posts, tags, RSS' },
+  { href: '/content/metaobjects', title: 'Metaobjects', sub: 'Custom content types (FAQs, team, locations…)' },
 ];
 
 export default function ContentPage() {

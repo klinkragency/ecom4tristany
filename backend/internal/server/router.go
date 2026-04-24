@@ -19,6 +19,7 @@ import (
 	"github.com/3mg/shop/backend/internal/fulfillment"
 	"github.com/3mg/shop/backend/internal/httpx"
 	"github.com/3mg/shop/backend/internal/inventory"
+	"github.com/3mg/shop/backend/internal/metaobject"
 	"github.com/3mg/shop/backend/internal/order"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/product"
@@ -248,6 +249,9 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/analytics/finance/store-credit", finH.StoreCreditLiability)
 			r.Get("/analytics/finance/payouts", finH.Payouts)
 
+			// Live sessions by country (default 5-min window).
+			r.Get("/analytics/sessions-by-country", anaH.SessionsByCountry)
+
 			// PostHog (server-side proxy)
 			phH := analytics.NewPostHogHandler(d.Cfg)
 			r.Get("/analytics/posthog/overview", phH.Overview)
@@ -268,6 +272,19 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/content/blog/{id}", blogH.AdminGet)
 			r.Put("/content/blog/{id}", blogH.AdminUpdate)
 			r.Delete("/content/blog/{id}", blogH.AdminDelete)
+
+			// Metaobjects
+			metaH := metaobject.NewHandler(d.DB)
+			r.Get("/content/metaobjects/types", metaH.ListTypes)
+			r.Post("/content/metaobjects/types", metaH.CreateType)
+			r.Get("/content/metaobjects/types/{id}", metaH.GetType)
+			r.Put("/content/metaobjects/types/{id}", metaH.UpdateType)
+			r.Delete("/content/metaobjects/types/{id}", metaH.DeleteType)
+			r.Get("/content/metaobjects/types/{typeId}/entries", metaH.ListEntries)
+			r.Post("/content/metaobjects/types/{typeId}/entries", metaH.CreateEntry)
+			r.Get("/content/metaobjects/entries/{id}", metaH.GetEntry)
+			r.Put("/content/metaobjects/entries/{id}", metaH.UpdateEntry)
+			r.Delete("/content/metaobjects/entries/{id}", metaH.DeleteEntry)
 		})
 	})
 
@@ -307,6 +324,9 @@ func NewRouter(d Deps) http.Handler {
 		curPubH := currency.NewHandler(d.DB)
 		r.Get("/currencies", curPubH.StorefrontList)
 
+		// Geo hint: country of the visitor + suggested currency if active.
+		r.Get("/geo-hint", analytics.NewGeoHintHandler(d.DB).Hint)
+
 		// CMS (public reads)
 		cmsH := cms.NewHandler(d.DB)
 		blogH := cms.NewBlogHandler(d.DB, d.Cfg)
@@ -315,6 +335,11 @@ func NewRouter(d Deps) http.Handler {
 		r.Get("/blog", blogH.StorefrontList)
 		r.Get("/blog/feed.xml", blogH.StorefrontFeed)
 		r.Get("/blog/{slug}", blogH.StorefrontBySlug)
+
+		// Metaobjects (public read of published entries)
+		metaPubH := metaobject.NewHandler(d.DB)
+		r.Get("/metaobjects/{typeHandle}", metaPubH.StorefrontList)
+		r.Get("/metaobjects/{typeHandle}/{entryHandle}", metaPubH.StorefrontByHandle)
 
 		// Analytics ingest (storefront events). No CSRF — the endpoint is
 		// read-only semantically (can't change shop state) and tracker scripts

@@ -61,6 +61,13 @@ type PostHog = {
   error?: string;
 };
 
+type SessionsByCountry = {
+  from: string;
+  windowMinutes: number;
+  totalSessions: number;
+  items: { country: string; sessions: number }[];
+};
+
 const RANGES = [
   { label: '7 days', days: 7 },
   { label: '30 days', days: 30 },
@@ -176,8 +183,81 @@ export default function AnalyticsPage() {
       </div>
 
       <PostHogCard data={posthog} />
+      <LiveSessionsCard />
     </section>
   );
+}
+
+function LiveSessionsCard() {
+  const [data, setData] = useState<SessionsByCountry | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  // Poll every 30 seconds so the "now" window stays fresh without
+  // hammering the API. When the tab isn't visible we skip — no point
+  // burning bandwidth for a dashboard nobody's looking at.
+  useEffect(() => {
+    let cancelled = false;
+    async function tick() {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const d = await api<SessionsByCountry>('/api/admin/analytics/sessions-by-country?minutes=5');
+        if (!cancelled) { setData(d); setErr(null); }
+      } catch (e) {
+        if (!cancelled) setErr(e instanceof ApiError ? e.message : 'Load failed');
+      }
+    }
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  const max = Math.max(1, ...(data?.items ?? []).map((i) => i.sessions));
+
+  return (
+    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold">Live sessions by country</h2>
+        <div className="flex items-center gap-2 text-xs text-[color:var(--color-text-muted)]">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          last 5 min · {data?.totalSessions ?? 0} active
+        </div>
+      </div>
+      {err && <div className="text-xs text-red-700 mb-2">{err}</div>}
+      {!data || data.items.length === 0 ? (
+        <p className="text-sm text-[color:var(--color-text-muted)]">
+          No active sessions right now.
+        </p>
+      ) : (
+        <ul className="space-y-1.5 text-sm">
+          {data.items.map((i) => {
+            const pct = (i.sessions / max) * 100;
+            return (
+              <li key={i.country} className="flex items-center gap-3">
+                <span className="w-10 text-lg leading-none">{flagFor(i.country)}</span>
+                <span className="w-12 font-mono text-xs text-[color:var(--color-text-muted)]">{i.country}</span>
+                <div className="flex-1 h-2 rounded bg-gray-100 overflow-hidden">
+                  <div className="h-full bg-[color:var(--color-accent)]" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="w-10 text-right text-xs">{i.sessions}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// Flag emoji from a 2-letter country code via regional indicators.
+// Returns the raw code for the "unknown" bucket ("??").
+function flagFor(country: string): string {
+  if (country.length !== 2 || country === '??') return '🏳️';
+  const A = 'A'.charCodeAt(0);
+  const offset = 127397;
+  const a = country.charCodeAt(0);
+  const b = country.charCodeAt(1);
+  if (a < A || a > A + 25 || b < A || b > A + 25) return country;
+  try { return String.fromCodePoint(a + offset, b + offset); } catch { return country; }
 }
 
 function PostHogCard({ data }: { data: PostHog | null }) {
