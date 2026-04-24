@@ -29,6 +29,7 @@ logs/
 
 # Test artifacts
 playwright-report/
+playwright-mcp/
 test-results/
 .playwright/
 
