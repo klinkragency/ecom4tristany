@@ -73,6 +73,10 @@ func NewRouter(d Deps) http.Handler {
 			r.Get("/me", adminH.Me)
 			r.Post("/auth/change-password", adminUsersH.ChangePassword)
 
+			// Global search (powers the ⌘K command palette).
+			searchH := admin.NewSearchHandler(d.DB)
+			r.Get("/search", searchH.Search)
+
 			// ── Platform (owner-only) ───────────────────────────────────
 			r.Group(func(r chi.Router) {
 				r.Use(auth.RequireRole(d.DB, auth.RoleOwner))
