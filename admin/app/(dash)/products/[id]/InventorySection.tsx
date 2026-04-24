@@ -71,7 +71,7 @@ export default function InventorySection({ productId }: { productId: string }) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">Inventory ({matrix.variants.length} variants × {matrix.locations.length} locations)</h2>
         <div className="flex items-center gap-2 text-xs">
-          <Link href="/locations" className="text-[color:var(--color-text-muted)] hover:underline">
+          <Link href="/settings/locations" className="text-[color:var(--color-text-muted)] hover:underline">
             Manage locations →
           </Link>
           {saved && !dirty && <span className="text-green-700">Saved</span>}
