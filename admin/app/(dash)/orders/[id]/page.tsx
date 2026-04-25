@@ -656,15 +656,6 @@ function RefundModal({
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad mb-4 space-y-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
 function Row({ label, val, muted, bold }: { label: string; val: string; muted?: boolean; bold?: boolean }) {
   return (
     <div className={`flex justify-between ${bold ? 'font-medium' : ''} ${muted ? 'text-xs text-stone-500' : ''}`}>
