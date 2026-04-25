@@ -32,44 +32,46 @@ export default function BlogListPage() {
 
   return (
     <section className="max-w-5xl">
-      <div className="flex items-center gap-3 mb-4">
-        <Link href="/content" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Content</Link>
-        <h1 className="text-2xl font-semibold flex-1">Blog</h1>
-        <Link href="/content/blog/new" className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white">+ New post</Link>
+      <div className="mb-5 flex items-center gap-3">
+        <Link href="/content" className="text-sm text-stone-500 hover:underline">← Content</Link>
+        <h1 className="h-page flex-1">Blog</h1>
+        <Link href="/content/blog/new" className="btn btn-primary">+ New post</Link>
       </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
       {items.length === 0 ? (
-        <div className="rounded border border-dashed border-[color:var(--color-border)] p-8 text-center text-sm text-[color:var(--color-text-muted)]">
-          No posts yet.
-        </div>
+        <div className="empty">No posts yet.</div>
       ) : (
-        <table className="w-full text-sm border border-[color:var(--color-border)] rounded bg-white">
-          <thead className="bg-gray-50 border-b border-[color:var(--color-border)]">
-            <tr className="text-left">
-              <th className="px-3 py-2 font-medium">Title</th>
-              <th className="px-3 py-2 font-medium">Author</th>
-              <th className="px-3 py-2 font-medium">Tags</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Updated</th>
+        <table className="table-card">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Tags</th>
+              <th>Status</th>
+              <th>Updated</th>
             </tr>
           </thead>
           <tbody>
             {items.map((p) => (
-              <tr key={p.id} className="border-b border-[color:var(--color-border)] hover:bg-gray-50">
-                <td className="px-3 py-2 font-medium">
+              <tr key={p.id}>
+                <td className="font-medium">
                   <Link href={`/content/blog/${p.id}`} className="hover:underline">{p.title}</Link>
-                  <div className="text-xs text-[color:var(--color-text-muted)] font-mono">/{p.slug}</div>
+                  <div className="font-mono text-xs text-stone-500">/{p.slug}</div>
                 </td>
-                <td className="px-3 py-2 text-xs">{p.authorName || '—'}</td>
-                <td className="px-3 py-2 text-xs text-[color:var(--color-text-muted)]">{p.tags.join(', ') || '—'}</td>
-                <td className="px-3 py-2">
-                  <span className={`text-xs rounded px-2 py-0.5 ${p.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <td className="text-xs">{p.authorName || '—'}</td>
+                <td>
+                  <div className="flex flex-wrap gap-1">
+                    {p.tags.length === 0
+                      ? <span className="text-stone-400">—</span>
+                      : p.tags.map((t) => <span key={t} className="badge badge-neutral no-dot">{t}</span>)}
+                  </div>
+                </td>
+                <td>
+                  <span className={`badge ${p.status === 'published' ? 'badge-success' : 'badge-neutral'}`}>
                     {p.status}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-xs text-[color:var(--color-text-muted)]">
-                  {new Date(p.updatedAt).toLocaleDateString()}
-                </td>
+                <td className="text-xs text-stone-500">{new Date(p.updatedAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
