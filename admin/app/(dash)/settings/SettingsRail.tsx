@@ -71,6 +71,7 @@ export default function SettingsRail() {
                 <Link
                   key={it.href}
                   href={it.href}
+                  replace
                   className={`group flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors ${
                     active ? 'bg-stone-900 text-white' : 'text-stone-700 hover:bg-stone-100'
                   }`}
