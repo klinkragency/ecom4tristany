@@ -72,9 +72,9 @@ export default function NewTransferPage() {
       )}
 
       <div className="space-y-4">
-        <div className="rounded border border-stone-200 bg-white p-4 grid grid-cols-2 gap-3">
+        <div className="card card-pad grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            <div className="font-medium mb-1">Source</div>
+            <span className="label">Source</span>
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
@@ -84,7 +84,7 @@ export default function NewTransferPage() {
             </select>
           </label>
           <label className="block text-sm">
-            <div className="font-medium mb-1">Destination</div>
+            <span className="label">Destination</span>
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
@@ -94,7 +94,7 @@ export default function NewTransferPage() {
             </select>
           </label>
           <label className="block text-sm col-span-2">
-            <div className="font-medium mb-1">Note (optional)</div>
+            <span className="label">Note (optional)</span>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -108,7 +108,7 @@ export default function NewTransferPage() {
             <h2 className="text-sm font-semibold">Items ({items.length})</h2>
             <button
               onClick={() => setPickerOpen(true)}
-              className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
+              className="btn btn-secondary btn-sm"
             >
               Add variant…
             </button>
@@ -150,7 +150,7 @@ export default function NewTransferPage() {
           <button
             onClick={submit}
             disabled={saving}
-            className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Creating…' : 'Create draft'}
           </button>

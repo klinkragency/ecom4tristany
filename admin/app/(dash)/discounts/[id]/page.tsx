@@ -75,7 +75,7 @@ export default function EditDiscountPage() {
     <section>
       <div className="flex items-center gap-3 mb-4">
         <Link href="/discounts" className="text-sm text-stone-500 hover:underline">← Discounts</Link>
-        <h1 className="text-2xl font-semibold flex-1">{initial.title || 'Edit discount'}</h1>
+        <h1 className="h-page flex-1">{initial.title || 'Edit discount'}</h1>
         <button onClick={del} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">Delete</button>
       </div>
       <DiscountForm initial={initial} onSave={save} saveLabel="Save changes" />

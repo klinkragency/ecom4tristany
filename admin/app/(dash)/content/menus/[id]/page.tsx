@@ -136,7 +136,7 @@ export default function MenuEditor() {
         <Link href="/content/menus" className="text-sm text-stone-500 hover:underline">← Menus</Link>
         <h1 className="h-page flex-1">{menu.name}</h1>
         <button onClick={save} disabled={saving}
-          className="px-4 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50">
+          className="btn btn-primary">
           {saving ? 'Saving…' : 'Save menu'}
         </button>
       </div>
@@ -145,7 +145,7 @@ export default function MenuEditor() {
 
       <div className="card card-pad mb-4">
         <label className="block text-sm">
-          <div className="font-medium mb-1">Menu name</div>
+          <span className="label">Menu name</span>
           <input value={menu.name} onChange={(e) => setMenu({ ...menu, name: e.target.value })}
             className="input" />
           <div className="text-xs text-stone-500 mt-1 font-mono">handle: {menu.handle}</div>
@@ -169,7 +169,7 @@ export default function MenuEditor() {
             ))}
           </ul>
         )}
-        <button onClick={() => addItem()} className="mt-2 text-xs px-3 py-1.5 rounded border border-stone-200 hover:bg-gray-50">
+        <button onClick={() => addItem()} className="btn btn-secondary btn-sm mt-2">
           + Add item
         </button>
       </div>
@@ -199,15 +199,15 @@ function MenuItemRow({
         <input value={item.label}
           onChange={(e) => onPatch(path, { label: e.target.value })}
           placeholder="Label"
-          className="flex-1 px-2 py-1 rounded border border-stone-200 text-sm" />
+          className="input text-sm flex-1" />
         <select value={item.linkType} onChange={(e) => onPatch(path, { linkType: e.target.value as LinkType })}
-          className="px-2 py-1 rounded border border-stone-200 text-xs bg-white">
+          className="select w-auto text-xs">
           {LINK_TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
         </select>
         {item.linkType !== 'menu_header' && item.linkType !== 'blog' && (
           <input value={item.target} onChange={(e) => onPatch(path, { target: e.target.value })}
             placeholder={linkHelp}
-            className="w-48 px-2 py-1 rounded border border-stone-200 text-xs" />
+            className="input text-xs w-48" />
         )}
         <label className="flex items-center gap-1 text-xs" title="Open in new tab">
           <input type="checkbox" checked={item.openInNewTab}
@@ -215,7 +215,7 @@ function MenuItemRow({
           ↗
         </label>
         {!isNested && (
-          <button onClick={() => onAddChild(item)} className="text-xs px-2 py-0.5 rounded border border-stone-200 hover:bg-gray-50">
+          <button onClick={() => onAddChild(item)} className="btn btn-secondary btn-sm text-xs">
             + sub
           </button>
         )}

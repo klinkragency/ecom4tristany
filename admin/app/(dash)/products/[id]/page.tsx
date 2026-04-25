@@ -124,7 +124,7 @@ export default function EditProductPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-3 py-2 rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -340,13 +340,13 @@ function OptionsEditor({
               placeholder="Option name (e.g. Size)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="px-3 py-2 rounded border border-stone-200 text-sm"
+              className="input text-sm"
             />
             <input
               placeholder="Values, comma-separated (e.g. S, M, L)"
               value={values}
               onChange={(e) => setValues(e.target.value)}
-              className="px-3 py-2 rounded border border-stone-200 text-sm"
+              className="input text-sm"
             />
             <button
               onClick={add}
@@ -369,14 +369,14 @@ function AddValueInput({ onAdd }: { onAdd: (v: string) => void }) {
         value={v}
         onChange={(e) => setV(e.target.value)}
         placeholder="New value…"
-        className="flex-1 px-2 py-1 rounded border border-stone-200 text-sm"
+        className="input text-sm flex-1"
       />
       <button
         onClick={() => {
           onAdd(v);
           setV('');
         }}
-        className="px-2 py-1 text-sm rounded border border-stone-200 hover:bg-gray-50"
+        className="btn btn-secondary btn-sm"
       >
         Add value
       </button>
@@ -504,7 +504,7 @@ function VariantRow({
       <button
         onClick={save}
         disabled={saving}
-        className="px-2 py-1 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50"
+        className="btn btn-secondary btn-sm"
       >
         {saving ? '…' : 'Save'}
       </button>
@@ -566,7 +566,7 @@ function AddVariantForm({
             key={o.id}
             value={values[o.id] || ''}
             onChange={(e) => setValues({ ...values, [o.id]: e.target.value })}
-            className="px-2 py-1 text-sm rounded border border-stone-200 bg-white"
+            className="select w-auto text-sm"
           >
             <option value="">{o.name}…</option>
             {o.values.map((v) => (
@@ -580,13 +580,13 @@ function AddVariantForm({
           placeholder="SKU"
           value={sku}
           onChange={(e) => setSku(e.target.value)}
-          className="px-2 py-1 text-sm rounded border border-stone-200"
+          className="input text-sm"
         />
         <input
           placeholder="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="px-2 py-1 text-sm rounded border border-stone-200"
+          className="input text-sm"
         />
         <button
           onClick={add}
@@ -611,7 +611,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}</div>
+      <span className="label">{label}</span>
       {children}
     </label>
   );

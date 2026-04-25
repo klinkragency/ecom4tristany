@@ -14,8 +14,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Shop Admin',
-  description: 'Single-shop ecommerce admin',
+  title: 'Klinkr Ecom · Admin',
+  description: 'Klinkr Ecom admin',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

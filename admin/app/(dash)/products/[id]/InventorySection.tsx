@@ -54,7 +54,7 @@ export default function InventorySection({ productId }: { productId: string }) {
 
   if (!matrix) {
     return (
-      <div className="rounded border border-stone-200 bg-white p-4 text-sm text-stone-500">
+      <div className="card card-pad text-sm text-stone-500">
         Loading inventory…
       </div>
     );

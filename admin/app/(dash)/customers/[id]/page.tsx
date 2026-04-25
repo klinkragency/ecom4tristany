@@ -141,7 +141,7 @@ export default function CustomerDetailPage() {
             <span className="text-sm text-stone-500">Balance · {c.ledgerEntries.length} entries</span>
             <button
               onClick={() => setGrantOpen(true)}
-              className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
+              className="btn btn-secondary btn-sm"
             >
               Grant or adjust
             </button>
@@ -185,13 +185,13 @@ export default function CustomerDetailPage() {
           <TagsField initial={c.tags} onSave={saveTags} busy={busy} />
         </Card>
 
-        <div className="rounded border border-red-200 bg-red-50/50 p-4 space-y-2">
+        <div className="rounded-xl border border-red-200 bg-red-50/40 p-4 space-y-2">
           <h2 className="text-sm font-semibold text-red-800">Privacy & admin tools</h2>
           <p className="text-xs text-red-900/70">GDPR rights of access and erasure. Erasure is permanent.</p>
           <div className="flex flex-col gap-1.5">
             <a
               href={`${API}/api/admin/customers/${id}/data-export`}
-              className="px-3 py-1.5 text-xs rounded border border-stone-200 bg-white hover:bg-gray-50 text-center"
+              className="btn btn-secondary btn-sm text-center"
               target="_blank"
               rel="noreferrer"
             >
@@ -199,13 +199,13 @@ export default function CustomerDetailPage() {
             </a>
             <button
               onClick={() => setMergeOpen(true)}
-              className="px-3 py-1.5 text-xs rounded border border-stone-200 bg-white hover:bg-gray-50"
+              className="btn btn-secondary btn-sm"
             >
               Merge duplicate into this customer
             </button>
             <button
               onClick={() => setEraseOpen(true)}
-              className="px-3 py-1.5 text-xs rounded border border-red-300 bg-white text-red-700 hover:bg-red-100"
+              className="btn btn-danger btn-sm"
             >
               Erase account (anonymize)
             </button>
@@ -258,7 +258,7 @@ function NoteField({ initial, onSave, busy }: { initial: string; onSave: (v: str
   return (
     <div className="space-y-2">
       <textarea rows={3} value={val} onChange={(e) => setVal(e.target.value)} className="input text-sm" />
-      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save note</button>
+      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="btn btn-secondary btn-sm">Save note</button>
     </div>
   );
 }
@@ -271,7 +271,7 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
   return (
     <div className="space-y-2">
       <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="input text-sm" />
-      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save tags</button>
+      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="btn btn-secondary btn-sm">Save tags</button>
     </div>
   );
 }
@@ -332,7 +332,7 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
           className="input"
         />
         {selected ? (
-          <div className="rounded border border-stone-200 px-3 py-2 bg-gray-50 flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
             <div>
               <div className="font-medium">{selected.email}</div>
               <div className="text-xs text-stone-500">{selected.firstName} {selected.lastName}</div>
@@ -462,12 +462,12 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
         <h2 className="font-semibold">Grant or adjust store credit</h2>
         {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
-          <div className="font-medium mb-1">Amount ({currency}) — negative to debit</div>
+          <span className="label">Amount ({currency}) — negative to debit</span>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
             className="input" />
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Reason</div>
+          <span className="label">Reason</span>
           <select value={reason} onChange={(e) => setReason(e.target.value)}
             className="select">
             <option value="grant">Grant (compensation / goodwill)</option>
@@ -478,7 +478,7 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
           </select>
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Note</div>
+          <span className="label">Note</span>
           <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />
         </label>
         <div className="flex justify-end gap-2 pt-2">

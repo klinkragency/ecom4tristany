@@ -116,11 +116,11 @@ export default function AnalyticsPage() {
         <div className="flex items-center gap-3">
           <Link href="/analytics/finance" className="text-sm hover:underline">Finance →</Link>
           <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-            className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
+            className="select w-auto">
             {RANGES.map((r) => <option key={r.days} value={r.days}>Last {r.label}</option>)}
           </select>
           <select value={granularity} onChange={(e) => setGranularity(e.target.value as 'day' | 'week' | 'month')}
-            className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
+            className="select w-auto">
             <option value="day">Daily</option>
             <option value="week">Weekly</option>
             <option value="month">Monthly</option>
@@ -264,7 +264,7 @@ function PostHogCard({ data }: { data: PostHog | null }) {
   if (!data) return null;
   if (!data.configured) {
     return (
-      <div className="rounded border border-dashed border-stone-200 bg-white p-4 mb-4">
+      <div className="card card-pad mb-4 border-dashed">
         <h2 className="text-sm font-semibold mb-1">PostHog</h2>
         <p className="text-sm text-stone-500">
           Not connected. Set <code className="font-mono bg-gray-100 px-1">POSTHOG_API_KEY</code> and{' '}
@@ -341,7 +341,7 @@ function PostHogCard({ data }: { data: PostHog | null }) {
 
 function KPI({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-3">
+    <div className="card-pad rounded-xl border border-stone-200 bg-white p-4">
       <div className="text-xs text-stone-500">{label}</div>
       <div className="text-lg font-semibold">{value}</div>
       {sub && <div className="text-xs text-stone-500">{sub}</div>}

@@ -63,7 +63,7 @@ export default function PageForm({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-stone-200';
+  const input = "input";
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -123,7 +123,7 @@ export default function PageForm({
 
       <div className="flex justify-between">
         {onDelete ? (
-          <button onClick={() => onDelete()} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">
+          <button onClick={() => onDelete()} className="btn btn-danger btn-sm">
             Delete
           </button>
         ) : <span />}
@@ -148,7 +148,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );

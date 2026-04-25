@@ -28,7 +28,7 @@ export default function TransfersListPage() {
         <h1 className="h-page">Stock transfers</h1>
         <Link
           href="/inventory/transfers/new"
-          className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800"
+          className="btn btn-primary"
         >
           New transfer
         </Link>

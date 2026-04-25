@@ -161,7 +161,7 @@ export default function EditCollectionPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-3 py-2 rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -227,7 +227,7 @@ export default function EditCollectionPage() {
           <Card title={`Products (${collection.products.length})`}>
             <button
               onClick={() => setPicker(true)}
-              className="px-3 py-2 text-sm rounded border border-stone-200 hover:bg-gray-50 mb-3"
+              className="btn btn-secondary mb-3"
             >
               Add products…
             </button>
@@ -326,7 +326,7 @@ function RulesEditor({
         <select
           value={field}
           onChange={(e) => setField(e.target.value as CollectionRule['field'])}
-          className="px-2 py-1 rounded border border-stone-200 bg-white"
+          className="select w-auto"
         >
           {Object.entries(FIELD_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
@@ -337,7 +337,7 @@ function RulesEditor({
         <select
           value={operator}
           onChange={(e) => setOperator(e.target.value as CollectionRule['operator'])}
-          className="px-2 py-1 rounded border border-stone-200 bg-white"
+          className="select w-auto"
         >
           {validOps.map((op) => (
             <option key={op} value={op}>
@@ -443,7 +443,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}</div>
+      <span className="label">{label}</span>
       {children}
     </label>
   );

@@ -42,7 +42,7 @@ export default function NewEntryPage() {
     <section>
       <div className="flex items-center gap-3 mb-4">
         <Link href={`/content/metaobjects/${typeId}`} className="text-sm text-stone-500 hover:underline">← {typeName}</Link>
-        <h1 className="text-2xl font-semibold">New entry</h1>
+        <h1 className="h-page">New entry</h1>
       </div>
       <EntryForm initial={EMPTY_ENTRY} fieldDefs={fieldDefs} onSave={save} saveLabel="Create" />
     </section>
