@@ -23,6 +23,7 @@ import (
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/email"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/inventory"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -225,34 +226,48 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 			httpx.Error(w, http.StatusInternalServerError, "line_insert", err.Error())
 			return
 		}
-		if locationID != nil {
-			// Look up variant_id for the inventory decrement.
-			var variantID *string
-			_ = tx.QueryRow(r.Context(),
-				`SELECT variant_id FROM order_line_items WHERE id = $1`, it.OrderLineItemID,
-			).Scan(&variantID)
-			if variantID != nil {
-				if _, err := tx.Exec(r.Context(), `
-                    INSERT INTO inventory_levels (variant_id, location_id, on_hand, updated_at)
-                    VALUES ($1, $2, 0, now())
-                    ON CONFLICT (variant_id, location_id)
-                    DO UPDATE SET on_hand = GREATEST(inventory_levels.on_hand - $3, 0), updated_at = now()
-                `, *variantID, *locationID, it.Quantity); err != nil {
-					httpx.Error(w, http.StatusInternalServerError, "inv_update", err.Error())
-					return
-				}
-				adminID := ""
-				if sess != nil && sess.UserID.Valid {
-					adminID = uuidString(sess.UserID.Bytes)
-				}
-				if _, err := tx.Exec(r.Context(), `
-                    INSERT INTO inventory_adjustments (variant_id, location_id, delta, reason, note, admin_id)
-                    VALUES ($1, $2, $3, 'fulfillment', $4, NULLIF($5, '')::uuid)
-                `, *variantID, *locationID, -it.Quantity,
-					"Fulfillment #"+orderNumber+"-"+iToString(nextNumber), adminID); err != nil {
-					httpx.Error(w, http.StatusInternalServerError, "adj_error", err.Error())
-					return
-				}
+		// Look up the line's variant_id and the location where its `committed`
+		// was reserved at order creation. Both are needed: variant for on_hand
+		// decrement at the actual ship location, committed_location_id for
+		// releasing the reservation that was made (potentially elsewhere).
+		var variantID, committedLoc *string
+		_ = tx.QueryRow(r.Context(),
+			`SELECT variant_id, committed_location_id FROM order_line_items WHERE id = $1`,
+			it.OrderLineItemID,
+		).Scan(&variantID, &committedLoc)
+
+		if locationID != nil && variantID != nil {
+			if _, err := tx.Exec(r.Context(), `
+                INSERT INTO inventory_levels (variant_id, location_id, on_hand, updated_at)
+                VALUES ($1, $2, 0, now())
+                ON CONFLICT (variant_id, location_id)
+                DO UPDATE SET on_hand = GREATEST(inventory_levels.on_hand - $3, 0), updated_at = now()
+            `, *variantID, *locationID, it.Quantity); err != nil {
+				httpx.Error(w, http.StatusInternalServerError, "inv_update", err.Error())
+				return
+			}
+			adminID := ""
+			if sess != nil && sess.UserID.Valid {
+				adminID = uuidString(sess.UserID.Bytes)
+			}
+			if _, err := tx.Exec(r.Context(), `
+                INSERT INTO inventory_adjustments (variant_id, location_id, delta, reason, note, admin_id)
+                VALUES ($1, $2, $3, 'fulfillment', $4, NULLIF($5, '')::uuid)
+            `, *variantID, *locationID, -it.Quantity,
+				"Fulfillment #"+orderNumber+"-"+iToString(nextNumber), adminID); err != nil {
+				httpx.Error(w, http.StatusInternalServerError, "adj_error", err.Error())
+				return
+			}
+		}
+
+		// Release the reservation made at order time. We do this whether or
+		// not the actual ship had a location attached — if `committed` was
+		// bumped, it has to come back down, otherwise available stays
+		// pessimistically low forever.
+		if variantID != nil && committedLoc != nil {
+			if err := inventory.Release(r.Context(), tx, *variantID, *committedLoc, it.Quantity); err != nil {
+				httpx.Error(w, http.StatusInternalServerError, "release_error", err.Error())
+				return
 			}
 		}
 	}
@@ -364,37 +379,42 @@ func (h *Handler) Cancel(w http.ResponseWriter, r *http.Request) {
 	if sess != nil && sess.UserID.Valid {
 		adminID = uuidString(sess.UserID.Bytes)
 	}
-	if locationID != nil {
-		rows, err := tx.Query(r.Context(), `
-            SELECT oli.variant_id, fli.quantity
-            FROM fulfillment_line_items fli
-            JOIN order_line_items oli ON oli.id = fli.order_line_item_id
-            WHERE fli.fulfillment_id = $1
-        `, fID)
-		if err != nil {
-			httpx.Error(w, http.StatusInternalServerError, "lines_error", err.Error())
+	// Restock + re-commit. We always read line metadata (even when the
+	// fulfillment had no location) so we can re-add the order's reservation
+	// at the original committed_location_id — otherwise cancelling a
+	// fulfillment would silently free up stock that the order still claims.
+	rows, err := tx.Query(r.Context(), `
+        SELECT oli.variant_id, oli.committed_location_id, fli.quantity
+        FROM fulfillment_line_items fli
+        JOIN order_line_items oli ON oli.id = fli.order_line_item_id
+        WHERE fli.fulfillment_id = $1
+    `, fID)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "lines_error", err.Error())
+		return
+	}
+	type restockItem struct {
+		variantID, commitLoc *string
+		qty                  int
+	}
+	var items []restockItem
+	for rows.Next() {
+		var it restockItem
+		if err := rows.Scan(&it.variantID, &it.commitLoc, &it.qty); err != nil {
+			rows.Close()
+			httpx.Error(w, http.StatusInternalServerError, "scan_error", err.Error())
 			return
 		}
-		type restockItem struct {
-			variantID *string
-			qty       int
+		items = append(items, it)
+	}
+	rows.Close()
+
+	for _, it := range items {
+		if it.variantID == nil {
+			continue
 		}
-		var items []restockItem
-		for rows.Next() {
-			var vID *string
-			var q int
-			if err := rows.Scan(&vID, &q); err != nil {
-				rows.Close()
-				httpx.Error(w, http.StatusInternalServerError, "scan_error", err.Error())
-				return
-			}
-			items = append(items, restockItem{variantID: vID, qty: q})
-		}
-		rows.Close()
-		for _, it := range items {
-			if it.variantID == nil {
-				continue
-			}
+		// On-hand restock at the actual ship location (only if known).
+		if locationID != nil {
 			if _, err := tx.Exec(r.Context(), `
                 INSERT INTO inventory_levels (variant_id, location_id, on_hand, updated_at)
                 VALUES ($1, $2, $3, now())
@@ -409,6 +429,13 @@ func (h *Handler) Cancel(w http.ResponseWriter, r *http.Request) {
                 VALUES ($1, $2, $3, 'return_restock', 'Fulfillment cancelled', NULLIF($4, '')::uuid)
             `, *it.variantID, *locationID, it.qty, adminID); err != nil {
 				httpx.Error(w, http.StatusInternalServerError, "adj_error", err.Error())
+				return
+			}
+		}
+		// Re-bump committed so the order still holds its reservation.
+		if it.commitLoc != nil {
+			if err := inventory.Commit(r.Context(), tx, *it.variantID, *it.commitLoc, it.qty); err != nil {
+				httpx.Error(w, http.StatusInternalServerError, "recommit_error", err.Error())
 				return
 			}
 		}
