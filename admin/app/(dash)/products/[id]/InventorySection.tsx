@@ -86,7 +86,7 @@ export default function InventorySection({ productId }: { productId: string }) {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">
+        <div className="alert alert-error text-xs mb-3">
           {error}
         </div>
       )}

@@ -324,7 +324,7 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
         <p className="text-xs text-stone-500">
           The selected customer&rsquo;s orders, addresses, tags, and store credit will move here. The other account will be deleted. This cannot be undone.
         </p>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <input
           value={q}
           onChange={(e) => { setQ(e.target.value); setSelected(null); }}
@@ -405,7 +405,7 @@ function EraseModal({ customerId, email, onClose, onDone }: { customerId: string
         <p className="text-xs">
           To confirm, type <span className="font-mono bg-gray-100 px-1">{email}</span> below:
         </p>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <input
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -460,7 +460,7 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
         <h2 className="font-semibold">Grant or adjust store credit</h2>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
           <div className="font-medium mb-1">Amount ({currency}) — negative to debit</div>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}

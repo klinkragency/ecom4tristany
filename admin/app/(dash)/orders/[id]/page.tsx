@@ -454,7 +454,7 @@ function FulfillModal({
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-xl rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
         <h2 className="font-semibold">Fulfill items</h2>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
 
         <ul className="divide-y divide-stone-200 border border-stone-200 rounded">
           {fulfillable.map((l) => (
@@ -588,7 +588,7 @@ function RefundModal({
         </p>
 
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>
+          <div className="alert alert-error text-xs">{error}</div>
         )}
 
         <div className="block">
