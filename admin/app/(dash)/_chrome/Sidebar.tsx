@@ -47,9 +47,9 @@ export default function Sidebar({
     setManualOpen(readExpanded());
   }, []);
 
-  function toggleSection(href: string) {
+  function setOpen(href: string, value: boolean) {
     setManualOpen((prev) => {
-      const next = { ...prev, [href]: !prev[href] };
+      const next = { ...prev, [href]: value };
       writeExpanded(next);
       return next;
     });
@@ -106,28 +106,34 @@ export default function Sidebar({
 
       {/* Top navigation */}
       <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto pr-1">
-        {TOP_NAV.map((s) => (
-          <SectionRow
-            key={s.href}
-            section={s}
-            pathname={pathname}
-            open={sectionOpen(s)}
-            onToggle={() => toggleSection(s.href)}
-          />
-        ))}
+        {TOP_NAV.map((s) => {
+          const open = sectionOpen(s);
+          return (
+            <SectionRow
+              key={s.href}
+              section={s}
+              pathname={pathname}
+              open={open}
+              onSetOpen={(v) => setOpen(s.href, v)}
+            />
+          );
+        })}
       </nav>
 
       {/* Bottom navigation (Settings) */}
       <div className="space-y-0.5 border-t pt-2" style={{ borderColor: 'var(--color-sidebar-border)' }}>
-        {BOTTOM_NAV.map((s) => (
-          <SectionRow
-            key={s.href}
-            section={s}
-            pathname={pathname}
-            open={sectionOpen(s)}
-            onToggle={() => toggleSection(s.href)}
-          />
-        ))}
+        {BOTTOM_NAV.map((s) => {
+          const open = sectionOpen(s);
+          return (
+            <SectionRow
+              key={s.href}
+              section={s}
+              pathname={pathname}
+              open={open}
+              onSetOpen={(v) => setOpen(s.href, v)}
+            />
+          );
+        })}
       </div>
     </aside>
   );
@@ -137,50 +143,64 @@ function SectionRow({
   section,
   pathname,
   open,
-  onToggle,
+  onSetOpen,
 }: {
   section: NavSection;
   pathname: string;
   open: boolean;
-  onToggle: () => void;
+  onSetOpen: (value: boolean) => void;
 }) {
   const Icon = section.icon;
-  const active = isSectionActive(pathname, section);
   const hasSubs = !!section.subs?.length;
+  const childActive = section.subs?.some((s) => isSubActive(pathname, s)) ?? false;
+  const inSection = isSectionActive(pathname, section);
+  const onSection = pathname === section.href;
+  // Two parent states:
+  //   leaf   = strong indicator (sand bar). Used when no sub-item owns the focus.
+  //   parent = soft indicator (bg lift only). Used when a sub-item is active so
+  //            the bar visually belongs to the sub-item, not the parent.
+  const parentState = !inSection ? null : childActive ? 'parent' : 'leaf';
+
+  // Click rules:
+  //   - On a different section → navigate (Link handles it) + force-OPEN the
+  //     subs so the user immediately sees where they landed.
+  //   - On the *same* section route already → toggle (allows collapsing the
+  //     row you're currently on without leaving it).
+  function handleClick() {
+    if (!hasSubs) return;
+    if (onSection) onSetOpen(!open);
+    else onSetOpen(true);
+  }
 
   return (
     <div>
-      <div className="flex items-center gap-1">
-        <Link href={section.href} className="sb-item flex-1" data-active={active}>
-          <Icon className="sb-icon h-4 w-4" />
-          <span className="flex-1 truncate">{section.label}</span>
-        </Link>
-        {hasSubs && (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={`${open ? 'Collapse' : 'Expand'} ${section.label}`}
-            className="rounded p-1 transition-colors hover:bg-white/5"
-            style={{ color: 'var(--color-sidebar-fg-muted)' }}
-          >
-            <ChevronRight className="sb-chevron h-3.5 w-3.5" data-open={open} />
-          </button>
-        )}
-      </div>
+      <Link
+        href={section.href}
+        onClick={handleClick}
+        className="sb-item"
+        data-active={parentState ?? undefined}
+        aria-expanded={hasSubs ? open : undefined}
+      >
+        <Icon className="sb-icon h-4 w-4" />
+        <span className="flex-1 truncate">{section.label}</span>
+        {hasSubs && <ChevronRight className="sb-chevron" data-open={open} aria-hidden />}
+      </Link>
+
       {hasSubs && (
-        <div className="sb-subs ml-6 pl-2" data-open={open} style={{ borderLeft: '1px solid var(--color-sidebar-border)' }}>
-          <div className="space-y-0.5 py-0.5">
-            {section.subs!.map((sub) => (
-              <Link
-                key={sub.href}
-                href={sub.href}
-                className="sb-item"
-                data-active={isSubActive(pathname, sub)}
-                style={{ paddingLeft: 12 }}
-              >
-                <span className="truncate">{sub.label}</span>
-              </Link>
-            ))}
+        <div className="sb-subs" data-open={open}>
+          <div>
+            <div className="space-y-0.5 pt-0.5">
+              {section.subs!.map((sub) => (
+                <Link
+                  key={sub.href}
+                  href={sub.href}
+                  className="sb-sub"
+                  data-active={isSubActive(pathname, sub)}
+                >
+                  <span className="truncate">{sub.label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

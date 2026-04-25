@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Search, Sun, Moon, ChevronDown, LogOut, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
+import { Modal } from '@/components/ui';
 
 type Me = { id: string; email: string; name: string; role: 'owner' | 'admin' | 'staff' };
 
@@ -215,49 +216,41 @@ function AccountMenu() {
 
 function RoleModal({ me, onClose }: { me: Me; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 cp-backdrop" onClick={onClose}>
-      <div
-        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl cp-panel"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-stone-900 text-sm font-semibold text-white">
-            {(me.name || me.email).split(/\s+/).map((s) => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-semibold">{me.name || me.email}</span>
-              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${ROLE_BADGE[me.role]}`}>
-                {me.role}
-              </span>
-            </div>
-            <div className="truncate text-xs text-stone-500">{me.email}</div>
+    <Modal
+      open
+      onClose={onClose}
+      footer={<button onClick={onClose} className="btn btn-secondary">Close</button>}
+    >
+      <div className="mb-4 flex items-center gap-2">
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-stone-900 text-sm font-semibold text-white">
+          {(me.name || me.email).split(/\s+/).map((s) => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold">{me.name || me.email}</span>
+            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${ROLE_BADGE[me.role]}`}>
+              {me.role}
+            </span>
           </div>
-        </div>
-        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-stone-500">What your role can do</h3>
-        <ul className="space-y-1.5 text-sm">
-          {PERMS.map((p) => {
-            const ok = p.allowed.includes(me.role);
-            return (
-              <li key={p.label} className="flex items-start gap-2">
-                <span className={`mt-[1px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-400'}`}>
-                  {ok ? '✓' : '–'}
-                </span>
-                <span className={ok ? 'text-stone-800' : 'text-stone-500'}>{p.label}</span>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="mt-5 flex justify-end">
-          <button
-            onClick={onClose}
-            className="rounded-lg border px-3 py-1.5 text-sm hover:bg-stone-50"
-            style={{ borderColor: 'var(--color-border)' }}
-          >
-            Close
-          </button>
+          <div className="truncate text-xs text-stone-500">{me.email}</div>
         </div>
       </div>
-    </div>
+      <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+        What your role can do
+      </h3>
+      <ul className="space-y-1.5 text-sm">
+        {PERMS.map((p) => {
+          const ok = p.allowed.includes(me.role);
+          return (
+            <li key={p.label} className="flex items-start gap-2">
+              <span className={`mt-[1px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-400'}`}>
+                {ok ? '✓' : '–'}
+              </span>
+              <span className={ok ? 'text-stone-800' : 'text-stone-500'}>{p.label}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </Modal>
   );
 }
