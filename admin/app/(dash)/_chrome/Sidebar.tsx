@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ChevronRight, Search, Sparkles } from 'lucide-react';
+import { ChevronRight, Search } from 'lucide-react';
 import {
   TOP_NAV,
   BOTTOM_NAV,
@@ -72,12 +72,14 @@ export default function Sidebar({
     >
       {/* Brand */}
       <div className="flex items-center gap-2 px-2 mb-2">
-        <span
-          className="inline-flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'rgba(214, 207, 184, 0.14)' }}
-        >
-          <Sparkles className="h-4 w-4" style={{ color: 'var(--color-sidebar-accent)' }} />
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/klinkr-logo.png"
+          alt="Klinkr"
+          width={28}
+          height={28}
+          className="h-7 w-7 rounded-md object-contain"
+        />
         <span className="text-sm font-semibold tracking-tight" style={{ color: 'var(--color-sidebar-fg-strong)' }}>
           {shopName}
         </span>
