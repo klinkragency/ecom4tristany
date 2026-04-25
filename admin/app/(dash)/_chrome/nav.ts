@@ -59,7 +59,6 @@ export const TOP_NAV: NavSection[] = [
       { href: '/content/files', label: 'Files' },
     ],
   },
-  { href: '/settings/currencies', label: 'Markets', icon: Globe },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 

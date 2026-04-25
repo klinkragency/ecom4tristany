@@ -53,7 +53,7 @@ export default function NewProductPage() {
       {error && <div className="alert alert-error mb-4">{error}</div>}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        <Card title="Basic info">
+        <Card title="Basic info" className="space-y-3">
           <Field label="Title">
             <input required value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
           </Field>
@@ -62,7 +62,7 @@ export default function NewProductPage() {
           </Field>
         </Card>
 
-        <Card title="Organization">
+        <Card title="Organization" className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Status">
               <select value={status} onChange={(e) => setStatus(e.target.value as 'draft' | 'active')} className="select">
@@ -93,20 +93,3 @@ export default function NewProductPage() {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad space-y-3">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="label">{label}</span>
-      {children}
-    </label>
-  );
-}
