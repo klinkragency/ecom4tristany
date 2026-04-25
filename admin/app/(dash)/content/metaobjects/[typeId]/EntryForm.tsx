@@ -226,24 +226,6 @@ function FieldInput({ def, value, onChange }: {
   }
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad space-y-3">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Row({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
-      {children}
-    </label>
-  );
-}
-
 function slugify(s: string): string {
   return s.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
