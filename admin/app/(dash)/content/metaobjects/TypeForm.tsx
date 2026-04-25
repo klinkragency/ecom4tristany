@@ -142,7 +142,7 @@ export default function TypeForm({
                   </div>
                   <input className={input + ' flex-1'} placeholder="Name (e.g. Shipping policy)"
                     value={f.name} onChange={(e) => updateField(i, { name: e.target.value })} />
-                  <button onClick={() => removeField(i)} className="text-xs text-red-700 hover:underline">Remove</button>
+                  <button onClick={() => removeField(i)} className="btn btn-ghost btn-sm text-red-700">Remove</button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <input className={input + ' font-mono'} placeholder="handle_snake_case"
@@ -177,7 +177,7 @@ export default function TypeForm({
           </button>
         ) : <span />}
         <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+          className="btn btn-primary">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -187,7 +187,7 @@ export default function TypeForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

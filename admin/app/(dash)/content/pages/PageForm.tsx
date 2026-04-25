@@ -128,7 +128,7 @@ export default function PageForm({
           </button>
         ) : <span />}
         <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+          className="btn btn-primary">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -138,7 +138,7 @@ export default function PageForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

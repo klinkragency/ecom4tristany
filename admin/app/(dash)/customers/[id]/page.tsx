@@ -73,7 +73,7 @@ export default function CustomerDetailPage() {
       <div>
         <div className="flex items-center gap-3 mb-4">
           <Link href="/customers" className="text-sm text-stone-500 hover:underline">← Customers</Link>
-          <h1 className="text-2xl font-semibold">{name}</h1>
+          <h1 className="h-page">{name}</h1>
         </div>
 
         {error && (
@@ -235,7 +235,7 @@ export default function CustomerDetailPage() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
+    <div className="card card-pad mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -257,7 +257,7 @@ function NoteField({ initial, onSave, busy }: { initial: string; onSave: (v: str
   const dirty = val !== initial;
   return (
     <div className="space-y-2">
-      <textarea rows={3} value={val} onChange={(e) => setVal(e.target.value)} className="w-full px-3 py-2 rounded border border-stone-200 text-sm" />
+      <textarea rows={3} value={val} onChange={(e) => setVal(e.target.value)} className="input text-sm" />
       <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save note</button>
     </div>
   );
@@ -270,7 +270,7 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
   const dirty = val !== initialStr;
   return (
     <div className="space-y-2">
-      <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="w-full px-3 py-2 rounded border border-stone-200 text-sm" />
+      <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="input text-sm" />
       <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save tags</button>
     </div>
   );
@@ -318,8 +318,8 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-lg rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
         <h2 className="font-semibold">Merge duplicate customer into this one</h2>
         <p className="text-xs text-stone-500">
           The selected customer&rsquo;s orders, addresses, tags, and store credit will move here. The other account will be deleted. This cannot be undone.
@@ -329,7 +329,7 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
           value={q}
           onChange={(e) => { setQ(e.target.value); setSelected(null); }}
           placeholder="Search by email or name (min 2 chars)"
-          className="w-full px-3 py-2 rounded border border-stone-200"
+          className="input"
         />
         {selected ? (
           <div className="rounded border border-stone-200 px-3 py-2 bg-gray-50 flex items-center justify-between">
@@ -355,7 +355,7 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
           </ul>
         ) : null}
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button
             onClick={submit}
             disabled={!selected || submitting}
@@ -394,8 +394,8 @@ function EraseModal({ customerId, email, onClose, onDone }: { customerId: string
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
         <h2 className="font-semibold text-red-800">Erase customer account</h2>
         <p className="text-xs text-stone-500">
           This anonymizes the customer row, deletes their addresses, invalidates sessions,
@@ -409,11 +409,11 @@ function EraseModal({ customerId, email, onClose, onDone }: { customerId: string
         <input
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full px-3 py-2 rounded border border-stone-200"
+          className="input"
           autoComplete="off"
         />
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button
             onClick={submit}
             disabled={submitting || confirm !== email}
@@ -457,19 +457,19 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
         <h2 className="font-semibold">Grant or adjust store credit</h2>
         {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
           <div className="font-medium mb-1">Amount ({currency}) — negative to debit</div>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200" />
+            className="input" />
         </label>
         <label className="block">
           <div className="font-medium mb-1">Reason</div>
           <select value={reason} onChange={(e) => setReason(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
+            className="select">
             <option value="grant">Grant (compensation / goodwill)</option>
             <option value="promotional">Promotional (birthday, etc.)</option>
             <option value="adjustment">Adjustment (correction)</option>
@@ -479,11 +479,11 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
         </label>
         <label className="block">
           <div className="font-medium mb-1">Note</div>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="w-full px-3 py-2 rounded border border-stone-200" />
+          <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
-          <button onClick={submit} disabled={submitting} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={submit} disabled={submitting} className="btn btn-primary">
             {submitting ? 'Saving…' : 'Apply'}
           </button>
         </div>

@@ -54,7 +54,7 @@ export default function EditContentPage() {
     <section>
       <div className="flex items-center gap-3 mb-4">
         <Link href="/content/pages" className="text-sm text-stone-500 hover:underline">← Pages</Link>
-        <h1 className="text-2xl font-semibold">{initial.title || 'Edit page'}</h1>
+        <h1 className="h-page">{initial.title || 'Edit page'}</h1>
       </div>
       <PageForm initial={initial} onSave={save} saveLabel="Save changes" onDelete={del} />
     </section>

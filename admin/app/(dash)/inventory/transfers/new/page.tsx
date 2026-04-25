@@ -64,7 +64,7 @@ export default function NewTransferPage() {
         <Link href="/inventory/transfers" className="text-sm text-stone-500 hover:underline">
           ← Transfers
         </Link>
-        <h1 className="text-2xl font-semibold">New transfer</h1>
+        <h1 className="h-page">New transfer</h1>
       </div>
 
       {error && (
@@ -78,7 +78,7 @@ export default function NewTransferPage() {
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
+              className="select"
             >
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -88,7 +88,7 @@ export default function NewTransferPage() {
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
+              className="select"
             >
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -98,12 +98,12 @@ export default function NewTransferPage() {
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </label>
         </div>
 
-        <div className="rounded border border-stone-200 bg-white p-4">
+        <div className="card card-pad">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold">Items ({items.length})</h2>
             <button
@@ -128,11 +128,11 @@ export default function NewTransferPage() {
                       const q = Math.max(1, parseInt(e.target.value || '1', 10));
                       setItems((arr) => arr.map((x, idx) => (idx === i ? { ...x, quantity: q } : x)));
                     }}
-                    className="w-20 px-2 py-1 rounded border border-stone-200 text-right"
+                    className="input text-sm w-20 text-right"
                   />
                   <button
                     onClick={() => setItems((arr) => arr.filter((_, idx) => idx !== i))}
-                    className="text-xs text-red-700 hover:underline"
+                    className="btn btn-ghost btn-sm text-red-700"
                   >
                     Remove
                   </button>
@@ -145,7 +145,7 @@ export default function NewTransferPage() {
         <div className="flex justify-end gap-2">
           <Link
             href="/inventory/transfers"
-            className="px-3 py-2 text-sm rounded border border-stone-200"
+            className="btn btn-secondary"
           >Cancel</Link>
           <button
             onClick={submit}
@@ -206,7 +206,7 @@ function VariantPicker({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl flex flex-col max-h-[80vh]">
         <div className="p-4 border-b border-stone-200 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Add variant to transfer</h2>
@@ -217,7 +217,7 @@ function VariantPicker({
             value={search}
             onChange={(e) => { setSearch(e.target.value); load(e.target.value); }}
             placeholder="Search products…"
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </div>
         <div className="overflow-y-auto flex-1 text-sm">

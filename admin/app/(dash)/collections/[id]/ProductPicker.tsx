@@ -60,7 +60,7 @@ export default function ProductPicker({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl flex flex-col max-h-[80vh]">
         <div className="p-4 border-b border-stone-200 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Add products</h2>
@@ -77,7 +77,7 @@ export default function ProductPicker({
               setSearch(e.target.value);
               load(e.target.value);
             }}
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </div>
         <div className="overflow-y-auto flex-1">
@@ -135,14 +135,14 @@ export default function ProductPicker({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-3 py-2 text-sm rounded border border-stone-200"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button
               onClick={attach}
               disabled={saving || selected.size === 0}
-              className="px-3 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50"
+              className="btn btn-primary"
             >
               {saving ? 'Adding…' : `Add ${selected.size || ''}`.trim()}
             </button>

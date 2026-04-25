@@ -147,22 +147,18 @@ export default function OrderDetailPage() {
   return (
     <section className="max-w-5xl grid md:grid-cols-[1fr_320px] gap-6">
       <div>
-        <div className="flex items-center gap-3 mb-4">
+        <div className="mb-5 flex items-center gap-3">
           <Link href="/orders" className="text-sm text-stone-500 hover:underline">← Orders</Link>
-          <h1 className="text-2xl font-semibold">{order.number}</h1>
-          <span className={`inline-block rounded px-2 py-0.5 text-xs ${FIN_BADGE[order.financialStatus]}`}>
+          <h1 className="h-page">{order.number}</h1>
+          <span className={`badge ${FIN_BADGE[order.financialStatus]}`}>
             {order.financialStatus.replace('_', ' ')}
           </span>
-          <span className={`inline-block rounded px-2 py-0.5 text-xs ${FUL_BADGE[order.fulfillmentStatus]}`}>
+          <span className={`badge ${FUL_BADGE[order.fulfillmentStatus]}`}>
             {order.fulfillmentStatus}
           </span>
         </div>
 
-        {error && (
-          <div className="mb-3 alert alert-error">
-            {error}
-          </div>
-        )}
+        {error && <div className="alert alert-error mb-4">{error}</div>}
 
         {/* Line items */}
         <Card title={`Items (${order.lineItems.length})`}>
@@ -228,17 +224,17 @@ export default function OrderDetailPage() {
           ) : (
             <ul className="space-y-3 text-sm">
               {fulfillments.map((f) => (
-                <li key={f.id} className="border border-stone-200 rounded p-3">
-                  <div className="flex items-center gap-2 mb-1">
+                <li key={f.id} className="rounded-xl border border-stone-200 p-3">
+                  <div className="mb-1 flex items-center gap-2">
                     <span className="font-medium">#{f.number}</span>
-                    <span className={`text-xs rounded px-1.5 py-0.5 ${f.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{f.status}</span>
+                    <span className={`badge ${f.status === 'cancelled' ? 'badge-danger' : 'badge-success'}`}>{f.status}</span>
                     {f.carrier && <span className="text-xs text-stone-500">via {f.carrier}</span>}
                     {f.trackingNumber && (
-                      <span className="text-xs font-mono text-stone-500">
+                      <span className="font-mono text-xs text-stone-500">
                         {f.trackingUrl ? <a href={f.trackingUrl} target="_blank" rel="noreferrer" className="underline">{f.trackingNumber}</a> : f.trackingNumber}
                       </span>
                     )}
-                    <span className="text-xs text-stone-500 ml-auto">
+                    <span className="ml-auto text-xs text-stone-500">
                       {f.shippedAt ? new Date(f.shippedAt).toLocaleString() : new Date(f.createdAt).toLocaleString()}
                     </span>
                   </div>
@@ -260,7 +256,7 @@ export default function OrderDetailPage() {
                           setError(err instanceof ApiError ? err.message : 'Cancel failed');
                         }
                       }}
-                      className="mt-2 text-xs text-red-700 hover:underline"
+                      className="btn btn-danger btn-sm mt-2"
                     >
                       Cancel fulfillment
                     </button>
@@ -272,7 +268,7 @@ export default function OrderDetailPage() {
           {order.fulfillmentStatus !== 'fulfilled' && order.status !== 'cancelled' && order.financialStatus === 'paid' && (
             <button
               onClick={() => setFulfillOpen(true)}
-              className="mt-3 text-xs px-3 py-1.5 rounded border border-stone-200 hover:bg-gray-50"
+              className="btn btn-secondary btn-sm mt-3"
             >
               + Fulfill items
             </button>
@@ -284,9 +280,9 @@ export default function OrderDetailPage() {
           <Card title={`Returns (${returnsList.length})`}>
             <ul className="space-y-2 text-sm">
               {returnsList.map((r) => (
-                <li key={r.id} className="border border-stone-200 rounded p-2 flex items-center gap-2">
+                <li key={r.id} className="flex items-center gap-2 rounded-xl border border-stone-200 p-2.5">
                   <Link href={`/returns/${r.id}`} className="font-medium hover:underline">{r.rmaNumber}</Link>
-                  <span className="text-xs rounded px-1.5 py-0.5 bg-gray-100 text-gray-800">{r.status}</span>
+                  <span className="badge badge-neutral no-dot">{r.status}</span>
                   <span className="flex-1 text-xs text-stone-500">
                     {r.items.length} line{r.items.length === 1 ? '' : 's'} · {formatPrice(r.estimatedCents, r.currency)}
                   </span>
@@ -350,11 +346,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {order.status !== 'cancelled' && order.financialStatus !== 'paid' && order.financialStatus !== 'partially_refunded' && order.financialStatus !== 'refunded' && (
-          <button
-            onClick={cancel}
-            disabled={busy}
-            className="w-full px-3 py-2 rounded border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
-          >
+          <button onClick={cancel} disabled={busy} className="btn btn-danger w-full">
             Cancel order
           </button>
         )}
@@ -363,7 +355,7 @@ export default function OrderDetailPage() {
           <button
             onClick={() => setRefundOpen(true)}
             disabled={busy || order.totalRefundedCents >= order.totalCents}
-            className="w-full px-3 py-2 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50"
+            className="btn btn-secondary w-full"
           >
             Issue refund
           </button>
@@ -451,14 +443,14 @@ function FulfillModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-xl rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Fulfill items</h2>
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-xl rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Fulfill items</h2>
         {error && <div className="alert alert-error text-xs">{error}</div>}
 
-        <ul className="divide-y divide-stone-200 border border-stone-200 rounded">
+        <div className="divide-y divide-stone-200/70 rounded-xl border border-stone-200">
           {fulfillable.map((l) => (
-            <li key={l.id} className="flex items-center gap-3 px-3 py-2">
+            <div key={l.id} className="flex items-center gap-3 px-4 py-2.5">
               <div className="flex-1">
                 <div className="font-medium">{l.title}</div>
                 {l.sku && <div className="text-xs text-stone-500">SKU {l.sku}</div>}
@@ -474,26 +466,23 @@ function FulfillModal({
                   setQtyByLine((s) => ({ ...s, [l.id]: v }));
                 }}
                 disabled={l.remaining === 0}
-                className="w-20 px-2 py-1 rounded border border-stone-200 text-sm"
+                className="input w-20"
               />
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
 
         <label className="block">
-          <div className="font-medium mb-1">Ship from</div>
-          <select value={locationId} onChange={(e) => setLocationId(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
+          <span className="label">Ship from</span>
+          <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="select">
             <option value="">— No location (inventory not decremented) —</option>
             {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         </label>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
-            <div className="font-medium mb-1">Carrier</div>
-            <input value={carrier} onChange={(e) => setCarrier(e.target.value)}
-              list="carriers"
-              className="w-full px-3 py-2 rounded border border-stone-200" />
+            <span className="label">Carrier</span>
+            <input value={carrier} onChange={(e) => setCarrier(e.target.value)} list="carriers" className="input" />
             <datalist id="carriers">
               <option value="Colissimo" />
               <option value="La Poste" />
@@ -505,25 +494,30 @@ function FulfillModal({
             </datalist>
           </label>
           <label className="block">
-            <div className="font-medium mb-1">Tracking number</div>
-            <input value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 font-mono" />
+            <span className="label">Tracking number</span>
+            <input
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              className="input font-mono"
+            />
           </label>
         </div>
         <label className="block">
-          <div className="font-medium mb-1">Tracking URL (optional)</div>
-          <input value={trackingUrl} onChange={(e) => setTrackingUrl(e.target.value)}
+          <span className="label">Tracking URL (optional)</span>
+          <input
+            value={trackingUrl}
+            onChange={(e) => setTrackingUrl(e.target.value)}
             placeholder="https://www.laposte.fr/outils/suivre-vos-envois?code=..."
-            className="w-full px-3 py-2 rounded border border-stone-200" />
+            className="input"
+          />
         </label>
-        <label className="flex items-center gap-2 text-xs">
+        <label className="flex items-center gap-2 text-xs text-stone-700">
           <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
           Email the customer a shipping notification
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
-          <button onClick={submit} disabled={submitting}
-            className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={submit} disabled={submitting} className="btn btn-primary">
             {submitting ? 'Shipping…' : 'Ship items'}
           </button>
         </div>
@@ -580,9 +574,9 @@ function RefundModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Issue refund</h2>
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Issue refund</h2>
         <p className="text-stone-500">
           Refundable: {formatPrice(refundable, order.currency)} of {formatPrice(order.totalCents, order.currency)}
         </p>
@@ -592,16 +586,12 @@ function RefundModal({
         )}
 
         <div className="block">
-          <div className="font-medium mb-1">Refund to</div>
+          <span className="label">Refund to</span>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setRefundTo('card')}
-              className={`px-3 py-2 text-sm rounded border ${
-                refundTo === 'card'
-                  ? 'border-stone-900 bg-stone-900 text-white'
-                  : 'border-stone-200 bg-white hover:bg-gray-50'
-              }`}
+              className={`rounded-lg border px-3 py-2 text-sm transition-colors ${refundTo === "card" ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white hover:bg-stone-50"}`}
             >
               Original payment method
             </button>
@@ -610,24 +600,22 @@ function RefundModal({
               disabled={!canRefundToCredit}
               onClick={() => setRefundTo('store_credit')}
               title={canRefundToCredit ? 'Add back to the customer\u2019s store credit' : 'Guest order — no customer account'}
-              className={`px-3 py-2 text-sm rounded border disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                 refundTo === 'store_credit'
                   ? 'border-stone-900 bg-stone-900 text-white'
-                  : 'border-stone-200 bg-white hover:bg-gray-50'
+                  : 'border-stone-200 bg-white hover:bg-stone-50'
               }`}
             >
               Store credit
             </button>
           </div>
           {refundTo === 'store_credit' && (
-            <p className="text-xs text-stone-500 mt-1">
-              No Stripe refund fee — money is added to the customer&rsquo;s balance.
-            </p>
+            <span className="help">No Stripe refund fee — money is added to the customer&rsquo;s balance.</span>
           )}
         </div>
 
         <label className="block">
-          <div className="font-medium mb-1">Amount ({order.currency})</div>
+          <span className="label">Amount ({order.currency})</span>
           <input
             type="number"
             min="0.01"
@@ -635,18 +623,14 @@ function RefundModal({
             max={(refundable / 100).toFixed(2)}
             value={amountStr}
             onChange={(e) => setAmountStr(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </label>
 
         {refundTo === 'card' && (
           <label className="block">
-            <div className="font-medium mb-1">Reason (Stripe)</div>
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value as typeof reason)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
-            >
+            <span className="label">Reason (Stripe)</span>
+            <select value={reason} onChange={(e) => setReason(e.target.value as typeof reason)} className="select">
               <option value="requested_by_customer">Requested by customer</option>
               <option value="duplicate">Duplicate</option>
               <option value="fraudulent">Fraudulent</option>
@@ -656,24 +640,13 @@ function RefundModal({
         )}
 
         <label className="block">
-          <div className="font-medium mb-1">Internal note (optional)</div>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Damaged on arrival…"
-            className="w-full px-3 py-2 rounded border border-stone-200"
-          />
+          <span className="label">Internal note (optional)</span>
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Damaged on arrival…" className="input" />
         </label>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">
-            Cancel
-          </button>
-          <button
-            onClick={submit}
-            disabled={submitting}
-            className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50"
-          >
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={submit} disabled={submitting} className="btn btn-primary">
             {submitting ? 'Refunding…' : 'Issue refund'}
           </button>
         </div>
@@ -684,7 +657,7 @@ function RefundModal({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
+    <div className="card card-pad mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -725,12 +698,12 @@ function NoteField({ initial, onSave, busy }: { initial: string; onSave: (v: str
         rows={3}
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        className="w-full px-3 py-2 rounded border border-stone-200 text-sm"
+        className="textarea text-sm"
       />
       <button
         onClick={() => onSave(val)}
         disabled={!dirty || busy}
-        className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50"
+        className="btn btn-secondary btn-sm"
       >
         Save note
       </button>
@@ -749,12 +722,12 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
         value={val}
         onChange={(e) => setVal(e.target.value)}
         placeholder="vip, gift, …"
-        className="w-full px-3 py-2 rounded border border-stone-200 text-sm"
+        className="input"
       />
       <button
         onClick={() => onSave(val)}
         disabled={!dirty || busy}
-        className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50"
+        className="btn btn-secondary btn-sm"
       >
         Save tags
       </button>

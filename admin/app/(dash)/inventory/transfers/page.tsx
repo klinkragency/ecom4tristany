@@ -25,7 +25,7 @@ export default function TransfersListPage() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Stock transfers</h1>
+        <h1 className="h-page">Stock transfers</h1>
         <Link
           href="/inventory/transfers/new"
           className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800"
@@ -38,7 +38,7 @@ export default function TransfersListPage() {
         <div className="mb-3 alert alert-error">{error}</div>
       )}
 
-      <div className="rounded border border-stone-200 bg-white overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>

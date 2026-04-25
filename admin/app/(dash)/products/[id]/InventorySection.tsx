@@ -67,7 +67,7 @@ export default function InventorySection({ productId }: { productId: string }) {
   };
 
   return (
-    <div className="rounded border border-stone-200 bg-white p-4">
+    <div className="card card-pad">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">Inventory ({matrix.variants.length} variants × {matrix.locations.length} locations)</h2>
         <div className="flex items-center gap-2 text-xs">
@@ -78,7 +78,7 @@ export default function InventorySection({ productId }: { productId: string }) {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-3 py-1.5 text-sm rounded bg-stone-900 text-white disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             {saving ? 'Saving…' : dirty ? 'Save inventory' : 'No changes'}
           </button>
@@ -121,7 +121,7 @@ export default function InventorySection({ productId }: { productId: string }) {
                         min={0}
                         value={val}
                         onChange={(e) => setCell(v.id, l.id, Math.max(0, parseInt(e.target.value || '0', 10)))}
-                        className="w-full px-2 py-1 rounded border border-stone-200 text-right"
+                        className="input text-sm text-right"
                       />
                       {cell.incoming > 0 && (
                         <div className="text-[10px] text-amber-700 text-right">+{cell.incoming} incoming</div>

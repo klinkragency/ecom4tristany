@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
   return (
     <section className="max-w-6xl">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Analytics</h1>
+        <h1 className="h-page">Analytics</h1>
         <div className="flex items-center gap-3">
           <Link href="/analytics/finance" className="text-sm hover:underline">Finance →</Link>
           <select value={days} onChange={(e) => setDays(Number(e.target.value))}
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue chart */}
-      <div className="rounded border border-stone-200 bg-white p-4 mb-6">
+      <div className="card card-pad mb-6">
         <h2 className="text-sm font-semibold mb-2">Revenue over time</h2>
         {sales && sales.points.length > 0 ? (
           <LineChart points={sales.points} />
@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Funnel */}
-        <div className="rounded border border-stone-200 bg-white p-4">
+        <div className="card card-pad">
           <h2 className="text-sm font-semibold mb-3">Conversion funnel</h2>
           {funnel.length === 0 ? (
             <p className="text-sm text-stone-500">No events yet — the storefront tracker starts collecting on page load.</p>
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top products */}
-        <div className="rounded border border-stone-200 bg-white p-4">
+        <div className="card card-pad">
           <h2 className="text-sm font-semibold mb-3">Top products</h2>
           {top.length === 0 ? (
             <p className="text-sm text-stone-500">No sales in range.</p>
@@ -214,7 +214,7 @@ function LiveSessionsCard() {
   const max = Math.max(1, ...(data?.items ?? []).map((i) => i.sessions));
 
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4">
+    <div className="card card-pad mb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">Live sessions by country</h2>
         <div className="flex items-center gap-2 text-xs text-stone-500">
@@ -275,7 +275,7 @@ function PostHogCard({ data }: { data: PostHog | null }) {
     );
   }
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4">
+    <div className="card card-pad mb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">PostHog</h2>
         {data.dashboardUrl && (

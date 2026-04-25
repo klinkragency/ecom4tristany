@@ -84,87 +84,97 @@ export default function ReturnDetailPage() {
 
   if (!ret) return <section><p className="text-stone-500">Loading…</p></section>;
 
+  const STATUS_BADGE: Record<string, string> = {
+    requested: 'badge-warning',
+    approved: 'badge-info',
+    rejected: 'badge-danger',
+    received: 'badge-success',
+    refunded: 'badge-success',
+    cancelled: 'badge-neutral',
+  };
+
   return (
     <section className="max-w-4xl">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-5 flex items-center gap-3">
         <Link href="/returns" className="text-sm text-stone-500 hover:underline">← Returns</Link>
-        <h1 className="text-2xl font-semibold flex-1">{ret.rmaNumber}</h1>
-        <span className="text-xs rounded px-2 py-0.5 bg-gray-100 text-gray-800">{ret.status}</span>
+        <h1 className="h-page flex-1">{ret.rmaNumber}</h1>
+        <span className={`badge ${STATUS_BADGE[ret.status] ?? 'badge-neutral'}`}>{ret.status}</span>
       </div>
 
-      {error && <div className="mb-3 alert alert-error">{error}</div>}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
-      <div className="rounded border border-stone-200 bg-white p-4 mb-4 text-sm">
-        <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="card card-pad mb-4 text-sm">
+        <div className="mb-3 grid grid-cols-2 gap-3">
           <div>
-            <div className="text-xs text-stone-500">Order</div>
+            <div className="label">Order</div>
             <Link href={`/orders/${ret.orderId}`} className="font-medium hover:underline">{ret.orderNumber}</Link>
           </div>
           <div>
-            <div className="text-xs text-stone-500">Requested by</div>
+            <div className="label">Requested by</div>
             <div className="font-medium capitalize">{ret.requestedBy}</div>
           </div>
           <div>
-            <div className="text-xs text-stone-500">Requested at</div>
+            <div className="label">Requested at</div>
             <div>{new Date(ret.requestedAt).toLocaleString()}</div>
           </div>
           <div>
-            <div className="text-xs text-stone-500">Estimated refund</div>
-            <div className="font-medium">{formatPrice(ret.estimatedCents, ret.currency)}</div>
+            <div className="label">Estimated refund</div>
+            <div className="font-medium tabular-nums">{formatPrice(ret.estimatedCents, ret.currency)}</div>
           </div>
         </div>
         {ret.customerNote && (
-          <div className="border-t border-stone-200 pt-2 text-xs">
-            <div className="font-semibold text-stone-500 mb-1">Customer note</div>
+          <div className="border-t border-stone-200 pt-3 text-xs">
+            <div className="label">Customer note</div>
             <div>{ret.customerNote}</div>
           </div>
         )}
       </div>
 
-      <div className="rounded border border-stone-200 bg-white p-4 mb-4">
-        <h2 className="text-sm font-semibold mb-2">Items</h2>
-        <ul className="divide-y divide-stone-200 text-sm">
+      <div className="card card-pad mb-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">Items</h2>
+        <div className="divide-y divide-stone-200/70 text-sm">
           {ret.items.map((l) => (
-            <li key={l.id} className="py-2 flex items-center gap-3">
+            <div key={l.id} className="flex items-center gap-3 py-3">
               <div className="flex-1">
                 <div className="font-medium">{l.productTitle}</div>
                 {l.variantTitle && <div className="text-xs text-stone-500">{l.variantTitle}</div>}
-                <div className="text-xs text-stone-500">
+                <div className="mt-0.5 text-xs text-stone-500">
                   Reason: {l.reason.replace(/_/g, ' ')}
                   {l.note && ` · ${l.note}`}
-                  {l.restocked && ' · restocked'}
+                  {l.restocked && <span className="ml-1 badge badge-success no-dot">restocked</span>}
                 </div>
               </div>
               <div className="text-right">
-                <div>{l.quantity} × {formatPrice(l.unitPriceCents, ret.currency)}</div>
-                <div className="font-medium">{formatPrice(l.quantity * l.unitPriceCents, ret.currency)}</div>
+                <div className="tabular-nums">{l.quantity} × {formatPrice(l.unitPriceCents, ret.currency)}</div>
+                <div className="font-medium tabular-nums">{formatPrice(l.quantity * l.unitPriceCents, ret.currency)}</div>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="rounded border border-stone-200 bg-white p-4 flex flex-wrap gap-2">
+      <div className="card card-pad flex flex-wrap gap-2">
         {ret.status === 'requested' && (
           <>
-            <button disabled={busy} onClick={() => act('approve')}
-              className="px-3 py-2 text-sm rounded bg-blue-700 text-white disabled:opacity-50">Approve</button>
-            <button disabled={busy} onClick={() => act('reject')}
-              className="px-3 py-2 text-sm rounded border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-50">Reject</button>
+            <button disabled={busy} onClick={() => act('approve')} className="btn btn-primary">Approve</button>
+            <button disabled={busy} onClick={() => act('reject')} className="btn btn-danger">Reject</button>
           </>
         )}
         {ret.status === 'approved' && (
-          <button disabled={busy} onClick={() => setReceiveOpen(true)}
-            className="px-3 py-2 text-sm rounded bg-emerald-700 text-white disabled:opacity-50">Mark as received</button>
+          <button disabled={busy} onClick={() => setReceiveOpen(true)} className="btn btn-primary">
+            Mark as received
+          </button>
         )}
         {ret.status === 'received' && (
-          <button disabled={busy} onClick={() => setRefundOpen(true)}
-            className="px-3 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50">Issue refund</button>
+          <button disabled={busy} onClick={() => setRefundOpen(true)} className="btn btn-primary">
+            Issue refund
+          </button>
         )}
         {ret.status !== 'refunded' && ret.status !== 'cancelled' && (
-          <button disabled={busy} onClick={() => act('cancel')}
-            className="px-3 py-2 text-sm rounded border border-stone-200 disabled:opacity-50">Cancel return</button>
+          <button disabled={busy} onClick={() => act('cancel')} className="btn btn-secondary">
+            Cancel return
+          </button>
         )}
       </div>
 
@@ -205,26 +215,24 @@ function ReceiveModal({
   const [restock, setRestock] = useState(true);
   const [locationId, setLocationId] = useState(locations[0]?.id ?? '');
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Mark as received</h2>
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Mark as received</h2>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} />
           Restock items to inventory
         </label>
         {restock && (
           <label className="block">
-            <div className="font-medium mb-1">Restock to location</div>
-            <select value={locationId} onChange={(e) => setLocationId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
+            <span className="label">Restock to location</span>
+            <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="select">
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
           </label>
         )}
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
-          <button onClick={() => onReceive(restock, locationId)} disabled={busy || (restock && !locationId)}
-            className="px-3 py-2 rounded bg-emerald-700 text-white disabled:opacity-50">
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={() => onReceive(restock, locationId)} disabled={busy || (restock && !locationId)} className="btn btn-primary">
             {busy ? 'Saving…' : 'Mark received'}
           </button>
         </div>
@@ -249,40 +257,37 @@ function RefundModal({
   const [refundTo, setRefundTo] = useState<'card' | 'store_credit'>('card');
   const [note, setNote] = useState('');
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Issue refund for return {ret.rmaNumber}</h2>
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Issue refund for return {ret.rmaNumber}</h2>
         <label className="block">
-          <div className="font-medium mb-1">Amount ({ret.currency})</div>
-          <input type="number" step="0.01" value={amountStr} onChange={(e) => setAmountStr(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200" />
+          <span className="label">Amount ({ret.currency})</span>
+          <input type="number" step="0.01" value={amountStr} onChange={(e) => setAmountStr(e.target.value)} className="input" />
           {ret.estimatedCents > maxRefundable && (
-            <div className="text-xs text-stone-500 mt-1">
+            <span className="help">
               Return value is {formatPrice(ret.estimatedCents, ret.currency)}, but only{' '}
               {formatPrice(maxRefundable, ret.currency)} is left refundable on the original charge
               (the rest was covered by store credit or already refunded).
-            </div>
+            </span>
           )}
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Refund to</div>
-          <select value={refundTo} onChange={(e) => setRefundTo(e.target.value as 'card' | 'store_credit')}
-            className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
+          <span className="label">Refund to</span>
+          <select value={refundTo} onChange={(e) => setRefundTo(e.target.value as 'card' | 'store_credit')} className="select">
             <option value="card">Original payment method (Stripe)</option>
             <option value="store_credit">Store credit</option>
           </select>
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Note (optional)</div>
-          <input value={note} onChange={(e) => setNote(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200" />
+          <span className="label">Note (optional)</span>
+          <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button
             onClick={() => onRefund(Math.round(parseFloat(amountStr) * 100), refundTo, note)}
             disabled={busy}
-            className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50"
+            className="btn btn-primary"
           >
             {busy ? 'Refunding…' : 'Issue refund'}
           </button>

@@ -134,7 +134,7 @@ export default function MenuEditor() {
     <section className="max-w-4xl">
       <div className="flex items-center gap-3 mb-4">
         <Link href="/content/menus" className="text-sm text-stone-500 hover:underline">← Menus</Link>
-        <h1 className="text-2xl font-semibold flex-1">{menu.name}</h1>
+        <h1 className="h-page flex-1">{menu.name}</h1>
         <button onClick={save} disabled={saving}
           className="px-4 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50">
           {saving ? 'Saving…' : 'Save menu'}
@@ -143,16 +143,16 @@ export default function MenuEditor() {
       {error && <div className="mb-3 alert alert-error">{error}</div>}
       {saved && <div className="mb-3 alert alert-success">Saved.</div>}
 
-      <div className="rounded border border-stone-200 bg-white p-4 mb-4">
+      <div className="card card-pad mb-4">
         <label className="block text-sm">
           <div className="font-medium mb-1">Menu name</div>
           <input value={menu.name} onChange={(e) => setMenu({ ...menu, name: e.target.value })}
-            className="w-full px-3 py-2 rounded border border-stone-200" />
+            className="input" />
           <div className="text-xs text-stone-500 mt-1 font-mono">handle: {menu.handle}</div>
         </label>
       </div>
 
-      <div className="rounded border border-stone-200 bg-white p-4 space-y-2">
+      <div className="card card-pad space-y-2">
         {menu.items.length === 0 ? (
           <p className="text-sm text-stone-500">No items. Add one to get started.</p>
         ) : (
@@ -219,7 +219,7 @@ function MenuItemRow({
             + sub
           </button>
         )}
-        <button onClick={() => onRemove(path)} className="text-xs text-red-700 hover:underline">✕</button>
+        <button onClick={() => onRemove(path)} className="btn btn-ghost btn-sm text-red-700">✕</button>
       </div>
       {item.children && item.children.length > 0 && (
         <ul className="pb-2 space-y-1">

@@ -57,7 +57,7 @@ export default function TransferDetailPage() {
           <Link href="/inventory/transfers" className="text-sm text-stone-500 hover:underline">
             ← Transfers
           </Link>
-          <h1 className="text-2xl font-semibold">{t.fromName} → {t.toName}</h1>
+          <h1 className="h-page">{t.fromName} → {t.toName}</h1>
           <span className={`inline-block rounded px-2 py-0.5 text-xs ${BADGE[t.status]}`}>
             {t.status.replace('_', ' ')}
           </span>
@@ -68,13 +68,13 @@ export default function TransferDetailPage() {
               <button onClick={() => transition('cancel')} disabled={busy} className="px-3 py-2 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50">
                 Cancel draft
               </button>
-              <button onClick={() => transition('ship')} disabled={busy} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+              <button onClick={() => transition('ship')} disabled={busy} className="btn btn-primary">
                 Ship
               </button>
             </>
           )}
           {t.status === 'in_transit' && (
-            <button onClick={() => transition('receive')} disabled={busy} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
+            <button onClick={() => transition('receive')} disabled={busy} className="btn btn-primary">
               Mark received
             </button>
           )}
