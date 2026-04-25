@@ -162,7 +162,7 @@ export default function OrderDetailPage() {
         {error && <div className="alert alert-error mb-4">{error}</div>}
 
         {/* Line items */}
-        <Card title={`Items (${order.lineItems.length})`}>
+        <Card title={`Items (${order.lineItems.length})`} className="mb-4 space-y-2">
           <ul className="divide-y divide-stone-200">
             {order.lineItems.map((li) => (
               <li key={li.id} className="flex items-center gap-3 py-2 text-sm">
@@ -197,7 +197,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {/* Payments */}
-        <Card title={`Payments (${order.payments.length})`}>
+        <Card title={`Payments (${order.payments.length})`} className="mb-4 space-y-2">
           {order.payments.length === 0 ? (
             <p className="text-sm text-stone-500">No payments recorded.</p>
           ) : (
@@ -219,7 +219,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {/* Fulfillments */}
-        <Card title={`Fulfillments (${fulfillments.length})`}>
+        <Card title={`Fulfillments (${fulfillments.length})`} className="mb-4 space-y-2">
           {fulfillments.length === 0 ? (
             <p className="text-sm text-stone-500">Nothing shipped yet.</p>
           ) : (
@@ -278,7 +278,7 @@ export default function OrderDetailPage() {
 
         {/* Returns */}
         {returnsList.length > 0 && (
-          <Card title={`Returns (${returnsList.length})`}>
+          <Card title={`Returns (${returnsList.length})`} className="mb-4 space-y-2">
             <ul className="space-y-2 text-sm">
               {returnsList.map((r) => (
                 <li key={r.id} className="flex items-center gap-2 rounded-xl border border-stone-200 p-2.5">
