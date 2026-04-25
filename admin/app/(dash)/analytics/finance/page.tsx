@@ -101,7 +101,7 @@ export default function FinancePage() {
       {error && <div className="mb-3 alert alert-error">{error}</div>}
 
       {/* Sales by country */}
-      <Card title="Sales by country (VAT jurisdictions)">
+      <Card title="Sales by country (VAT jurisdictions)" className="mb-4 space-y-2">
         <div className="flex items-center justify-end mb-2">
           <a href={csvHref} className="text-xs hover:underline">Download CSV →</a>
         </div>
@@ -136,7 +136,7 @@ export default function FinancePage() {
       </Card>
 
       {/* Refunds */}
-      <Card title="Refunds">
+      <Card title="Refunds" className="mb-4 space-y-2">
         {refunds ? (
           <div className="grid grid-cols-3 gap-3 text-sm mb-3">
             <Stat label="Total refunded" value={formatPrice(refunds.totalCents)} sub={`${refunds.totalCount} refunds`} />
@@ -161,7 +161,7 @@ export default function FinancePage() {
       </Card>
 
       {/* Store credit liability */}
-      <Card title="Store credit liability">
+      <Card title="Store credit liability" className="mb-4 space-y-2">
         {credit ? (
           <div className="grid grid-cols-2 gap-3 text-sm">
             <Stat label="Outstanding balance" value={formatPrice(credit.totalLiabilityCents, credit.currency)} />
@@ -171,7 +171,7 @@ export default function FinancePage() {
       </Card>
 
       {/* Stripe payouts */}
-      <Card title="Recent Stripe payouts">
+      <Card title="Recent Stripe payouts" className="mb-4 space-y-2">
         {payouts.length === 0 ? (
           <p className="text-sm text-stone-500">No payouts found (or Stripe not configured).</p>
         ) : (
