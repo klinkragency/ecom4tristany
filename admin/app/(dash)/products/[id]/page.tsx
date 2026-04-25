@@ -139,7 +139,7 @@ export default function EditProductPage() {
       )}
 
       <div className="space-y-4">
-        <Card title="Basic info">
+        <Card title="Basic info" className="space-y-3">
           <Field label="Title">
             <input
               value={title}
@@ -172,7 +172,7 @@ export default function EditProductPage() {
         <VariantsEditor product={product} onChanged={refetch} onError={setError} />
         <InventorySection productId={product.id} />
 
-        <Card title="Organization">
+        <Card title="Organization" className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Status">
               <select
@@ -209,7 +209,7 @@ export default function EditProductPage() {
           </div>
         </Card>
 
-        <Card title="SEO">
+        <Card title="SEO" className="space-y-3">
           <Field label="SEO title">
             <input
               value={seoTitle}

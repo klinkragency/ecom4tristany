@@ -7,6 +7,7 @@ import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Collection, type CollectionRule, type SortOrder } from '@/lib/types';
 import ProductPicker from './ProductPicker';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Card, Field } from '@/components/ui';
 
 const FIELD_LABELS: Record<CollectionRule['field'], string> = {
   title: 'Title',
