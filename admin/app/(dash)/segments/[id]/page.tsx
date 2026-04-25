@@ -163,9 +163,9 @@ export default function SegmentDetailPage() {
     <section className="max-w-4xl">
       <div className="flex items-center gap-3 mb-4">
         <Link href="/segments" className="text-sm text-stone-500 hover:underline">← Segments</Link>
-        <h1 className="text-2xl font-semibold flex-1">{s.name || 'Untitled segment'}</h1>
+        <h1 className="h-page flex-1">{s.name || 'Untitled segment'}</h1>
         <button onClick={del} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">Delete</button>
-        <button onClick={save} disabled={saving} className="px-3 py-1.5 text-sm rounded bg-stone-900 text-white disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="btn btn-primary btn-sm">
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
@@ -178,7 +178,7 @@ export default function SegmentDetailPage() {
           <input
             value={s.name}
             onChange={(e) => update({ name: e.target.value })}
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </label>
         <label className="block">
@@ -186,7 +186,7 @@ export default function SegmentDetailPage() {
           <input
             value={s.description}
             onChange={(e) => update({ description: e.target.value })}
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </label>
         <label className="flex items-center gap-2 text-xs">

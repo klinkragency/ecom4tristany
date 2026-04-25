@@ -107,7 +107,7 @@ export default function EditProductPage() {
           <Link href="/products" className="text-sm text-stone-500 hover:underline">
             ← Products
           </Link>
-          <h1 className="text-2xl font-semibold">{product.title}</h1>
+          <h1 className="h-page">{product.title}</h1>
         </div>
         <div className="flex items-center gap-2 text-sm">
           {savedAt && (
@@ -117,7 +117,7 @@ export default function EditProductPage() {
           )}
           <button
             onClick={del}
-            className="px-3 py-2 rounded border border-red-200 text-red-700 hover:bg-red-50"
+            className="btn btn-danger"
           >
             Delete
           </button>
@@ -143,14 +143,14 @@ export default function EditProductPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </Field>
           <Field label="Handle (URL slug)">
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 font-mono text-sm"
+              className="input font-mono text-sm"
             />
           </Field>
           <Field label="Description">
@@ -177,7 +177,7 @@ export default function EditProductPage() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as typeof status)}
-                className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
+                className="select"
               >
                 <option value="draft">Draft</option>
                 <option value="active">Active</option>
@@ -188,21 +188,21 @@ export default function EditProductPage() {
               <input
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-stone-200"
+                className="input"
               />
             </Field>
             <Field label="Product type">
               <input
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-stone-200"
+                className="input"
               />
             </Field>
             <Field label="Tags (comma-separated)">
               <input
                 value={tagsStr}
                 onChange={(e) => setTagsStr(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-stone-200"
+                className="input"
               />
             </Field>
           </div>
@@ -213,7 +213,7 @@ export default function EditProductPage() {
             <input
               value={seoTitle}
               onChange={(e) => setSeoTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </Field>
           <Field label="SEO description">
@@ -221,7 +221,7 @@ export default function EditProductPage() {
               rows={2}
               value={seoDesc}
               onChange={(e) => setSeoDesc(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </Field>
         </Card>
@@ -305,7 +305,7 @@ function OptionsEditor({
         <div key={o.id} className="border border-stone-200 rounded p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium text-sm">{o.name}</div>
-            <button onClick={() => del(o.id)} className="text-xs text-red-700 hover:underline">
+            <button onClick={() => del(o.id)} className="btn btn-ghost btn-sm text-red-700">
               Remove option
             </button>
           </div>
@@ -493,13 +493,13 @@ function VariantRow({
         placeholder="SKU"
         value={sku}
         onChange={(e) => setSku(e.target.value)}
-        className="px-2 py-1 rounded border border-stone-200"
+        className="input text-sm w-auto"
       />
       <input
         placeholder="Price"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="px-2 py-1 rounded border border-stone-200"
+        className="input text-sm w-auto"
       />
       <button
         onClick={save}
@@ -601,7 +601,7 @@ function AddVariantForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

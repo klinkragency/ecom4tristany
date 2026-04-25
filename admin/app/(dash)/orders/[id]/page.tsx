@@ -722,7 +722,7 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
         value={val}
         onChange={(e) => setVal(e.target.value)}
         placeholder="vip, gift, …"
-        className="textarea text-sm"
+        className="input"
       />
       <button
         onClick={() => onSave(val)}

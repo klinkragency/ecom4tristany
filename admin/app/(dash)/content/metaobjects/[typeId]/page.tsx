@@ -70,7 +70,7 @@ export default function TypeDetailPage() {
     <section className="max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
         <Link href="/content/metaobjects" className="text-sm text-stone-500 hover:underline">← Metaobjects</Link>
-        <h1 className="text-2xl font-semibold">{typeName || 'Edit type'}</h1>
+        <h1 className="h-page">{typeName || 'Edit type'}</h1>
       </div>
 
       <div>
@@ -82,12 +82,12 @@ export default function TypeDetailPage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Entries ({entries.length})</h2>
           <Link href={`/content/metaobjects/${typeId}/entries/new`}
-            className="px-3 py-2 text-sm rounded bg-stone-900 text-white">
+            className="btn btn-primary">
             + New entry
           </Link>
         </div>
         {entries.length === 0 ? (
-          <div className="rounded border border-dashed border-stone-200 p-8 text-center text-sm text-stone-500">
+          <div className="empty">
             No entries yet.
           </div>
         ) : (

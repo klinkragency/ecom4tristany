@@ -46,7 +46,7 @@ export default function NewCollectionPage() {
         <Link href="/collections" className="text-sm text-stone-500 hover:underline">
           ← Collections
         </Link>
-        <h1 className="text-2xl font-semibold">New collection</h1>
+        <h1 className="h-page">New collection</h1>
       </div>
 
       {error && (
@@ -56,14 +56,14 @@ export default function NewCollectionPage() {
       )}
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+        <div className="card card-pad space-y-3">
           <label className="block">
             <div className="text-sm font-medium mb-1">Title</div>
             <input
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </label>
           <label className="block">
@@ -77,7 +77,7 @@ export default function NewCollectionPage() {
           </label>
         </div>
 
-        <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+        <div className="card card-pad space-y-3">
           <div className="text-sm font-semibold">Collection type</div>
           <label className="flex items-start gap-2 text-sm">
             <input
@@ -127,7 +127,7 @@ export default function NewCollectionPage() {
         <div className="flex gap-2 justify-end">
           <Link
             href="/collections"
-            className="px-3 py-2 text-sm rounded border border-stone-200"
+            className="btn btn-secondary"
           >
             Cancel
           </Link>

@@ -88,7 +88,7 @@ export default function FinancePage() {
     <section className="max-w-5xl">
       <div className="flex items-center gap-3 mb-4">
         <Link href="/analytics" className="text-sm text-stone-500 hover:underline">← Analytics</Link>
-        <h1 className="text-2xl font-semibold flex-1">Finance</h1>
+        <h1 className="h-page flex-1">Finance</h1>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))}
           className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
           <option value={7}>Last 7 days</option>
@@ -206,7 +206,7 @@ export default function FinancePage() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
+    <div className="card card-pad mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

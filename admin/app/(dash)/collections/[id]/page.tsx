@@ -142,7 +142,7 @@ export default function EditCollectionPage() {
           <Link href="/collections" className="text-sm text-stone-500 hover:underline">
             ← Collections
           </Link>
-          <h1 className="text-2xl font-semibold">{collection.title}</h1>
+          <h1 className="h-page">{collection.title}</h1>
           <span
             className={`inline-block rounded px-2 py-0.5 text-xs ${
               collection.isRulesBased ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'
@@ -154,7 +154,7 @@ export default function EditCollectionPage() {
         <div className="flex items-center gap-2 text-sm">
           <button
             onClick={del}
-            className="px-3 py-2 rounded border border-red-200 text-red-700 hover:bg-red-50"
+            className="btn btn-danger"
           >
             Delete
           </button>
@@ -180,14 +180,14 @@ export default function EditCollectionPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200"
+              className="input"
             />
           </Field>
           <Field label="Handle">
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-stone-200 font-mono text-sm"
+              className="input font-mono text-sm"
             />
           </Field>
           <Field label="Description">
@@ -202,7 +202,7 @@ export default function EditCollectionPage() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
+              className="select"
             >
               {!collection.isRulesBased && <option value="manual">Manual</option>}
               <option value="created_desc">Newest first</option>
@@ -284,7 +284,7 @@ function RulesEditor({
   const needsValue = operator !== 'in_stock' && operator !== 'out_of_stock';
 
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Rules</h2>
         <label className="inline-flex items-center gap-2 text-sm">
@@ -350,7 +350,7 @@ function RulesEditor({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field === 'price' ? 'e.g. 25' : field === 'status' ? 'active / draft / archived' : 'value'}
-            className="px-2 py-1 rounded border border-stone-200"
+            className="input text-sm w-auto"
           />
         ) : (
           <div />
@@ -420,7 +420,7 @@ function ProductList({
           {onDetach && (
             <button
               onClick={() => onDetach(p.id)}
-              className="text-xs text-red-700 hover:underline"
+              className="btn btn-ghost btn-sm text-red-700"
             >
               Remove
             </button>
@@ -433,7 +433,7 @@ function ProductList({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
