@@ -1,0 +1,281 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e9]: Shop
+      - button "Search ⌘K" [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: Search
+        - generic [ref=e15]: ⌘K
+      - navigation [ref=e16]:
+        - link "Home" [ref=e19] [cursor=pointer]:
+          - /url: /
+          - img [ref=e20]
+          - generic [ref=e23]: Home
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - link "Orders" [ref=e26] [cursor=pointer]:
+              - /url: /orders
+              - img [ref=e27]
+              - generic [ref=e30]: Orders
+            - button "Collapse Orders" [ref=e31]:
+              - img [ref=e32]
+          - link "Returns" [ref=e36] [cursor=pointer]:
+            - /url: /returns
+            - generic [ref=e37]: Returns
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - link "Products" [ref=e40] [cursor=pointer]:
+              - /url: /products
+              - img [ref=e41]
+              - generic [ref=e45]: Products
+            - button "Expand Products" [ref=e46]:
+              - img [ref=e47]
+          - generic [ref=e50]:
+            - link "Collections" [ref=e51] [cursor=pointer]:
+              - /url: /collections
+              - generic [ref=e52]: Collections
+            - link "Inventory" [ref=e53] [cursor=pointer]:
+              - /url: /inventory
+              - generic [ref=e54]: Inventory
+            - link "Transfers" [ref=e55] [cursor=pointer]:
+              - /url: /inventory/transfers
+              - generic [ref=e56]: Transfers
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - link "Customers" [ref=e59] [cursor=pointer]:
+              - /url: /customers
+              - img [ref=e60]
+              - generic [ref=e65]: Customers
+            - button "Expand Customers" [ref=e66]:
+              - img [ref=e67]
+          - link "Segments" [ref=e71] [cursor=pointer]:
+            - /url: /segments
+            - generic [ref=e72]: Segments
+        - link "Discounts" [ref=e75] [cursor=pointer]:
+          - /url: /discounts
+          - img [ref=e76]
+          - generic [ref=e79]: Discounts
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - link "Content" [ref=e82] [cursor=pointer]:
+              - /url: /content
+              - img [ref=e83]
+              - generic [ref=e86]: Content
+            - button "Expand Content" [ref=e87]:
+              - img [ref=e88]
+          - generic [ref=e91]:
+            - link "Pages" [ref=e92] [cursor=pointer]:
+              - /url: /content/pages
+              - generic [ref=e93]: Pages
+            - link "Blog posts" [ref=e94] [cursor=pointer]:
+              - /url: /content/blog
+              - generic [ref=e95]: Blog posts
+            - link "Menus" [ref=e96] [cursor=pointer]:
+              - /url: /content/menus
+              - generic [ref=e97]: Menus
+            - link "Metaobjects" [ref=e98] [cursor=pointer]:
+              - /url: /content/metaobjects
+              - generic [ref=e99]: Metaobjects
+            - link "Files" [ref=e100] [cursor=pointer]:
+              - /url: /content/files
+              - generic [ref=e101]: Files
+        - link "Markets" [ref=e104] [cursor=pointer]:
+          - /url: /settings/currencies
+          - img [ref=e105]
+          - generic [ref=e108]: Markets
+        - link "Analytics" [ref=e111] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e112]
+          - generic [ref=e114]: Analytics
+      - link "Settings" [ref=e118] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e119]
+        - generic [ref=e122]: Settings
+    - generic [ref=e123]:
+      - banner [ref=e124]:
+        - button "Search anything… ⌘K" [ref=e126]:
+          - img [ref=e127]
+          - generic [ref=e130]: Search anything…
+          - generic [ref=e131]: ⌘K
+        - button "Switch to dark" [ref=e132]:
+          - img [ref=e133]
+        - button "Notifications" [ref=e135]:
+          - img [ref=e136]
+        - button "T Tristany" [ref=e149]:
+          - generic [ref=e150]: T
+          - generic [ref=e151]: Tristany
+          - img [ref=e152]
+      - main [ref=e139]:
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - heading "Orders" [level=1] [ref=e142]
+            - generic [ref=e154]: 10 total
+          - generic [ref=e143]:
+            - 'searchbox "Search by email or order #" [ref=e144]'
+            - combobox [ref=e145]:
+              - option "All payments" [selected]
+              - option "Pending"
+              - option "Paid"
+              - option "Refunded"
+              - option "Partially refunded"
+            - combobox [ref=e146]:
+              - option "All fulfillment" [selected]
+              - option "Unfulfilled"
+              - option "Partial"
+              - option "Fulfilled"
+          - table [ref=e155]:
+            - rowgroup [ref=e156]:
+              - row "Order Date Customer Payment Fulfillment Total Items" [ref=e157]:
+                - columnheader "Order" [ref=e158]
+                - columnheader "Date" [ref=e159]
+                - columnheader "Customer" [ref=e160]
+                - columnheader "Payment" [ref=e161]
+                - columnheader "Fulfillment" [ref=e162]
+                - columnheader "Total" [ref=e163]
+                - columnheader "Items" [ref=e164]
+            - rowgroup [ref=e165]:
+              - row "#1009 21/04/2026, 23:45:29 nok no fefer@frd.com pending unfulfilled 135,05 € 5" [ref=e166]:
+                - cell "#1009" [ref=e167]:
+                  - link "#1009" [ref=e168] [cursor=pointer]:
+                    - /url: /orders/15deb78a-6afd-4698-905a-882cd2ef8b63
+                - cell "21/04/2026, 23:45:29" [ref=e169]
+                - cell "nok no fefer@frd.com" [ref=e170]:
+                  - generic [ref=e171]: nok no
+                  - generic [ref=e172]: fefer@frd.com
+                - cell "pending" [ref=e173]:
+                  - generic [ref=e174]: pending
+                - cell "unfulfilled" [ref=e175]:
+                  - generic [ref=e176]: unfulfilled
+                - cell "135,05 €" [ref=e177]
+                - cell "5" [ref=e178]
+              - row "#1008 21/04/2026, 21:59:23 febioklj@de.fr febioklj@de.fr febioklj@de.fr pending unfulfilled 125,06 € 4" [ref=e179]:
+                - cell "#1008" [ref=e180]:
+                  - link "#1008" [ref=e181] [cursor=pointer]:
+                    - /url: /orders/411a8ce0-4498-4b8e-bf63-255cfc752ae2
+                - cell "21/04/2026, 21:59:23" [ref=e182]
+                - cell "febioklj@de.fr febioklj@de.fr febioklj@de.fr" [ref=e183]:
+                  - generic [ref=e184]: febioklj@de.fr febioklj@de.fr
+                  - generic [ref=e185]: febioklj@de.fr
+                - cell "pending" [ref=e186]:
+                  - generic [ref=e187]: pending
+                - cell "unfulfilled" [ref=e188]:
+                  - generic [ref=e189]: unfulfilled
+                - cell "125,06 €" [ref=e190]
+                - cell "4" [ref=e191]
+              - row "#1007 21/04/2026, 21:04:48 jopk okp hnoij@de.fr pending unfulfilled 1,00 € 1" [ref=e192]:
+                - cell "#1007" [ref=e193]:
+                  - link "#1007" [ref=e194] [cursor=pointer]:
+                    - /url: /orders/7dae1bd0-cbb6-4e22-92c4-3e4e17810cbf
+                - cell "21/04/2026, 21:04:48" [ref=e195]
+                - cell "jopk okp hnoij@de.fr" [ref=e196]:
+                  - generic [ref=e197]: jopk okp
+                  - generic [ref=e198]: hnoij@de.fr
+                - cell "pending" [ref=e199]:
+                  - generic [ref=e200]: pending
+                - cell "unfulfilled" [ref=e201]:
+                  - generic [ref=e202]: unfulfilled
+                - cell "1,00 €" [ref=e203]
+                - cell "1" [ref=e204]
+              - row "#1006 20/04/2026, 20:42:18 jhiok opjk noi@noij.dr refunded unfulfilled 24,86 € 3" [ref=e205]:
+                - cell "#1006" [ref=e206]:
+                  - link "#1006" [ref=e207] [cursor=pointer]:
+                    - /url: /orders/668910dd-c0e8-4188-8a2f-f56b8c2fb616
+                - cell "20/04/2026, 20:42:18" [ref=e208]
+                - cell "jhiok opjk noi@noij.dr" [ref=e209]:
+                  - generic [ref=e210]: jhiok opjk
+                  - generic [ref=e211]: noi@noij.dr
+                - cell "refunded" [ref=e212]:
+                  - generic [ref=e213]: refunded
+                - cell "unfulfilled" [ref=e214]:
+                  - generic [ref=e215]: unfulfilled
+                - cell "24,86 €" [ref=e216]
+                - cell "3" [ref=e217]
+              - row "#1005 20/04/2026, 01:03:57 oppp ppp dezdze@dez.com pending unfulfilled 4,88 € 1" [ref=e218]:
+                - cell "#1005" [ref=e219]:
+                  - link "#1005" [ref=e220] [cursor=pointer]:
+                    - /url: /orders/f9bd9ed4-22ff-4c53-a8d6-2ed5bdca6837
+                - cell "20/04/2026, 01:03:57" [ref=e221]
+                - cell "oppp ppp dezdze@dez.com" [ref=e222]:
+                  - generic [ref=e223]: oppp ppp
+                  - generic [ref=e224]: dezdze@dez.com
+                - cell "pending" [ref=e225]:
+                  - generic [ref=e226]: pending
+                - cell "unfulfilled" [ref=e227]:
+                  - generic [ref=e228]: unfulfilled
+                - cell "4,88 €" [ref=e229]
+                - cell "1" [ref=e230]
+              - row "#1004 20/04/2026, 00:39:41 bnio jop dez@dez.fr paid unfulfilled 34,99 € 1" [ref=e231]:
+                - cell "#1004" [ref=e232]:
+                  - link "#1004" [ref=e233] [cursor=pointer]:
+                    - /url: /orders/cd078b14-3b07-412c-bbc0-36649b04eac9
+                - cell "20/04/2026, 00:39:41" [ref=e234]
+                - cell "bnio jop dez@dez.fr" [ref=e235]:
+                  - generic [ref=e236]: bnio jop
+                  - generic [ref=e237]: dez@dez.fr
+                - cell "paid" [ref=e238]:
+                  - generic [ref=e239]: paid
+                - cell "unfulfilled" [ref=e240]:
+                  - generic [ref=e241]: unfulfilled
+                - cell "34,99 €" [ref=e242]
+                - cell "1" [ref=e243]
+              - row "#1003 20/04/2026, 00:35:59 nol jpoml dz@hpez.fr paid unfulfilled 24,98 € 2" [ref=e244]:
+                - cell "#1003" [ref=e245]:
+                  - link "#1003" [ref=e246] [cursor=pointer]:
+                    - /url: /orders/ddbb7177-3a38-41da-9157-7acf1eae4e00
+                - cell "20/04/2026, 00:35:59" [ref=e247]
+                - cell "nol jpoml dz@hpez.fr" [ref=e248]:
+                  - generic [ref=e249]: nol jpoml
+                  - generic [ref=e250]: dz@hpez.fr
+                - cell "paid" [ref=e251]:
+                  - generic [ref=e252]: paid
+                - cell "unfulfilled" [ref=e253]:
+                  - generic [ref=e254]: unfulfilled
+                - cell "24,98 €" [ref=e255]
+                - cell "2" [ref=e256]
+              - row "#1002 19/04/2026, 13:54:34 hopl kopk dezjdop.dze@djezpo.cop paid unfulfilled 120,92 € 8" [ref=e257]:
+                - cell "#1002" [ref=e258]:
+                  - link "#1002" [ref=e259] [cursor=pointer]:
+                    - /url: /orders/7749878f-1c87-414d-8acf-4fbc7eb7bfc1
+                - cell "19/04/2026, 13:54:34" [ref=e260]
+                - cell "hopl kopk dezjdop.dze@djezpo.cop" [ref=e261]:
+                  - generic [ref=e262]: hopl kopk
+                  - generic [ref=e263]: dezjdop.dze@djezpo.cop
+                - cell "paid" [ref=e264]:
+                  - generic [ref=e265]: paid
+                - cell "unfulfilled" [ref=e266]:
+                  - generic [ref=e267]: unfulfilled
+                - cell "120,92 €" [ref=e268]
+                - cell "8" [ref=e269]
+              - row "#1001 19/04/2026, 13:52:17 nio boni menzo.smit-adam@epitech.eu pending unfulfilled 120,92 € 8" [ref=e270]:
+                - cell "#1001" [ref=e271]:
+                  - link "#1001" [ref=e272] [cursor=pointer]:
+                    - /url: /orders/f3e6ace6-9555-47bb-ae04-28a0319f67a4
+                - cell "19/04/2026, 13:52:17" [ref=e273]
+                - cell "nio boni menzo.smit-adam@epitech.eu" [ref=e274]:
+                  - generic [ref=e275]: nio boni
+                  - generic [ref=e276]: menzo.smit-adam@epitech.eu
+                - cell "pending" [ref=e277]:
+                  - generic [ref=e278]: pending
+                - cell "unfulfilled" [ref=e279]:
+                  - generic [ref=e280]: unfulfilled
+                - cell "120,92 €" [ref=e281]
+                - cell "8" [ref=e282]
+              - row "#1000 19/04/2026, 13:45:53 Jean Dupont buyer@test.com pending unfulfilled 5,00 € 1" [ref=e283]:
+                - cell "#1000" [ref=e284]:
+                  - link "#1000" [ref=e285] [cursor=pointer]:
+                    - /url: /orders/6e31c959-8ba9-4263-aa98-b48ef0a4b1ba
+                - cell "19/04/2026, 13:45:53" [ref=e286]
+                - cell "Jean Dupont buyer@test.com" [ref=e287]:
+                  - generic [ref=e288]: Jean Dupont
+                  - generic [ref=e289]: buyer@test.com
+                - cell "pending" [ref=e290]:
+                  - generic [ref=e291]: pending
+                - cell "unfulfilled" [ref=e292]:
+                  - generic [ref=e293]: unfulfilled
+                - cell "5,00 €" [ref=e294]
+                - cell "1" [ref=e295]
+  - button "Open Next.js Dev Tools" [ref=e301] [cursor=pointer]:
+    - img [ref=e302]
+  - alert [ref=e305]

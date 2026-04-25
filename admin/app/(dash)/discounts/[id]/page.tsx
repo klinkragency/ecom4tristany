@@ -68,13 +68,13 @@ export default function EditDiscountPage() {
   }
 
   if (!initial) {
-    return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
+    return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
   }
 
   return (
     <section>
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/discounts" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Discounts</Link>
+        <Link href="/discounts" className="text-sm text-stone-500 hover:underline">← Discounts</Link>
         <h1 className="text-2xl font-semibold flex-1">{initial.title || 'Edit discount'}</h1>
         <button onClick={del} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">Delete</button>
       </div>

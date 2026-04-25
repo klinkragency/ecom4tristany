@@ -46,7 +46,7 @@ export default function WhoAmI() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-2 px-2 py-2 rounded border border-[color:var(--color-border)] hover:bg-gray-50 text-left"
+        className="w-full flex items-center gap-2 px-2 py-2 rounded border border-stone-200 hover:bg-gray-50 text-left"
         title="View my role + permissions"
       >
         <div className="w-8 h-8 shrink-0 rounded-full bg-gray-900 text-white grid place-items-center text-xs font-semibold">
@@ -58,7 +58,7 @@ export default function WhoAmI() {
             <span className={`text-[10px] rounded px-1.5 py-0.5 ${ROLE_BADGE[me.role]}`}>
               {me.role}
             </span>
-            <span className="text-[10px] text-[color:var(--color-text-muted)] truncate">{me.email}</span>
+            <span className="text-[10px] text-stone-500 truncate">{me.email}</span>
           </div>
         </div>
       </button>
@@ -80,10 +80,10 @@ function RoleModal({ me, onClose }: { me: Me; onClose: () => void }) {
             <h2 className="font-semibold">{me.name || me.email}</h2>
             <span className={`text-xs rounded px-2 py-0.5 ${ROLE_BADGE[me.role]}`}>{me.role}</span>
           </div>
-          <div className="text-xs text-[color:var(--color-text-muted)]">{me.email}</div>
+          <div className="text-xs text-stone-500">{me.email}</div>
         </div>
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-[color:var(--color-text-muted)] mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500 mb-2">
             What your role can do
           </h3>
           <ul className="space-y-1.5 text-sm">
@@ -94,7 +94,7 @@ function RoleModal({ me, onClose }: { me: Me; onClose: () => void }) {
                   <span className={`shrink-0 w-4 text-center ${allowed ? 'text-green-700' : 'text-gray-400'}`}>
                     {allowed ? '✓' : '—'}
                   </span>
-                  <span className={allowed ? '' : 'text-[color:var(--color-text-muted)]'}>
+                  <span className={allowed ? '' : 'text-stone-500'}>
                     {p.label}
                   </span>
                 </li>
@@ -103,7 +103,7 @@ function RoleModal({ me, onClose }: { me: Me; onClose: () => void }) {
           </ul>
         </div>
         <div className="pt-2 flex justify-end">
-          <button onClick={onClose} className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50">
+          <button onClick={onClose} className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50">
             Close
           </button>
         </div>

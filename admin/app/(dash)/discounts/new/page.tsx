@@ -17,7 +17,7 @@ export default function NewDiscountPage() {
   return (
     <section>
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/discounts" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Discounts</Link>
+        <Link href="/discounts" className="text-sm text-stone-500 hover:underline">← Discounts</Link>
         <h1 className="text-2xl font-semibold">New discount</h1>
       </div>
       <DiscountForm initial={EMPTY_DISCOUNT} onSave={save} saveLabel="Create" />

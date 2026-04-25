@@ -63,12 +63,12 @@ export default function PageForm({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)]';
+  const input = 'w-full px-3 py-2 rounded border border-stone-200';
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
         <Field label="Title" required>
@@ -86,7 +86,7 @@ export default function PageForm({
             value={v.slug}
             onChange={(e) => update({ slug: e.target.value.toLowerCase() })}
             placeholder="about" />
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
+          <div className="text-xs text-stone-500 mt-1">
             Page will be available at <span className="font-mono">/pages/{v.slug || '…'}</span>
           </div>
         </Field>
@@ -104,7 +104,7 @@ export default function PageForm({
         <Field label="Meta description (optional, 150-160 chars recommended)">
           <textarea rows={2} value={v.metaDescription} onChange={(e) => update({ metaDescription: e.target.value })}
             maxLength={200} className={input} />
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">{v.metaDescription.length}/200</div>
+          <div className="text-xs text-stone-500 mt-1">{v.metaDescription.length}/200</div>
         </Field>
       </Card>
 
@@ -128,7 +128,7 @@ export default function PageForm({
           </button>
         ) : <span />}
         <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          className="px-4 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -138,7 +138,7 @@ export default function PageForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

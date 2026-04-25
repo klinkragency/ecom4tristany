@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 
@@ -34,45 +33,54 @@ export default function ChangePasswordPage() {
 
   if (done) {
     return (
-      <section className="max-w-md">
-        <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">
-          Password updated.
-        </div>
-      </section>
+      <div className="max-w-md">
+        <div className="alert alert-success">Password updated.</div>
+      </div>
     );
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)]';
   return (
-    <section className="max-w-md">
-      <div className="flex items-center gap-3 mb-4">
-        <Link href="/settings" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Settings</Link>
-        <h1 className="text-2xl font-semibold">Change password</h1>
-      </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3 text-sm">
+    <div className="max-w-md space-y-3">
+      {error && <div className="alert alert-error">{error}</div>}
+      <div className="card card-pad space-y-3">
         <label className="block">
-          <div className="font-medium mb-1">Current password</div>
-          <input type="password" autoComplete="current-password" className={input}
-            value={current} onChange={(e) => setCurrent(e.target.value)} />
+          <span className="label">Current password</span>
+          <input
+            type="password"
+            autoComplete="current-password"
+            className="input"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+          />
         </label>
         <label className="block">
-          <div className="font-medium mb-1">New password (8+ chars)</div>
-          <input type="password" autoComplete="new-password" minLength={8} className={input}
-            value={next1} onChange={(e) => setNext1(e.target.value)} />
+          <span className="label">New password (8+ chars)</span>
+          <input
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            className="input"
+            value={next1}
+            onChange={(e) => setNext1(e.target.value)}
+          />
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Confirm new password</div>
-          <input type="password" autoComplete="new-password" minLength={8} className={input}
-            value={next2} onChange={(e) => setNext2(e.target.value)} />
+          <span className="label">Confirm new password</span>
+          <input
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            className="input"
+            value={next2}
+            onChange={(e) => setNext2(e.target.value)}
+          />
         </label>
         <div className="flex justify-end pt-1">
-          <button onClick={submit} disabled={busy}
-            className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          <button onClick={submit} disabled={busy} className="btn btn-primary">
             {busy ? 'Saving…' : 'Update password'}
           </button>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

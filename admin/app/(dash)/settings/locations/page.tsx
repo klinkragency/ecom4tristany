@@ -62,67 +62,69 @@ export default function LocationsPage() {
   }
 
   return (
-    <section className="max-w-3xl">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Locations</h1>
+    <div className="max-w-3xl space-y-3">
+      <div className="flex items-center justify-end">
         <button
           onClick={() => setEditing({
             name: '', isActive: true, isFulfillment: true,
             addressLine1: '', addressLine2: '', city: '', region: '', postalCode: '', country: '', phone: '',
           })}
-          className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)]"
+          className="btn btn-primary"
         >
           Add location
         </button>
       </div>
 
-      {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error">{error}</div>}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+      {!locations ? (
+        <div className="empty">Loading…</div>
+      ) : locations.length === 0 ? (
+        <div className="empty">No locations yet.</div>
+      ) : (
+        <table className="table-card">
+          <thead>
             <tr>
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Address</th>
-              <th className="px-3 py-2 font-medium">Active</th>
-              <th className="px-3 py-2 font-medium">Fulfillment</th>
-              <th className="px-3 py-2" />
+              <th>Name</th>
+              <th>Address</th>
+              <th>Active</th>
+              <th>Fulfillment</th>
+              <th />
             </tr>
           </thead>
           <tbody>
-            {!locations && (
-              <tr><td colSpan={5} className="px-3 py-4 text-center text-[color:var(--color-text-muted)]">Loading…</td></tr>
-            )}
-            {locations?.map((l) => (
-              <tr key={l.id} className="border-t border-[color:var(--color-border)]">
-                <td className="px-3 py-2 font-medium">{l.name}</td>
-                <td className="px-3 py-2 text-[color:var(--color-text-muted)]">
+            {locations.map((l) => (
+              <tr key={l.id}>
+                <td className="font-medium">{l.name}</td>
+                <td className="text-stone-500">
                   {[l.city, l.region, l.country].filter(Boolean).join(', ') || '—'}
                 </td>
-                <td className="px-3 py-2">{l.isActive ? '✓' : '—'}</td>
-                <td className="px-3 py-2">{l.isFulfillment ? '✓' : '—'}</td>
-                <td className="px-3 py-2 text-right">
-                  <button onClick={() => setEditing(l)} className="text-sm hover:underline mr-3">
-                    Edit
-                  </button>
-                  <button onClick={() => del(l.id)} className="text-sm text-red-700 hover:underline">
-                    Delete
-                  </button>
+                <td>
+                  <span className={`badge ${l.isActive ? 'badge-success' : 'badge-neutral'}`}>
+                    {l.isActive ? 'active' : 'inactive'}
+                  </span>
+                </td>
+                <td>
+                  {l.isFulfillment
+                    ? <span className="badge badge-info no-dot">fulfillment</span>
+                    : <span className="text-stone-400">—</span>}
+                </td>
+                <td className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <button onClick={() => setEditing(l)} className="btn btn-ghost btn-sm">Edit</button>
+                    <button onClick={() => del(l.id)} className="btn btn-danger btn-sm">Delete</button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      )}
 
       {editing && (
-        <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-            <h2 className="font-semibold">{editing.id ? 'Edit location' : 'New location'}</h2>
+        <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+            <h2 className="text-base font-semibold">{editing.id ? 'Edit location' : 'New location'}</h2>
             <LabelledInput label="Name" value={editing.name ?? ''} onChange={(v) => setEditing({ ...editing, name: v })} />
             <div className="grid grid-cols-2 gap-2">
               <Toggle label="Active" checked={!!editing.isActive} onChange={(v) => setEditing({ ...editing, isActive: v })} />
@@ -140,39 +142,30 @@ export default function LocationsPage() {
               <LabelledInput label="Phone" value={editing.phone ?? ''} onChange={(v) => setEditing({ ...editing, phone: v })} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setEditing(null)}
-                className="px-3 py-2 rounded border border-[color:var(--color-border)]"
-              >Cancel</button>
-              <button
-                onClick={save}
-                disabled={saving}
-                className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
-              >{saving ? 'Saving…' : 'Save'}</button>
+              <button onClick={() => setEditing(null)} className="btn btn-secondary">Cancel</button>
+              <button onClick={save} disabled={saving} className="btn btn-primary">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
             </div>
           </div>
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
 function LabelledInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <div className="text-xs font-medium text-[color:var(--color-text-muted)] mb-1">{label}</div>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-1.5 rounded border border-[color:var(--color-border)]"
-      />
+      <span className="label">{label}</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="input" />
     </label>
   );
 }
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex items-center gap-2 pt-4">
+    <label className="flex items-center gap-2 pt-5 text-sm">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>

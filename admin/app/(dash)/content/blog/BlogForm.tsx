@@ -71,16 +71,14 @@ export default function BlogForm({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)]';
-
   return (
     <div className="space-y-4 max-w-3xl">
-      {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
         <Field label="Title" required>
-          <input className={input} value={v.title}
+          <input className="input" value={v.title}
             onChange={(e) => {
               const newTitle = e.target.value;
               const wasAutoSlug = slugify(v.title) === v.slug || v.slug === '';
@@ -90,20 +88,20 @@ export default function BlogForm({
             }} />
         </Field>
         <Field label="Slug" required>
-          <input className={input + ' font-mono'}
+          <input className="input font-mono"
             value={v.slug} onChange={(e) => update({ slug: e.target.value.toLowerCase() })} />
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
+          <div className="text-xs text-stone-500 mt-1">
             Post URL: <span className="font-mono">/blog/{v.slug || '…'}</span>
           </div>
         </Field>
         <Field label="Excerpt (shown on listings + feed)">
-          <textarea rows={2} value={v.excerpt} onChange={(e) => update({ excerpt: e.target.value })} className={input} />
+          <textarea rows={2} value={v.excerpt} onChange={(e) => update({ excerpt: e.target.value })} className="input" />
         </Field>
         <Field label="Author name">
-          <input className={input} value={v.authorName} onChange={(e) => update({ authorName: e.target.value })} />
+          <input className="input" value={v.authorName} onChange={(e) => update({ authorName: e.target.value })} />
         </Field>
         <Field label="Featured image URL (optional)">
-          <input className={input} value={v.featuredImageUrl}
+          <input className="input" value={v.featuredImageUrl}
             onChange={(e) => update({ featuredImageUrl: e.target.value })}
             placeholder="https://…" />
         </Field>
@@ -114,16 +112,16 @@ export default function BlogForm({
       </Card>
 
       <Card title="Tags">
-        <input className={input} value={tagsStr} onChange={(e) => setTagsStr(e.target.value)}
+        <input className="input" value={tagsStr} onChange={(e) => setTagsStr(e.target.value)}
           placeholder="announcements, behind-the-scenes, …" />
-        <div className="text-xs text-[color:var(--color-text-muted)] mt-1">Comma-separated.</div>
+        <div className="text-xs text-stone-500 mt-1">Comma-separated.</div>
       </Card>
 
       <Card title="SEO">
         <Field label="Meta description">
           <textarea rows={2} value={v.metaDescription} maxLength={200}
-            onChange={(e) => update({ metaDescription: e.target.value })} className={input} />
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">{v.metaDescription.length}/200</div>
+            onChange={(e) => update({ metaDescription: e.target.value })} className="input" />
+          <div className="text-xs text-stone-500 mt-1">{v.metaDescription.length}/200</div>
         </Field>
       </Card>
 
@@ -142,12 +140,11 @@ export default function BlogForm({
 
       <div className="flex justify-between">
         {onDelete ? (
-          <button onClick={() => onDelete()} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">
+          <button onClick={() => onDelete()} className="btn btn-danger btn-sm">
             Delete
           </button>
         ) : <span />}
-        <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+        <button onClick={submit} disabled={saving} className="btn btn-primary">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -157,7 +154,7 @@ export default function BlogForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="card card-pad space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -167,7 +164,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );

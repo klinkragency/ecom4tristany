@@ -64,7 +64,7 @@ export default function CustomerDetailPage() {
   }
 
   if (!c) {
-    return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
+    return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
   }
 
   const name = `${c.firstName} ${c.lastName}`.trim() || c.email;
@@ -72,12 +72,12 @@ export default function CustomerDetailPage() {
     <section className="max-w-5xl grid md:grid-cols-[1fr_320px] gap-6">
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <Link href="/customers" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Customers</Link>
+          <Link href="/customers" className="text-sm text-stone-500 hover:underline">← Customers</Link>
           <h1 className="text-2xl font-semibold">{name}</h1>
         </div>
 
         {error && (
-          <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
+          <div className="mb-3 alert alert-error">{error}</div>
         )}
 
         <Card title="Summary">
@@ -93,16 +93,16 @@ export default function CustomerDetailPage() {
 
         <Card title={`Recent orders (${c.recentOrders.length})`}>
           {c.recentOrders.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No orders.</p>
+            <p className="text-sm text-stone-500">No orders.</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)] text-sm">
+            <ul className="divide-y divide-stone-200 text-sm">
               {c.recentOrders.map((o) => (
                 <li key={o.id} className="py-2 flex items-center gap-3">
                   <Link href={`/orders/${o.id}`} className="font-medium hover:underline">{o.number}</Link>
                   <span className={`text-xs rounded px-2 py-0.5 ${FIN_BADGE[o.financialStatus]}`}>
                     {o.financialStatus.replace('_', ' ')}
                   </span>
-                  <span className="text-xs text-[color:var(--color-text-muted)] flex-1">
+                  <span className="text-xs text-stone-500 flex-1">
                     {new Date(o.createdAt).toLocaleDateString()} · {o.itemsCount} items
                   </span>
                   <span className="font-medium">{formatPrice(o.totalCents, o.currency)}</span>
@@ -114,11 +114,11 @@ export default function CustomerDetailPage() {
 
         <Card title={`Addresses (${c.addresses.length})`}>
           {c.addresses.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No addresses saved.</p>
+            <p className="text-sm text-stone-500">No addresses saved.</p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 text-sm">
               {c.addresses.map((a) => (
-                <li key={a.id} className="border border-[color:var(--color-border)] rounded p-3">
+                <li key={a.id} className="border border-stone-200 rounded p-3">
                   <div className="flex items-center gap-2 mb-1">
                     {a.label && <span className="font-medium">{a.label}</span>}
                     {a.isDefaultShipping && <span className="text-xs rounded bg-green-100 text-green-800 px-1.5 py-0.5">Shipping</span>}
@@ -138,25 +138,25 @@ export default function CustomerDetailPage() {
 
         <Card title={`Store credit (${formatPrice(c.storeCreditCents, c.storeCreditCurrency)})`}>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-[color:var(--color-text-muted)]">Balance · {c.ledgerEntries.length} entries</span>
+            <span className="text-sm text-stone-500">Balance · {c.ledgerEntries.length} entries</span>
             <button
               onClick={() => setGrantOpen(true)}
-              className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
             >
               Grant or adjust
             </button>
           </div>
           {c.ledgerEntries.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No ledger entries yet.</p>
+            <p className="text-sm text-stone-500">No ledger entries yet.</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)] text-sm">
+            <ul className="divide-y divide-stone-200 text-sm">
               {c.ledgerEntries.map((e) => (
                 <li key={e.id} className="py-1.5 flex items-center gap-3">
-                  <span className="text-xs text-[color:var(--color-text-muted)] w-32">
+                  <span className="text-xs text-stone-500 w-32">
                     {new Date(e.createdAt).toLocaleString()}
                   </span>
                   <span className="capitalize text-xs w-24">{e.reason}</span>
-                  <span className="flex-1 text-xs text-[color:var(--color-text-muted)]">{e.note}</span>
+                  <span className="flex-1 text-xs text-stone-500">{e.note}</span>
                   <span className={`font-medium ${e.deltaCents > 0 ? 'text-green-700' : 'text-red-700'}`}>
                     {e.deltaCents > 0 ? '+' : ''}{formatPrice(e.deltaCents, c.storeCreditCurrency)}
                   </span>
@@ -170,9 +170,9 @@ export default function CustomerDetailPage() {
       <aside className="space-y-4 text-sm">
         <Card title="Contact">
           <div className="font-medium">{name}</div>
-          <div className="text-[color:var(--color-text-muted)]">{c.email}</div>
-          {c.phone && <div className="text-[color:var(--color-text-muted)]">{c.phone}</div>}
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-2">
+          <div className="text-stone-500">{c.email}</div>
+          {c.phone && <div className="text-stone-500">{c.phone}</div>}
+          <div className="text-xs text-stone-500 mt-2">
             Marketing consent: {c.marketingConsent ? 'yes' : 'no'}
           </div>
         </Card>
@@ -191,7 +191,7 @@ export default function CustomerDetailPage() {
           <div className="flex flex-col gap-1.5">
             <a
               href={`${API}/api/admin/customers/${id}/data-export`}
-              className="px-3 py-1.5 text-xs rounded border border-[color:var(--color-border)] bg-white hover:bg-gray-50 text-center"
+              className="px-3 py-1.5 text-xs rounded border border-stone-200 bg-white hover:bg-gray-50 text-center"
               target="_blank"
               rel="noreferrer"
             >
@@ -199,7 +199,7 @@ export default function CustomerDetailPage() {
             </a>
             <button
               onClick={() => setMergeOpen(true)}
-              className="px-3 py-1.5 text-xs rounded border border-[color:var(--color-border)] bg-white hover:bg-gray-50"
+              className="px-3 py-1.5 text-xs rounded border border-stone-200 bg-white hover:bg-gray-50"
             >
               Merge duplicate into this customer
             </button>
@@ -235,7 +235,7 @@ export default function CustomerDetailPage() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 space-y-2">
+    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -245,7 +245,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-[color:var(--color-text-muted)]">{label}</div>
+      <div className="text-xs text-stone-500">{label}</div>
       <div className="font-medium">{value}</div>
     </div>
   );
@@ -257,8 +257,8 @@ function NoteField({ initial, onSave, busy }: { initial: string; onSave: (v: str
   const dirty = val !== initial;
   return (
     <div className="space-y-2">
-      <textarea rows={3} value={val} onChange={(e) => setVal(e.target.value)} className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm" />
-      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-[color:var(--color-border)] disabled:opacity-50">Save note</button>
+      <textarea rows={3} value={val} onChange={(e) => setVal(e.target.value)} className="w-full px-3 py-2 rounded border border-stone-200 text-sm" />
+      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save note</button>
     </div>
   );
 }
@@ -270,8 +270,8 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
   const dirty = val !== initialStr;
   return (
     <div className="space-y-2">
-      <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm" />
-      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-[color:var(--color-border)] disabled:opacity-50">Save tags</button>
+      <input value={val} onChange={(e) => setVal(e.target.value)} placeholder="vip, fashion, …" className="w-full px-3 py-2 rounded border border-stone-200 text-sm" />
+      <button onClick={() => onSave(val)} disabled={!dirty || busy} className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50">Save tags</button>
     </div>
   );
 }
@@ -321,26 +321,26 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-lg rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
         <h2 className="font-semibold">Merge duplicate customer into this one</h2>
-        <p className="text-xs text-[color:var(--color-text-muted)]">
+        <p className="text-xs text-stone-500">
           The selected customer&rsquo;s orders, addresses, tags, and store credit will move here. The other account will be deleted. This cannot be undone.
         </p>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <input
           value={q}
           onChange={(e) => { setQ(e.target.value); setSelected(null); }}
           placeholder="Search by email or name (min 2 chars)"
-          className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          className="w-full px-3 py-2 rounded border border-stone-200"
         />
         {selected ? (
-          <div className="rounded border border-[color:var(--color-border)] px-3 py-2 bg-gray-50 flex items-center justify-between">
+          <div className="rounded border border-stone-200 px-3 py-2 bg-gray-50 flex items-center justify-between">
             <div>
               <div className="font-medium">{selected.email}</div>
-              <div className="text-xs text-[color:var(--color-text-muted)]">{selected.firstName} {selected.lastName}</div>
+              <div className="text-xs text-stone-500">{selected.firstName} {selected.lastName}</div>
             </div>
             <button onClick={() => setSelected(null)} className="text-xs underline">Clear</button>
           </div>
         ) : results.length > 0 ? (
-          <ul className="border border-[color:var(--color-border)] rounded max-h-48 overflow-y-auto divide-y divide-[color:var(--color-border)]">
+          <ul className="border border-stone-200 rounded max-h-48 overflow-y-auto divide-y divide-stone-200">
             {results.map((r) => (
               <li key={r.id}>
                 <button
@@ -348,14 +348,14 @@ function MergeModal({ targetId, onClose, onDone }: { targetId: string; onClose: 
                   className="w-full text-left px-3 py-2 hover:bg-gray-50"
                 >
                   <div className="font-medium text-xs">{r.email}</div>
-                  <div className="text-xs text-[color:var(--color-text-muted)]">{r.firstName} {r.lastName}</div>
+                  <div className="text-xs text-stone-500">{r.firstName} {r.lastName}</div>
                 </button>
               </li>
             ))}
           </ul>
         ) : null}
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
           <button
             onClick={submit}
             disabled={!selected || submitting}
@@ -397,7 +397,7 @@ function EraseModal({ customerId, email, onClose, onDone }: { customerId: string
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
         <h2 className="font-semibold text-red-800">Erase customer account</h2>
-        <p className="text-xs text-[color:var(--color-text-muted)]">
+        <p className="text-xs text-stone-500">
           This anonymizes the customer row, deletes their addresses, invalidates sessions,
           and redacts personal data from past order snapshots. Orders themselves are kept
           (legal/tax retention).
@@ -405,15 +405,15 @@ function EraseModal({ customerId, email, onClose, onDone }: { customerId: string
         <p className="text-xs">
           To confirm, type <span className="font-mono bg-gray-100 px-1">{email}</span> below:
         </p>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <input
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+          className="w-full px-3 py-2 rounded border border-stone-200"
           autoComplete="off"
         />
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
           <button
             onClick={submit}
             disabled={submitting || confirm !== email}
@@ -460,16 +460,16 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
         <h2 className="font-semibold">Grant or adjust store credit</h2>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
           <div className="font-medium mb-1">Amount ({currency}) — negative to debit</div>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+            className="w-full px-3 py-2 rounded border border-stone-200" />
         </label>
         <label className="block">
           <div className="font-medium mb-1">Reason</div>
           <select value={reason} onChange={(e) => setReason(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white">
+            className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
             <option value="grant">Grant (compensation / goodwill)</option>
             <option value="promotional">Promotional (birthday, etc.)</option>
             <option value="adjustment">Adjustment (correction)</option>
@@ -479,11 +479,11 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
         </label>
         <label className="block">
           <div className="font-medium mb-1">Note</div>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+          <input value={note} onChange={(e) => setNote(e.target.value)} className="w-full px-3 py-2 rounded border border-stone-200" />
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
-          <button onClick={submit} disabled={submitting} className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
+          <button onClick={submit} disabled={submitting} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
             {submitting ? 'Saving…' : 'Apply'}
           </button>
         </div>

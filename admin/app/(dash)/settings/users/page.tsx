@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 
 type AdminUser = {
@@ -60,57 +59,58 @@ export default function UsersPage() {
   }
 
   return (
-    <section className="max-w-5xl">
-      <div className="flex items-center gap-3 mb-4">
-        <Link href="/settings" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Settings</Link>
-        <h1 className="text-2xl font-semibold flex-1">Admin users</h1>
-        <button onClick={() => setInviteOpen(true)} className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white">+ Invite user</button>
+    <div className="max-w-5xl space-y-3">
+      <div className="flex items-center justify-end">
+        <button onClick={() => setInviteOpen(true)} className="btn btn-primary">+ Invite user</button>
       </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
       {inviteUrl && (
-        <div className="mb-3 rounded border border-blue-200 bg-blue-50 p-3 text-sm">
-          <div className="font-medium mb-1">Invite link generated</div>
-          <div className="font-mono text-xs break-all">{inviteUrl}</div>
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
-            Share this if the email didn&rsquo;t arrive. Valid for 72 hours.
-          </div>
+        <div className="alert alert-info">
+          <div className="mb-1 font-medium">Invite link generated</div>
+          <div className="break-all font-mono text-xs">{inviteUrl}</div>
+          <div className="mt-1 text-xs opacity-75">Share this if the email didn&rsquo;t arrive. Valid for 72 hours.</div>
         </div>
       )}
 
-      <table className="w-full text-sm border border-[color:var(--color-border)] rounded bg-white">
-        <thead className="bg-gray-50 border-b border-[color:var(--color-border)]">
-          <tr className="text-left">
-            <th className="px-3 py-2 font-medium">Email</th>
-            <th className="px-3 py-2 font-medium">Name</th>
-            <th className="px-3 py-2 font-medium">Role</th>
-            <th className="px-3 py-2 font-medium">Last login</th>
-            <th className="px-3 py-2 font-medium"></th>
+      <table className="table-card">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Last login</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {items.map((u) => (
-            <tr key={u.id} className="border-b border-[color:var(--color-border)]">
-              <td className="px-3 py-2">
+            <tr key={u.id}>
+              <td>
                 <div className="font-medium">{u.email}</div>
-                {u.mustChangePassword && <div className="text-xs text-amber-800">pending first login</div>}
+                {u.mustChangePassword && <span className="badge badge-warning no-dot">pending first login</span>}
               </td>
-              <td className="px-3 py-2">{u.name}</td>
-              <td className="px-3 py-2">
-                <select value={u.role} onChange={(e) => setRole(u.id, e.target.value as AdminUser['role'])}
-                  className="px-2 py-1 text-xs rounded border border-[color:var(--color-border)] bg-white">
+              <td>{u.name}</td>
+              <td>
+                <select
+                  value={u.role}
+                  onChange={(e) => setRole(u.id, e.target.value as AdminUser['role'])}
+                  className="select w-auto"
+                >
                   <option value="owner">Owner</option>
                   <option value="admin">Admin</option>
                   <option value="staff">Staff</option>
                 </select>
               </td>
-              <td className="px-3 py-2 text-xs text-[color:var(--color-text-muted)]">
+              <td className="text-xs text-stone-500">
                 {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '—'}
               </td>
-              <td className="px-3 py-2 text-right">
-                {u.mustChangePassword && (
-                  <button onClick={() => resend(u.id)} className="text-xs hover:underline mr-3">Resend invite</button>
-                )}
-                <button onClick={() => del(u)} className="text-xs text-red-700 hover:underline">Delete</button>
+              <td className="text-right">
+                <div className="flex justify-end gap-1">
+                  {u.mustChangePassword && (
+                    <button onClick={() => resend(u.id)} className="btn btn-ghost btn-sm">Resend invite</button>
+                  )}
+                  <button onClick={() => del(u)} className="btn btn-danger btn-sm">Delete</button>
+                </div>
               </td>
             </tr>
           ))}
@@ -127,7 +127,7 @@ export default function UsersPage() {
           }}
         />
       )}
-    </section>
+    </div>
   );
 }
 
@@ -158,33 +158,30 @@ function InviteModal({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm';
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Invite an admin</h2>
-        {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">{error}</div>}
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Invite an admin</h2>
+        {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
-          <div className="font-medium mb-1">Email</div>
-          <input className={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <span className="label">Email</span>
+          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Name</div>
-          <input className={input} value={name} onChange={(e) => setName(e.target.value)} />
+          <span className="label">Name</span>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label className="block">
-          <div className="font-medium mb-1">Role</div>
-          <select value={role} onChange={(e) => setRole(e.target.value as AdminUser['role'])}
-            className={input + ' bg-white'}>
+          <span className="label">Role</span>
+          <select value={role} onChange={(e) => setRole(e.target.value as AdminUser['role'])} className="select">
             <option value="staff">Staff — day-to-day ops, no refunds or deletes</option>
             <option value="admin">Admin — everything except managing admins</option>
             <option value="owner">Owner — full rights</option>
           </select>
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
-          <button onClick={submit} disabled={busy || !email.trim() || !name.trim()}
-            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={submit} disabled={busy || !email.trim() || !name.trim()} className="btn btn-primary">
             {busy ? 'Sending…' : 'Send invite'}
           </button>
         </div>

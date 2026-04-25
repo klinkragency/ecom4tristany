@@ -134,19 +134,17 @@ export default function DiscountForm({
     }
   }
 
-  const inputCls = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)]';
-
   return (
     <div className="space-y-4 max-w-3xl">
-      {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
         <Field label="Title (admin-facing)" required>
-          <input className={inputCls} value={v.title} onChange={(e) => update({ title: e.target.value })} />
+          <input className="input" value={v.title} onChange={(e) => update({ title: e.target.value })} />
         </Field>
         <Field label="Code (leave empty for automatic discount)">
-          <input className={inputCls + ' font-mono uppercase'}
+          <input className="input font-mono uppercase"
             value={v.code}
             onChange={(e) => update({ code: e.target.value.toUpperCase() })}
             placeholder="SUMMER20" />
@@ -163,7 +161,7 @@ export default function DiscountForm({
             <input type="number" step="0.01" min={0} max={100}
               value={v.valuePercent ?? ''}
               onChange={(e) => update({ valuePercent: e.target.value === '' ? null : Number(e.target.value) })}
-              className={inputCls} />
+              className="input" />
           </Field>
         )}
         <label className="flex items-center gap-2 text-sm mb-2">
@@ -175,7 +173,7 @@ export default function DiscountForm({
             <input type="number" step="0.01" min={0}
               value={v.valueCents == null ? '' : (v.valueCents / 100).toFixed(2)}
               onChange={(e) => update({ valueCents: e.target.value === '' ? null : Math.round(Number(e.target.value) * 100) })}
-              className={inputCls} />
+              className="input" />
           </Field>
         )}
         <label className="flex items-center gap-2 text-sm mb-2">
@@ -197,28 +195,28 @@ export default function DiscountForm({
           <div className="grid grid-cols-3 gap-3">
             <Field label="Buy (qty)">
               <input type="number" min={1} value={v.bogoBuyQuantity ?? 1}
-                onChange={(e) => update({ bogoBuyQuantity: Number(e.target.value) })} className={inputCls} />
+                onChange={(e) => update({ bogoBuyQuantity: Number(e.target.value) })} className="input" />
             </Field>
             <Field label="Get (qty)">
               <input type="number" min={1} value={v.bogoGetQuantity ?? 1}
-                onChange={(e) => update({ bogoGetQuantity: Number(e.target.value) })} className={inputCls} />
+                onChange={(e) => update({ bogoGetQuantity: Number(e.target.value) })} className="input" />
             </Field>
             <Field label="Get discount (%)">
               <input type="number" min={0} max={100} value={v.bogoGetDiscountPercent ?? 100}
-                onChange={(e) => update({ bogoGetDiscountPercent: Number(e.target.value) })} className={inputCls} />
+                onChange={(e) => update({ bogoGetDiscountPercent: Number(e.target.value) })} className="input" />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Buy from">
               <select value={v.bogoBuyScope ?? 'products'} onChange={(e) => update({ bogoBuyScope: e.target.value as 'products' | 'collections' })}
-                className={inputCls + ' bg-white'}>
+                className="select">
                 <option value="products">Specific products</option>
                 <option value="collections">Collections</option>
               </select>
             </Field>
             <Field label="Get from">
               <select value={v.bogoGetScope ?? 'products'} onChange={(e) => update({ bogoGetScope: e.target.value as 'products' | 'collections' })}
-                className={inputCls + ' bg-white'}>
+                className="select">
                 <option value="products">Specific products</option>
                 <option value="collections">Collections</option>
               </select>
@@ -287,19 +285,19 @@ export default function DiscountForm({
             <input type="number" step="0.01" min={0}
               value={(v.minSubtotalCents / 100).toFixed(2)}
               onChange={(e) => update({ minSubtotalCents: Math.round(Number(e.target.value) * 100) })}
-              className={inputCls} />
+              className="input" />
           </Field>
           <Field label="Total uses (empty = unlimited)">
             <input type="number" min={0}
               value={v.usageLimit ?? ''}
               onChange={(e) => update({ usageLimit: e.target.value === '' ? null : Number(e.target.value) })}
-              className={inputCls} />
+              className="input" />
           </Field>
           <Field label="Uses per customer (empty = unlimited)">
             <input type="number" min={0}
               value={v.usageLimitPerCustomer ?? ''}
               onChange={(e) => update({ usageLimitPerCustomer: e.target.value === '' ? null : Number(e.target.value) })}
-              className={inputCls} />
+              className="input" />
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -307,13 +305,13 @@ export default function DiscountForm({
             <input type="datetime-local"
               value={v.startsAt ? v.startsAt.slice(0, 16) : ''}
               onChange={(e) => update({ startsAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
-              className={inputCls} />
+              className="input" />
           </Field>
           <Field label="Ends at">
             <input type="datetime-local"
               value={v.endsAt ? v.endsAt.slice(0, 16) : ''}
               onChange={(e) => update({ endsAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
-              className={inputCls} />
+              className="input" />
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">
@@ -323,8 +321,7 @@ export default function DiscountForm({
       </Card>
 
       <div className="flex justify-end">
-        <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+        <button onClick={submit} disabled={saving} className="btn btn-primary">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -334,7 +331,7 @@ export default function DiscountForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-2">
+    <div className="card card-pad space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -343,8 +340,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <label className="block mb-3">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+    <label className="mb-3 block">
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );
@@ -364,14 +361,14 @@ function MultiPicker({
   };
   return (
     <div className="mt-2">
-      <div className="text-sm font-medium mb-1">{label}</div>
+      <div className="label">{label}</div>
       {options.length === 0 ? (
-        <p className="text-xs text-[color:var(--color-text-muted)]">None available.</p>
+        <p className="text-xs text-stone-500">None available.</p>
       ) : (
-        <ul className="max-h-40 overflow-y-auto border border-[color:var(--color-border)] rounded text-sm divide-y divide-[color:var(--color-border)]">
+        <ul className="max-h-44 divide-y divide-stone-200/70 overflow-y-auto rounded-xl border border-stone-200 bg-white text-sm">
           {options.map((o) => (
             <li key={o.id}>
-              <label className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
+              <label className="flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-stone-50">
                 <input type="checkbox" checked={selected.includes(o.id)} onChange={() => toggle(o.id)} />
                 <span>{o.label}</span>
               </label>

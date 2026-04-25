@@ -116,18 +116,18 @@ export default function AnalyticsPage() {
         <div className="flex items-center gap-3">
           <Link href="/analytics/finance" className="text-sm hover:underline">Finance →</Link>
           <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-            className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] bg-white">
+            className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
             {RANGES.map((r) => <option key={r.days} value={r.days}>Last {r.label}</option>)}
           </select>
           <select value={granularity} onChange={(e) => setGranularity(e.target.value as 'day' | 'week' | 'month')}
-            className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] bg-white">
+            className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
             <option value="day">Daily</option>
             <option value="week">Weekly</option>
             <option value="month">Monthly</option>
           </select>
         </div>
       </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="mb-3 alert alert-error">{error}</div>}
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -142,38 +142,38 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue chart */}
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-6">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-6">
         <h2 className="text-sm font-semibold mb-2">Revenue over time</h2>
         {sales && sales.points.length > 0 ? (
           <LineChart points={sales.points} />
         ) : (
-          <p className="text-sm text-[color:var(--color-text-muted)]">No data in range.</p>
+          <p className="text-sm text-stone-500">No data in range.</p>
         )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Funnel */}
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4">
+        <div className="rounded border border-stone-200 bg-white p-4">
           <h2 className="text-sm font-semibold mb-3">Conversion funnel</h2>
           {funnel.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No events yet — the storefront tracker starts collecting on page load.</p>
+            <p className="text-sm text-stone-500">No events yet — the storefront tracker starts collecting on page load.</p>
           ) : (
             <Funnel steps={funnel} />
           )}
         </div>
 
         {/* Top products */}
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4">
+        <div className="rounded border border-stone-200 bg-white p-4">
           <h2 className="text-sm font-semibold mb-3">Top products</h2>
           {top.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No sales in range.</p>
+            <p className="text-sm text-stone-500">No sales in range.</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)] text-sm">
+            <ul className="divide-y divide-stone-200 text-sm">
               {top.map((p, i) => (
                 <li key={p.productId} className="flex items-center gap-3 py-2">
-                  <span className="w-5 text-xs text-[color:var(--color-text-muted)]">{i + 1}</span>
+                  <span className="w-5 text-xs text-stone-500">{i + 1}</span>
                   <Link href={`/products/${p.productId}`} className="flex-1 hover:underline truncate">{p.title}</Link>
-                  <span className="w-16 text-right text-xs text-[color:var(--color-text-muted)]">{p.unitsSold} u</span>
+                  <span className="w-16 text-right text-xs text-stone-500">{p.unitsSold} u</span>
                   <span className="w-24 text-right font-medium">{formatPrice(p.revenueCents)}</span>
                 </li>
               ))}
@@ -214,17 +214,17 @@ function LiveSessionsCard() {
   const max = Math.max(1, ...(data?.items ?? []).map((i) => i.sessions));
 
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4">
+    <div className="rounded border border-stone-200 bg-white p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">Live sessions by country</h2>
-        <div className="flex items-center gap-2 text-xs text-[color:var(--color-text-muted)]">
+        <div className="flex items-center gap-2 text-xs text-stone-500">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           last 5 min · {data?.totalSessions ?? 0} active
         </div>
       </div>
       {err && <div className="text-xs text-red-700 mb-2">{err}</div>}
       {!data || data.items.length === 0 ? (
-        <p className="text-sm text-[color:var(--color-text-muted)]">
+        <p className="text-sm text-stone-500">
           No active sessions right now.
         </p>
       ) : (
@@ -234,9 +234,9 @@ function LiveSessionsCard() {
             return (
               <li key={i.country} className="flex items-center gap-3">
                 <span className="w-10 text-lg leading-none">{flagFor(i.country)}</span>
-                <span className="w-12 font-mono text-xs text-[color:var(--color-text-muted)]">{i.country}</span>
+                <span className="w-12 font-mono text-xs text-stone-500">{i.country}</span>
                 <div className="flex-1 h-2 rounded bg-gray-100 overflow-hidden">
-                  <div className="h-full bg-[color:var(--color-accent)]" style={{ width: `${pct}%` }} />
+                  <div className="h-full bg-stone-900" style={{ width: `${pct}%` }} />
                 </div>
                 <span className="w-10 text-right text-xs">{i.sessions}</span>
               </li>
@@ -264,9 +264,9 @@ function PostHogCard({ data }: { data: PostHog | null }) {
   if (!data) return null;
   if (!data.configured) {
     return (
-      <div className="rounded border border-dashed border-[color:var(--color-border)] bg-white p-4 mb-4">
+      <div className="rounded border border-dashed border-stone-200 bg-white p-4 mb-4">
         <h2 className="text-sm font-semibold mb-1">PostHog</h2>
-        <p className="text-sm text-[color:var(--color-text-muted)]">
+        <p className="text-sm text-stone-500">
           Not connected. Set <code className="font-mono bg-gray-100 px-1">POSTHOG_API_KEY</code> and{' '}
           <code className="font-mono bg-gray-100 px-1">POSTHOG_PROJECT_ID</code> in the backend env,
           then restart the API.
@@ -275,7 +275,7 @@ function PostHogCard({ data }: { data: PostHog | null }) {
     );
   }
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4">
+    <div className="rounded border border-stone-200 bg-white p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">PostHog</h2>
         {data.dashboardUrl && (
@@ -291,25 +291,25 @@ function PostHogCard({ data }: { data: PostHog | null }) {
       )}
       <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
         <div>
-          <div className="text-xs text-[color:var(--color-text-muted)]">Unique visitors</div>
+          <div className="text-xs text-stone-500">Unique visitors</div>
           <div className="text-lg font-semibold">{data.uniqueVisitors.toLocaleString()}</div>
         </div>
         <div>
-          <div className="text-xs text-[color:var(--color-text-muted)]">Pageviews</div>
+          <div className="text-xs text-stone-500">Pageviews</div>
           <div className="text-lg font-semibold">{data.pageviews.toLocaleString()}</div>
         </div>
         <div>
-          <div className="text-xs text-[color:var(--color-text-muted)]">Total events</div>
+          <div className="text-xs text-stone-500">Total events</div>
           <div className="text-lg font-semibold">{data.totalEvents.toLocaleString()}</div>
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-4 text-sm">
         <div>
-          <h3 className="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wide mb-1">Top events</h3>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Top events</h3>
           {data.topEvents.length === 0 ? (
-            <p className="text-xs text-[color:var(--color-text-muted)]">—</p>
+            <p className="text-xs text-stone-500">—</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)]">
+            <ul className="divide-y divide-stone-200">
               {data.topEvents.map((e) => (
                 <li key={e.event} className="flex justify-between py-1">
                   <span className="font-mono text-xs">{e.event}</span>
@@ -320,11 +320,11 @@ function PostHogCard({ data }: { data: PostHog | null }) {
           )}
         </div>
         <div>
-          <h3 className="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wide mb-1">Top pages</h3>
+          <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Top pages</h3>
           {data.topPages.length === 0 ? (
-            <p className="text-xs text-[color:var(--color-text-muted)]">—</p>
+            <p className="text-xs text-stone-500">—</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)]">
+            <ul className="divide-y divide-stone-200">
               {data.topPages.map((p) => (
                 <li key={p.path} className="flex justify-between py-1">
                   <span className="truncate pr-2">{p.path}</span>
@@ -341,10 +341,10 @@ function PostHogCard({ data }: { data: PostHog | null }) {
 
 function KPI({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-3">
-      <div className="text-xs text-[color:var(--color-text-muted)]">{label}</div>
+    <div className="rounded border border-stone-200 bg-white p-3">
+      <div className="text-xs text-stone-500">{label}</div>
       <div className="text-lg font-semibold">{value}</div>
-      {sub && <div className="text-xs text-[color:var(--color-text-muted)]">{sub}</div>}
+      {sub && <div className="text-xs text-stone-500">{sub}</div>}
     </div>
   );
 }
@@ -420,13 +420,13 @@ function Funnel({ steps }: { steps: FunnelStep[] }) {
           <li key={s.name}>
             <div className="flex items-center justify-between text-xs mb-1">
               <span>{s.name}</span>
-              <span className="text-[color:var(--color-text-muted)]">
+              <span className="text-stone-500">
                 {s.count.toLocaleString()}
                 {conv !== null && ` · ${conv.toFixed(1)}% of prior`}
               </span>
             </div>
             <div className="h-2 rounded bg-gray-100 overflow-hidden">
-              <div className="h-full bg-[color:var(--color-accent)]" style={{ width: `${pct}%` }} />
+              <div className="h-full bg-stone-900" style={{ width: `${pct}%` }} />
             </div>
           </li>
         );

@@ -129,7 +129,7 @@ export default function EditCollectionPage() {
   if (!collection) {
     return (
       <section>
-        <p className="text-[color:var(--color-text-muted)]">Loading…</p>
+        <p className="text-stone-500">Loading…</p>
         {error && <div className="mt-3 text-red-700 text-sm">{error}</div>}
       </section>
     );
@@ -139,7 +139,7 @@ export default function EditCollectionPage() {
     <section className="max-w-4xl">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link href="/collections" className="text-sm text-[color:var(--color-text-muted)] hover:underline">
+          <Link href="/collections" className="text-sm text-stone-500 hover:underline">
             ← Collections
           </Link>
           <h1 className="text-2xl font-semibold">{collection.title}</h1>
@@ -161,7 +161,7 @@ export default function EditCollectionPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)] disabled:opacity-50"
+            className="px-3 py-2 rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -169,7 +169,7 @@ export default function EditCollectionPage() {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
+        <div className="mb-3 alert alert-error">
           {error}
         </div>
       )}
@@ -180,14 +180,14 @@ export default function EditCollectionPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </Field>
           <Field label="Handle">
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
+              className="w-full px-3 py-2 rounded border border-stone-200 font-mono text-sm"
             />
           </Field>
           <Field label="Description">
@@ -202,7 +202,7 @@ export default function EditCollectionPage() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
             >
               {!collection.isRulesBased && <option value="manual">Manual</option>}
               <option value="created_desc">Newest first</option>
@@ -227,7 +227,7 @@ export default function EditCollectionPage() {
           <Card title={`Products (${collection.products.length})`}>
             <button
               onClick={() => setPicker(true)}
-              className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50 mb-3"
+              className="px-3 py-2 text-sm rounded border border-stone-200 hover:bg-gray-50 mb-3"
             >
               Add products…
             </button>
@@ -248,7 +248,7 @@ export default function EditCollectionPage() {
 
         {collection.isRulesBased && (
           <Card title={`Matched products (${collection.products.length})`}>
-            <p className="text-xs text-[color:var(--color-text-muted)] mb-3">
+            <p className="text-xs text-stone-500 mb-3">
               Preview of what the rules currently match.
             </p>
             <ProductList products={collection.products} />
@@ -284,7 +284,7 @@ function RulesEditor({
   const needsValue = operator !== 'in_stock' && operator !== 'out_of_stock';
 
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Rules</h2>
         <label className="inline-flex items-center gap-2 text-sm">
@@ -298,7 +298,7 @@ function RulesEditor({
       </div>
 
       {rules.length === 0 && (
-        <p className="text-sm text-[color:var(--color-text-muted)]">
+        <p className="text-sm text-stone-500">
           Add at least one rule for products to appear in this collection.
         </p>
       )}
@@ -307,10 +307,10 @@ function RulesEditor({
         {rules.map((r) => (
           <div
             key={r.id}
-            className="flex items-center gap-2 text-sm border border-[color:var(--color-border)] rounded px-3 py-2"
+            className="flex items-center gap-2 text-sm border border-stone-200 rounded px-3 py-2"
           >
             <span className="font-medium">{FIELD_LABELS[r.field]}</span>
-            <span className="text-[color:var(--color-text-muted)]">{OPERATOR_LABELS[r.operator]}</span>
+            <span className="text-stone-500">{OPERATOR_LABELS[r.operator]}</span>
             {r.value && <span className="font-mono bg-gray-100 px-1.5 rounded">{r.value}</span>}
             <button
               onClick={() => onDelete(r.id)}
@@ -322,11 +322,11 @@ function RulesEditor({
         ))}
       </div>
 
-      <div className="pt-3 border-t border-[color:var(--color-border)] grid grid-cols-[1fr_1fr_2fr_auto] gap-2 text-sm">
+      <div className="pt-3 border-t border-stone-200 grid grid-cols-[1fr_1fr_2fr_auto] gap-2 text-sm">
         <select
           value={field}
           onChange={(e) => setField(e.target.value as CollectionRule['field'])}
-          className="px-2 py-1 rounded border border-[color:var(--color-border)] bg-white"
+          className="px-2 py-1 rounded border border-stone-200 bg-white"
         >
           {Object.entries(FIELD_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
@@ -337,7 +337,7 @@ function RulesEditor({
         <select
           value={operator}
           onChange={(e) => setOperator(e.target.value as CollectionRule['operator'])}
-          className="px-2 py-1 rounded border border-[color:var(--color-border)] bg-white"
+          className="px-2 py-1 rounded border border-stone-200 bg-white"
         >
           {validOps.map((op) => (
             <option key={op} value={op}>
@@ -350,7 +350,7 @@ function RulesEditor({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={field === 'price' ? 'e.g. 25' : field === 'status' ? 'active / draft / archived' : 'value'}
-            className="px-2 py-1 rounded border border-[color:var(--color-border)]"
+            className="px-2 py-1 rounded border border-stone-200"
           />
         ) : (
           <div />
@@ -394,10 +394,10 @@ function ProductList({
   onDetach?: (productId: string) => Promise<void>;
 }) {
   if (products.length === 0) {
-    return <p className="text-sm text-[color:var(--color-text-muted)]">No products.</p>;
+    return <p className="text-sm text-stone-500">No products.</p>;
   }
   return (
-    <ul className="divide-y divide-[color:var(--color-border)]">
+    <ul className="divide-y divide-stone-200">
       {products.map((p) => (
         <li key={p.id} className="flex items-center gap-3 py-2 text-sm">
           <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden shrink-0">
@@ -408,11 +408,11 @@ function ProductList({
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium truncate">{p.title}</div>
-            <div className="text-xs text-[color:var(--color-text-muted)]">
+            <div className="text-xs text-stone-500">
               {p.handle} · {p.status}
             </div>
           </div>
-          <div className="text-xs text-[color:var(--color-text-muted)]">
+          <div className="text-xs text-stone-500">
             {p.minPriceCents === p.maxPriceCents
               ? formatPrice(p.minPriceCents)
               : `${formatPrice(p.minPriceCents)} – ${formatPrice(p.maxPriceCents)}`}
@@ -433,7 +433,7 @@ function ProductList({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

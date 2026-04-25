@@ -54,7 +54,7 @@ export default function InventorySection({ productId }: { productId: string }) {
 
   if (!matrix) {
     return (
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 text-sm text-[color:var(--color-text-muted)]">
+      <div className="rounded border border-stone-200 bg-white p-4 text-sm text-stone-500">
         Loading inventory…
       </div>
     );
@@ -67,18 +67,18 @@ export default function InventorySection({ productId }: { productId: string }) {
   };
 
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4">
+    <div className="rounded border border-stone-200 bg-white p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold">Inventory ({matrix.variants.length} variants × {matrix.locations.length} locations)</h2>
         <div className="flex items-center gap-2 text-xs">
-          <Link href="/settings/locations" className="text-[color:var(--color-text-muted)] hover:underline">
+          <Link href="/settings/locations" className="text-stone-500 hover:underline">
             Manage locations →
           </Link>
           {saved && !dirty && <span className="text-green-700">Saved</span>}
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-3 py-1.5 text-sm rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
+            className="px-3 py-1.5 text-sm rounded bg-stone-900 text-white disabled:opacity-50"
           >
             {saving ? 'Saving…' : dirty ? 'Save inventory' : 'No changes'}
           </button>
@@ -86,7 +86,7 @@ export default function InventorySection({ productId }: { productId: string }) {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-xs px-3 py-2">
+        <div className="alert alert-error text-xs mb-3">
           {error}
         </div>
       )}
@@ -106,10 +106,10 @@ export default function InventorySection({ productId }: { productId: string }) {
           </thead>
           <tbody>
             {matrix.variants.map((v) => (
-              <tr key={v.id} className="border-t border-[color:var(--color-border)]">
+              <tr key={v.id} className="border-t border-stone-200">
                 <td className="px-2 py-1.5 sticky left-0 bg-white z-10">
                   <div className="font-medium">{v.label}</div>
-                  {v.sku && <div className="text-xs text-[color:var(--color-text-muted)]">{v.sku}</div>}
+                  {v.sku && <div className="text-xs text-stone-500">{v.sku}</div>}
                 </td>
                 {matrix.locations.map((l) => {
                   const cell = v.levels[l.id] ?? { onHand: 0, committed: 0, incoming: 0 };
@@ -121,7 +121,7 @@ export default function InventorySection({ productId }: { productId: string }) {
                         min={0}
                         value={val}
                         onChange={(e) => setCell(v.id, l.id, Math.max(0, parseInt(e.target.value || '0', 10)))}
-                        className="w-full px-2 py-1 rounded border border-[color:var(--color-border)] text-right"
+                        className="w-full px-2 py-1 rounded border border-stone-200 text-right"
                       />
                       {cell.incoming > 0 && (
                         <div className="text-[10px] text-amber-700 text-right">+{cell.incoming} incoming</div>

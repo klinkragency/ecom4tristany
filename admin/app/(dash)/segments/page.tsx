@@ -52,43 +52,37 @@ export default function SegmentsPage() {
 
   return (
     <section className="max-w-4xl">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Segments</h1>
-        <button
-          onClick={create}
-          disabled={creating}
-          className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
-        >
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="h-page">Segments</h1>
+        <button onClick={create} disabled={creating} className="btn btn-primary">
           {creating ? 'Creating…' : 'New segment'}
         </button>
       </div>
-      <p className="text-sm text-[color:var(--color-text-muted)] mb-4">
+      <p className="mb-4 text-sm text-stone-500">
         Saved filters over your customer list. Each segment is a dynamic query — membership
         is always computed live from current customer data.
       </p>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
       {items.length === 0 ? (
-        <div className="rounded border border-dashed border-[color:var(--color-border)] p-8 text-center text-sm text-[color:var(--color-text-muted)]">
-          No segments yet. Create one to save a filter.
-        </div>
+        <div className="empty">No segments yet. Create one to save a filter.</div>
       ) : (
-        <ul className="divide-y divide-[color:var(--color-border)] border border-[color:var(--color-border)] rounded bg-white">
+        <div className="card divide-y divide-stone-200/60">
           {items.map((s) => (
-            <li key={s.id} className="p-3 flex items-center gap-3">
-              <div className="flex-1">
-                <Link href={`/segments/${s.id}`} className="font-medium hover:underline">{s.name}</Link>
+            <div key={s.id} className="flex items-center gap-3 px-5 py-4">
+              <div className="flex-1 min-w-0">
+                <Link href={`/segments/${s.id}`} className="text-sm font-medium hover:underline">{s.name}</Link>
                 {s.description && (
-                  <div className="text-xs text-[color:var(--color-text-muted)]">{s.description}</div>
+                  <div className="text-xs text-stone-500">{s.description}</div>
                 )}
               </div>
-              <div className="text-xs text-[color:var(--color-text-muted)]">
+              <span className="badge badge-neutral no-dot">
                 {s.matchAll ? 'ALL' : 'ANY'} · {s.memberCount} members
-              </div>
-              <Link href={`/segments/${s.id}`} className="text-xs underline">Edit</Link>
-            </li>
+              </span>
+              <Link href={`/segments/${s.id}`} className="btn btn-ghost btn-sm">Edit</Link>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );

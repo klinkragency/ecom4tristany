@@ -47,14 +47,14 @@ export default function TransferDetailPage() {
   }
 
   if (!t) {
-    return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
+    return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
   }
 
   return (
     <section className="max-w-3xl">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link href="/inventory/transfers" className="text-sm text-[color:var(--color-text-muted)] hover:underline">
+          <Link href="/inventory/transfers" className="text-sm text-stone-500 hover:underline">
             ← Transfers
           </Link>
           <h1 className="text-2xl font-semibold">{t.fromName} → {t.toName}</h1>
@@ -65,16 +65,16 @@ export default function TransferDetailPage() {
         <div className="flex items-center gap-2 text-sm">
           {t.status === 'draft' && (
             <>
-              <button onClick={() => transition('cancel')} disabled={busy} className="px-3 py-2 rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50">
+              <button onClick={() => transition('cancel')} disabled={busy} className="px-3 py-2 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50">
                 Cancel draft
               </button>
-              <button onClick={() => transition('ship')} disabled={busy} className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+              <button onClick={() => transition('ship')} disabled={busy} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
                 Ship
               </button>
             </>
           )}
           {t.status === 'in_transit' && (
-            <button onClick={() => transition('receive')} disabled={busy} className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+            <button onClick={() => transition('receive')} disabled={busy} className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
               Mark received
             </button>
           )}
@@ -82,17 +82,17 @@ export default function TransferDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
+        <div className="mb-3 alert alert-error">{error}</div>
       )}
 
       {t.note && (
-        <div className="mb-4 rounded border border-[color:var(--color-border)] bg-white p-3 text-sm">
+        <div className="mb-4 rounded border border-stone-200 bg-white p-3 text-sm">
           <div className="font-medium mb-1">Note</div>
-          <div className="text-[color:var(--color-text-muted)]">{t.note}</div>
+          <div className="text-stone-500">{t.note}</div>
         </div>
       )}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white overflow-hidden mb-4">
+      <div className="rounded border border-stone-200 bg-white overflow-hidden mb-4">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -103,13 +103,13 @@ export default function TransferDetailPage() {
           </thead>
           <tbody>
             {t.items.map((it) => (
-              <tr key={it.variantId} className="border-t border-[color:var(--color-border)]">
+              <tr key={it.variantId} className="border-t border-stone-200">
                 <td className="px-3 py-2">{it.label}</td>
-                <td className="px-3 py-2 text-[color:var(--color-text-muted)]">{it.sku || '—'}</td>
+                <td className="px-3 py-2 text-stone-500">{it.sku || '—'}</td>
                 <td className="px-3 py-2 text-right">{it.quantity}</td>
               </tr>
             ))}
-            <tr className="bg-gray-50 border-t border-[color:var(--color-border)]">
+            <tr className="bg-gray-50 border-t border-stone-200">
               <td colSpan={2} className="px-3 py-2 text-right font-medium">Total units</td>
               <td className="px-3 py-2 text-right font-medium">{t.totalUnits}</td>
             </tr>
@@ -117,7 +117,7 @@ export default function TransferDetailPage() {
         </table>
       </div>
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 text-xs text-[color:var(--color-text-muted)] space-y-0.5">
+      <div className="rounded border border-stone-200 bg-white p-4 text-xs text-stone-500 space-y-0.5">
         <div>Created: {new Date(t.createdAt).toLocaleString()}</div>
         {t.shippedAt && <div>Shipped: {new Date(t.shippedAt).toLocaleString()}</div>}
         {t.receivedAt && <div>Received: {new Date(t.receivedAt).toLocaleString()}</div>}
@@ -126,7 +126,7 @@ export default function TransferDetailPage() {
       {t.status === 'cancelled' && (
         <button
           onClick={() => router.push('/inventory/transfers')}
-          className="mt-4 text-sm text-[color:var(--color-text-muted)] hover:underline"
+          className="mt-4 text-sm text-stone-500 hover:underline"
         >
           Back to list
         </button>
