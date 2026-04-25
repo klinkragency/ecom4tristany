@@ -250,7 +250,7 @@ export default function SegmentDetailPage() {
                       value={r.value}
                       onChange={(e) => updateRule(i, { value: e.target.value })}
                       placeholder="value"
-                      className="flex-1 px-2 py-1.5 rounded border border-stone-200 text-xs"
+                      className="input text-xs flex-1"
                     />
                   )}
                   <button
@@ -269,7 +269,7 @@ export default function SegmentDetailPage() {
       <div className="card card-pad mb-4 space-y-3 text-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Members ({s.memberCount})</h2>
-          <button onClick={previewMembers} disabled={loadingMembers} className="px-3 py-1 text-xs rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50">
+          <button onClick={previewMembers} disabled={loadingMembers} className="btn btn-secondary btn-sm">
             {loadingMembers ? 'Loading…' : 'Preview matches'}
           </button>
         </div>

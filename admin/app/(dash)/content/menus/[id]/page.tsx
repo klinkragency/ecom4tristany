@@ -136,7 +136,7 @@ export default function MenuEditor() {
         <Link href="/content/menus" className="text-sm text-stone-500 hover:underline">← Menus</Link>
         <h1 className="h-page flex-1">{menu.name}</h1>
         <button onClick={save} disabled={saving}
-          className="px-4 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50">
+          className="btn btn-primary">
           {saving ? 'Saving…' : 'Save menu'}
         </button>
       </div>
