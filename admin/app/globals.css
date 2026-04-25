@@ -222,7 +222,10 @@ html, body {
 .alert-info  { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
 .alert-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 
-/* Sidebar item hover/active states (data-active toggles via JS) */
+/* ─────────────────────────────────────────────────────────────────
+   Sidebar items — single clickable row that both navigates AND
+   toggles its sub-section. The chevron is a visual indicator only.
+   ───────────────────────────────────────────────────────────────── */
 .sb-item {
   position: relative;
   display: flex;
@@ -232,41 +235,100 @@ html, body {
   border-radius: 8px;
   font-size: 14px;
   color: var(--color-sidebar-fg);
-  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+  transition: background-color 140ms ease, color 140ms ease;
+  cursor: pointer;
+  user-select: none;
 }
-.sb-item:hover { background: var(--color-sidebar-hover-bg); color: var(--color-sidebar-fg-strong); }
-.sb-item[data-active="true"] {
+.sb-item:hover {
+  background: var(--color-sidebar-hover-bg);
+  color: var(--color-sidebar-fg-strong);
+}
+.sb-item:active { transform: scale(0.99); }
+
+/* Active = current route. We split this into two visual roles:
+   - parent active: just a lift on bg (no left bar — that goes to sub-items)
+   - sub-item active: bg lift + sand bar on the left */
+.sb-item[data-active="parent"] {
   background: var(--color-sidebar-active-bg);
   color: var(--color-sidebar-fg-strong);
 }
-.sb-item[data-active="true"]::before {
+.sb-item[data-active="leaf"] {
+  background: rgba(214, 207, 184, 0.14);
+  color: var(--color-sidebar-fg-strong);
+  font-weight: 500;
+}
+.sb-item[data-active="leaf"]::before {
   content: "";
   position: absolute;
-  left: -8px;
-  top: 8px;
-  bottom: 8px;
+  left: -2px;
+  top: 7px;
+  bottom: 7px;
   width: 2px;
   border-radius: 2px;
   background: var(--color-sidebar-accent);
 }
-.sb-item .sb-icon {
-  transition: transform 200ms cubic-bezier(.4,0,.2,1);
-}
-.sb-item:hover .sb-icon { transform: scale(1.10) rotate(-2deg); }
-.sb-item[data-active="true"] .sb-icon { transform: scale(1.04); }
 
-/* Section toggle chevron */
-.sb-chevron { transition: transform 200ms ease; }
+/* Icon micro-interaction */
+.sb-item .sb-icon {
+  transition: transform 220ms cubic-bezier(.4,0,.2,1);
+  flex-shrink: 0;
+}
+.sb-item:hover .sb-icon { transform: scale(1.08) rotate(-3deg); }
+.sb-item[data-active] .sb-icon { transform: scale(1.05); }
+
+/* Chevron for parents that have sub-items. Rotates with [data-open]. */
+.sb-chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--color-sidebar-fg-muted);
+  transition: transform 200ms cubic-bezier(.4,0,.2,1), color 140ms ease;
+}
+.sb-item:hover .sb-chevron { color: var(--color-sidebar-fg-strong); }
 .sb-chevron[data-open="true"] { transform: rotate(90deg); }
 
-/* Sub-items collapsible animation */
+/* Sub-items collapsible — grid trick for animatable height */
 .sb-subs {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 200ms cubic-bezier(.4,0,.2,1);
+  transition: grid-template-rows 220ms cubic-bezier(.4,0,.2,1);
 }
 .sb-subs[data-open="true"] { grid-template-rows: 1fr; }
 .sb-subs > div { overflow: hidden; }
+
+/* Sub-items stack — slim, indented, not too dense */
+.sb-sub {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px 6px 30px;       /* extra left = align under parent label */
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+  transition: background-color 140ms ease, color 140ms ease;
+  cursor: pointer;
+}
+.sb-sub:hover {
+  color: var(--color-sidebar-fg-strong);
+  background: var(--color-sidebar-hover-bg);
+}
+.sb-sub[data-active="true"] {
+  color: var(--color-sidebar-fg-strong);
+  background: rgba(214, 207, 184, 0.12);
+  font-weight: 500;
+}
+.sb-sub[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-sidebar-accent);
+}
 
 /* Command palette transitions */
 @keyframes cp-in {

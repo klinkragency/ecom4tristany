@@ -145,42 +145,50 @@ function SectionRow({
   onToggle: () => void;
 }) {
   const Icon = section.icon;
-  const active = isSectionActive(pathname, section);
   const hasSubs = !!section.subs?.length;
+  const childActive = section.subs?.some((s) => isSubActive(pathname, s)) ?? false;
+  const inSection = isSectionActive(pathname, section);
+  // Two parent states:
+  //   leaf   = strong indicator (sand bar). Used when no sub-item owns the focus.
+  //   parent = soft indicator (bg lift only). Used when a sub-item is active so
+  //            the bar visually belongs to the sub-item, not the parent.
+  const parentState = !inSection ? null : childActive ? 'parent' : 'leaf';
+
+  // One Link handles BOTH navigation and expand. Clicking the row navigates
+  // to the section route and toggles the sub-list. Chevron is decorative only.
+  function handleClick() {
+    if (hasSubs) onToggle();
+  }
 
   return (
     <div>
-      <div className="flex items-center gap-1">
-        <Link href={section.href} className="sb-item flex-1" data-active={active}>
-          <Icon className="sb-icon h-4 w-4" />
-          <span className="flex-1 truncate">{section.label}</span>
-        </Link>
-        {hasSubs && (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={`${open ? 'Collapse' : 'Expand'} ${section.label}`}
-            className="rounded p-1 transition-colors hover:bg-white/5"
-            style={{ color: 'var(--color-sidebar-fg-muted)' }}
-          >
-            <ChevronRight className="sb-chevron h-3.5 w-3.5" data-open={open} />
-          </button>
-        )}
-      </div>
+      <Link
+        href={section.href}
+        onClick={handleClick}
+        className="sb-item"
+        data-active={parentState ?? undefined}
+        aria-expanded={hasSubs ? open : undefined}
+      >
+        <Icon className="sb-icon h-4 w-4" />
+        <span className="flex-1 truncate">{section.label}</span>
+        {hasSubs && <ChevronRight className="sb-chevron" data-open={open} aria-hidden />}
+      </Link>
+
       {hasSubs && (
-        <div className="sb-subs ml-6 pl-2" data-open={open} style={{ borderLeft: '1px solid var(--color-sidebar-border)' }}>
-          <div className="space-y-0.5 py-0.5">
-            {section.subs!.map((sub) => (
-              <Link
-                key={sub.href}
-                href={sub.href}
-                className="sb-item"
-                data-active={isSubActive(pathname, sub)}
-                style={{ paddingLeft: 12 }}
-              >
-                <span className="truncate">{sub.label}</span>
-              </Link>
-            ))}
+        <div className="sb-subs" data-open={open}>
+          <div>
+            <div className="space-y-0.5 pt-0.5">
+              {section.subs!.map((sub) => (
+                <Link
+                  key={sub.href}
+                  href={sub.href}
+                  className="sb-sub"
+                  data-active={isSubActive(pathname, sub)}
+                >
+                  <span className="truncate">{sub.label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}
