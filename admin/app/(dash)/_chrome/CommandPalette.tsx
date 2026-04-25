@@ -171,8 +171,8 @@ export default function CommandPalette({
     const term = q.trim();
     const liveItems: Item[] = hits.map((h) => ({
       id: `${h.kind}-${h.id}`,
-      group: KIND_META[h.kind].group,
-      icon: KIND_META[h.kind].icon,
+      group: KIND_META[h.kind]?.group ?? 'Results',
+      icon: KIND_META[h.kind]?.icon ?? Search,
       title: h.title,
       subtitle: h.subtitle,
       href: h.href,

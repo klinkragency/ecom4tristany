@@ -248,7 +248,7 @@ export default function CheckoutPage() {
 
         {initResp && stripePromise && (
           <Elements stripe={stripePromise} options={{ clientSecret: initResp.clientSecret, appearance: { theme: 'stripe' } }}>
-            <PaymentStep orderId={initResp.orderId} totalCents={initResp.totalCents} currency={initResp.currency} onBack={() => { setInitResp(null); setStripePromise(null); }} />
+            <PaymentStep orderId={initResp.orderId} totalCents={initResp.totalCents} currency={initResp.currency} onBack={() => setInitResp(null)} />
           </Elements>
         )}
       </div>
