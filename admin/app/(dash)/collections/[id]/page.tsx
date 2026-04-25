@@ -176,7 +176,7 @@ export default function EditCollectionPage() {
       )}
 
       <div className="space-y-4">
-        <Card title="Basic info">
+        <Card title="Basic info" className="space-y-3">
           <Field label="Title">
             <input
               value={title}
