@@ -72,7 +72,7 @@ export default function NewTransferPage() {
       )}
 
       <div className="space-y-4">
-        <div className="rounded border border-stone-200 bg-white p-4 grid grid-cols-2 gap-3">
+        <div className="card card-pad grid grid-cols-2 gap-3">
           <label className="block text-sm">
             <span className="label">Source</span>
             <select
@@ -150,7 +150,7 @@ export default function NewTransferPage() {
           <button
             onClick={submit}
             disabled={saving}
-            className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Creating…' : 'Create draft'}
           </button>

@@ -65,7 +65,7 @@ export default function TransferDetailPage() {
         <div className="flex items-center gap-2 text-sm">
           {t.status === 'draft' && (
             <>
-              <button onClick={() => transition('cancel')} disabled={busy} className="px-3 py-2 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50">
+              <button onClick={() => transition('cancel')} disabled={busy} className="btn btn-secondary">
                 Cancel draft
               </button>
               <button onClick={() => transition('ship')} disabled={busy} className="btn btn-primary">
@@ -86,13 +86,13 @@ export default function TransferDetailPage() {
       )}
 
       {t.note && (
-        <div className="mb-4 rounded border border-stone-200 bg-white p-3 text-sm">
+        <div className="card card-pad mb-4 text-sm">
           <span className="label">Note</span>
           <div className="text-stone-500">{t.note}</div>
         </div>
       )}
 
-      <div className="rounded border border-stone-200 bg-white overflow-hidden mb-4">
+      <div className="card overflow-hidden mb-4">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -117,7 +117,7 @@ export default function TransferDetailPage() {
         </table>
       </div>
 
-      <div className="rounded border border-stone-200 bg-white p-4 text-xs text-stone-500 space-y-0.5">
+      <div className="card card-pad text-xs text-stone-500 space-y-0.5">
         <div>Created: {new Date(t.createdAt).toLocaleString()}</div>
         {t.shippedAt && <div>Shipped: {new Date(t.shippedAt).toLocaleString()}</div>}
         {t.receivedAt && <div>Received: {new Date(t.receivedAt).toLocaleString()}</div>}

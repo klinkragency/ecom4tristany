@@ -58,7 +58,7 @@ export default function EntryForm({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
+  const input = "input text-sm";
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -130,9 +130,9 @@ function FieldInput({ def, value, onChange }: {
   value: unknown;
   onChange: (v: unknown) => void;
 }) {
-  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
+  const input = "input text-sm";
   const label = (
-    <div className="text-sm font-medium mb-1">
+    <span className="label">
       {def.name}{def.required && <span className="text-red-600 ml-0.5">*</span>}
       <span className="ml-2 text-xs font-mono text-stone-500">{def.key}</span>
     </div>
@@ -214,7 +214,7 @@ function FieldInput({ def, value, onChange }: {
           <div className="flex items-center gap-2">
             <input type="color" value={strVal || '#000000'}
               onChange={(e) => onChange(e.target.value)}
-              className="h-10 w-14 rounded border border-stone-200 cursor-pointer" />
+              className="h-10 w-14 cursor-pointer rounded-lg border border-stone-200" />
             <input className={input + ' font-mono uppercase'} value={strVal}
               placeholder="#RRGGBB" maxLength={7}
               onChange={(e) => onChange(e.target.value)} />
@@ -237,7 +237,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Row({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );

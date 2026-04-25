@@ -134,7 +134,7 @@ export default function NewCollectionPage() {
           <button
             type="submit"
             disabled={pending}
-            className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
+            className="btn btn-primary"
           >
             {pending ? 'Creating…' : 'Create collection'}
           </button>

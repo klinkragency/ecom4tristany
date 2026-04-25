@@ -97,7 +97,7 @@ export default function TypeForm({
     setV({ ...v, fieldDefs: next });
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
+  const input = "input text-sm";
 
   return (
     <div className="space-y-4 max-w-3xl">
@@ -164,7 +164,7 @@ export default function TypeForm({
           </ul>
         )}
         <button onClick={addField}
-          className="mt-3 text-xs px-3 py-1.5 rounded border border-stone-200 hover:bg-gray-50">
+          className="btn btn-secondary btn-sm mt-3">
           + Add field
         </button>
       </Card>
@@ -197,7 +197,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );

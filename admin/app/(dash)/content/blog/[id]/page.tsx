@@ -57,7 +57,7 @@ export default function EditBlogPost() {
     <section>
       <div className="flex items-center gap-3 mb-4">
         <Link href="/content/blog" className="text-sm text-stone-500 hover:underline">← Blog</Link>
-        <h1 className="text-2xl font-semibold">{initial.title || 'Edit post'}</h1>
+        <h1 className="h-page">{initial.title || 'Edit post'}</h1>
       </div>
       <BlogForm initial={initial} onSave={save} saveLabel="Save changes" onDelete={del} />
     </section>
