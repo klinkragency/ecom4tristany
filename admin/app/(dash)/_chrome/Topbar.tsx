@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Search, Sun, Moon, ChevronDown, LogOut, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
+import { Modal } from '@/components/ui';
 
 type Me = { id: string; email: string; name: string; role: 'owner' | 'admin' | 'staff' };
 
