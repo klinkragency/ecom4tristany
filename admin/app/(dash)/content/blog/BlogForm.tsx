@@ -80,7 +80,7 @@ export default function BlogForm({
 
       <Card title="Basics">
         <Field label="Title" required>
-          <input className={input} value={v.title}
+          <input className="input" value={v.title}
             onChange={(e) => {
               const newTitle = e.target.value;
               const wasAutoSlug = slugify(v.title) === v.slug || v.slug === '';
@@ -90,20 +90,20 @@ export default function BlogForm({
             }} />
         </Field>
         <Field label="Slug" required>
-          <input className={input + ' font-mono'}
+          <input className="input font-mono"
             value={v.slug} onChange={(e) => update({ slug: e.target.value.toLowerCase() })} />
           <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
             Post URL: <span className="font-mono">/blog/{v.slug || '…'}</span>
           </div>
         </Field>
         <Field label="Excerpt (shown on listings + feed)">
-          <textarea rows={2} value={v.excerpt} onChange={(e) => update({ excerpt: e.target.value })} className={input} />
+          <textarea rows={2} value={v.excerpt} onChange={(e) => update({ excerpt: e.target.value })} className="input" />
         </Field>
         <Field label="Author name">
-          <input className={input} value={v.authorName} onChange={(e) => update({ authorName: e.target.value })} />
+          <input className="input" value={v.authorName} onChange={(e) => update({ authorName: e.target.value })} />
         </Field>
         <Field label="Featured image URL (optional)">
-          <input className={input} value={v.featuredImageUrl}
+          <input className="input" value={v.featuredImageUrl}
             onChange={(e) => update({ featuredImageUrl: e.target.value })}
             placeholder="https://…" />
         </Field>
@@ -114,7 +114,7 @@ export default function BlogForm({
       </Card>
 
       <Card title="Tags">
-        <input className={input} value={tagsStr} onChange={(e) => setTagsStr(e.target.value)}
+        <input className="input" value={tagsStr} onChange={(e) => setTagsStr(e.target.value)}
           placeholder="announcements, behind-the-scenes, …" />
         <div className="text-xs text-[color:var(--color-text-muted)] mt-1">Comma-separated.</div>
       </Card>
@@ -122,7 +122,7 @@ export default function BlogForm({
       <Card title="SEO">
         <Field label="Meta description">
           <textarea rows={2} value={v.metaDescription} maxLength={200}
-            onChange={(e) => update({ metaDescription: e.target.value })} className={input} />
+            onChange={(e) => update({ metaDescription: e.target.value })} className="input" />
           <div className="text-xs text-[color:var(--color-text-muted)] mt-1">{v.metaDescription.length}/200</div>
         </Field>
       </Card>
