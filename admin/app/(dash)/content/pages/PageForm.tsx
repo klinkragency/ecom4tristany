@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Card, Field } from '@/components/ui';
 import { ApiError } from '@/lib/api';
 
 export type PagePayload = {
