@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import type { Product } from '@/lib/types';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Card, Field } from '@/components/ui';
 
 export default function NewProductPage() {
   const router = useRouter();
