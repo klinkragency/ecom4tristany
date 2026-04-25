@@ -30,8 +30,14 @@ logs/
 # Test artifacts
 playwright-report/
 playwright-mcp/
+.playwright-mcp/
 test-results/
 .playwright/
+
+# Stray screenshots at repo root (use .playwright-mcp/ for browser captures)
+/*.png
+/*.jpg
+/*.jpeg
 
 # Secrets
 *.pem

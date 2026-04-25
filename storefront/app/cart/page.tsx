@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { updateItem, removeItem, applyDiscount, removeDiscount, ApiError } from '@/lib/cart';
 import { cartStore, useCart } from '@/lib/cart-store';
@@ -61,10 +62,15 @@ export default function CartPage() {
       <ul className="divide-y divide-[color:var(--color-border)] border-y border-[color:var(--color-border)]">
         {cart.items.map((it) => (
           <li key={it.id} className="py-4 flex items-center gap-4">
-            <div className="w-16 h-16 rounded bg-gray-100 overflow-hidden shrink-0">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded bg-gray-100">
               {it.imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.imageUrl} alt={it.productTitle} className="w-full h-full object-cover" />
+                <Image
+                  src={it.imageUrl}
+                  alt={it.productTitle}
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
               )}
             </div>
             <div className="flex-1 min-w-0">

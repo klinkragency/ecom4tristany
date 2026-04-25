@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import SafeHtml from '@/app/products/[handle]/SafeHtml';
 
@@ -56,8 +57,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {post.authorName && <span> · {post.authorName}</span>}
       </div>
       {post.featuredImageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={post.featuredImageUrl} alt="" className="w-full rounded mb-6" />
+        <div className="relative mb-6 aspect-[16/9] w-full overflow-hidden rounded">
+          <Image
+            src={post.featuredImageUrl}
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 768px) 768px, 100vw"
+            className="object-cover"
+          />
+        </div>
       )}
       {post.contentHtml && <SafeHtml html={post.contentHtml} className="prose max-w-none text-sm" />}
       {post.tags.length > 0 && (

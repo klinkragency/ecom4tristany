@@ -1,14 +1,15 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { cookies } from 'next/headers';
 import { type ProductListPage } from '@/lib/types';
 import { fetchCurrencies, resolveCurrency, price, COOKIE as CURRENCY_COOKIE } from '@/lib/currency';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
-export const dynamic = 'force-dynamic';
-
 async function getProducts(): Promise<ProductListPage> {
-  const res = await fetch(`${API}/api/storefront/products?limit=50`, { cache: 'no-store' });
+  const res = await fetch(`${API}/api/storefront/products?limit=50`, {
+    next: { revalidate: 60, tags: ['products'] },
+  });
   if (!res.ok) throw new Error(`failed to load products (${res.status})`);
   return res.json();
 }
@@ -36,16 +37,17 @@ export default async function ProductsPage() {
           {page.items.map((p) => (
             <li key={p.id}>
               <Link href={`/products/${p.handle}`} className="group block">
-                <div className="aspect-square w-full rounded bg-gray-100 overflow-hidden mb-2">
+                <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-100 mb-2">
                   {p.primaryImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={p.primaryImageUrl}
                       alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      sizes="(min-width: 1024px) 220px, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full grid place-items-center text-xs text-[color:var(--color-text-muted)]">
+                    <div className="grid h-full w-full place-items-center text-xs text-[color:var(--color-text-muted)]">
                       No image
                     </div>
                   )}

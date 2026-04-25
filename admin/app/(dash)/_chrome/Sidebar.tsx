@@ -57,7 +57,8 @@ export default function Sidebar({
 
   function sectionOpen(s: NavSection): boolean {
     if (!s.subs?.length) return false;
-    if (manualOpen[s.href] !== undefined) return manualOpen[s.href];
+    const m = manualOpen[s.href];
+    if (m !== undefined) return m;
     return isSectionActive(pathname, s); // auto-open if active
   }
 

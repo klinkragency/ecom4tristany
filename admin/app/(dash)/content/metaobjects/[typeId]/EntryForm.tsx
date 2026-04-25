@@ -133,9 +133,9 @@ function FieldInput({ def, value, onChange }: {
   const input = "input text-sm";
   const label = (
     <span className="label">
-      {def.name}{def.required && <span className="text-red-600 ml-0.5">*</span>}
-      <span className="ml-2 text-xs font-mono text-stone-500">{def.key}</span>
-    </div>
+      {def.name}{def.required && <span className="ml-0.5 text-red-600">*</span>}
+      <span className="ml-2 font-mono text-xs text-stone-500">{def.key}</span>
+    </span>
   );
   const help = def.help ? (
     <div className="text-xs text-stone-500 mt-1">{def.help}</div>

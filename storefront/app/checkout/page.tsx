@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { api, ApiError } from '@/lib/api';
 import { cartStore, useCart } from '@/lib/cart-store';
@@ -11,11 +12,15 @@ import { track } from '@/lib/analytics';
 import { formatPrice } from '@/lib/types';
 import PaymentStep from './PaymentStep';
 
+// Stripe.js must be loaded once per page session, not per checkout attempt.
+// The publishable key is safe to ship in the bundle (it's public by design).
+const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
+
 type InitResponse = {
   orderId: string;
   orderNumber: string;
   clientSecret: string;
-  publishableKey: string;
   currency: string;
   subtotalCents: number;
   discountCents: number;
@@ -68,7 +73,6 @@ export default function CheckoutPage() {
   const [ratesLoading, setRatesLoading] = useState(false);
 
   const [initResp, setInitResp] = useState<InitResponse | null>(null);
-  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -140,7 +144,6 @@ export default function CheckoutPage() {
         }),
       });
       setInitResp(res);
-      setStripePromise(loadStripe(res.publishableKey));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not start payment');
     } finally {
@@ -246,7 +249,7 @@ export default function CheckoutPage() {
 
         {initResp && stripePromise && (
           <Elements stripe={stripePromise} options={{ clientSecret: initResp.clientSecret, appearance: { theme: 'stripe' } }}>
-            <PaymentStep orderId={initResp.orderId} totalCents={initResp.totalCents} currency={initResp.currency} onBack={() => { setInitResp(null); setStripePromise(null); }} />
+            <PaymentStep orderId={initResp.orderId} totalCents={initResp.totalCents} currency={initResp.currency} onBack={() => setInitResp(null)} />
           </Elements>
         )}
       </div>
@@ -257,10 +260,9 @@ export default function CheckoutPage() {
           <ul className="divide-y divide-[color:var(--color-border)]">
             {cart?.items.map((it) => (
               <li key={it.id} className="flex items-start gap-3 py-2">
-                <div className="w-12 h-12 rounded bg-gray-100 overflow-hidden shrink-0">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-gray-100">
                   {it.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.imageUrl} alt="" className="w-full h-full object-cover" />
+                    <Image src={it.imageUrl} alt="" fill sizes="48px" className="object-cover" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

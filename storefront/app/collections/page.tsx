@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { CollectionListPage } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -24,16 +25,17 @@ export default async function CollectionsPage() {
           {page.items.map((c) => (
             <li key={c.id}>
               <Link href={`/collections/${c.handle}`} className="group block">
-                <div className="aspect-[4/3] w-full rounded bg-gray-100 overflow-hidden mb-2">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded bg-gray-100 mb-2">
                   {c.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={c.imageUrl}
                       alt={c.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      sizes="(min-width: 1024px) 260px, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full grid place-items-center text-sm text-[color:var(--color-text-muted)]">
+                    <div className="grid h-full w-full place-items-center text-sm text-[color:var(--color-text-muted)]">
                       {c.title}
                     </div>
                   )}

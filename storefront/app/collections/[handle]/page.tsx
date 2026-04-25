@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import SafeHtml from '../../products/[handle]/SafeHtml';
@@ -49,16 +50,17 @@ export default async function CollectionPage({
           {collection.products.map((p) => (
             <li key={p.id}>
               <Link href={`/products/${p.handle}`} className="group block">
-                <div className="aspect-square w-full rounded bg-gray-100 overflow-hidden mb-2">
+                <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-100 mb-2">
                   {p.primaryImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={p.primaryImageUrl}
                       alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      sizes="(min-width: 1024px) 220px, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full grid place-items-center text-xs text-[color:var(--color-text-muted)]">
+                    <div className="grid h-full w-full place-items-center text-xs text-[color:var(--color-text-muted)]">
                       No image
                     </div>
                   )}
