@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { Card } from '@/components/ui';
 import { formatPrice, type Order, type FinancialStatus, type FulfillmentStatus } from '@/lib/types';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
