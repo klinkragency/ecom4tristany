@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { formatPrice, type Product, type ProductVariant } from '@/lib/types';
+import { type Product, type ProductVariant } from '@/lib/types';
 import MediaUploader from './MediaUploader';
 import RichTextEditor from '@/components/RichTextEditor';
 import InventorySection from './InventorySection';
+import { Card, Field } from '@/components/ui';
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -599,23 +600,3 @@ function AddVariantForm({
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad space-y-3">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="label">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-// formatPrice referenced elsewhere; prevent dead-code warnings in strict setups.
-void formatPrice;
