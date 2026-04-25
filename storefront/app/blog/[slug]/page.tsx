@@ -19,11 +19,9 @@ type Post = {
   tags: string[];
 };
 
-export const dynamic = 'force-dynamic';
-
 async function getPost(slug: string): Promise<Post | null> {
   const res = await fetch(`${API}/api/storefront/blog/${encodeURIComponent(slug)}`, {
-    cache: 'no-store',
+    next: { revalidate: 300, tags: ['blog', `blog:${slug}`] },
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`failed to load post (${res.status})`);

@@ -4,10 +4,10 @@ import type { CollectionListPage } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
-export const dynamic = 'force-dynamic';
-
 async function getCollections(): Promise<CollectionListPage> {
-  const res = await fetch(`${API}/api/storefront/collections?limit=50`, { cache: 'no-store' });
+  const res = await fetch(`${API}/api/storefront/collections?limit=50`, {
+    next: { revalidate: 60, tags: ['collections'] },
+  });
   if (!res.ok) throw new Error(`failed to load collections (${res.status})`);
   return res.json();
 }

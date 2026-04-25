@@ -19,8 +19,6 @@ type ListResp = {
   type: { handle: string; name: string; description: string; fieldDefs: FieldDef[] };
 };
 
-export const dynamic = 'force-dynamic';
-
 async function getEntry(typeHandle: string, entryHandle: string) {
   // Detail endpoint gives us the entry (and 404 on draft/missing). List
   // endpoint gives us the type's fieldDefs so we can render each field
@@ -28,11 +26,11 @@ async function getEntry(typeHandle: string, entryHandle: string) {
   const [detailRes, listRes] = await Promise.all([
     fetch(
       `${API}/api/storefront/metaobjects/${encodeURIComponent(typeHandle)}/${encodeURIComponent(entryHandle)}`,
-      { cache: 'no-store' },
+      { next: { revalidate: 300, tags: ['metaobjects', `metaobjects:${typeHandle}`, `metaobjects:${typeHandle}:${entryHandle}`] } },
     ),
     fetch(
       `${API}/api/storefront/metaobjects/${encodeURIComponent(typeHandle)}`,
-      { cache: 'no-store' },
+      { next: { revalidate: 300, tags: ['metaobjects', `metaobjects:${typeHandle}`] } },
     ),
   ]);
   if (detailRes.status === 404 || listRes.status === 404) return null;

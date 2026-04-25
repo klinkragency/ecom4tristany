@@ -14,10 +14,10 @@ type Post = {
   tags: string[];
 };
 
-export const dynamic = 'force-dynamic';
-
 export default async function BlogIndex() {
-  const res = await fetch(`${API}/api/storefront/blog?limit=20`, { cache: 'no-store' });
+  const res = await fetch(`${API}/api/storefront/blog?limit=20`, {
+    next: { revalidate: 300, tags: ['blog'] },
+  });
   const data: { items: Post[] } = res.ok ? await res.json() : { items: [] };
   const posts = data.items ?? [];
 

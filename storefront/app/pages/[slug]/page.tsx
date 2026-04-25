@@ -14,11 +14,9 @@ type Page = {
   status: 'draft' | 'published';
 };
 
-export const dynamic = 'force-dynamic';
-
 async function getPage(slug: string): Promise<Page | null> {
   const res = await fetch(`${API}/api/storefront/pages/${encodeURIComponent(slug)}`, {
-    cache: 'no-store',
+    next: { revalidate: 300, tags: ['pages', `page:${slug}`] },
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`failed to load page (${res.status})`);
