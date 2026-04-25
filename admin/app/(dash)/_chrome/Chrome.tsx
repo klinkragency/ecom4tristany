@@ -23,7 +23,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="grid min-h-screen grid-cols-[232px_1fr]">
-      <Sidebar shopName="Shop" onOpenSearch={() => setPaletteOpen(true)} />
+      <Sidebar shopName="Klinkr Ecom" onOpenSearch={() => setPaletteOpen(true)} />
       <div className="flex min-h-screen flex-col">
         <Topbar onOpenSearch={() => setPaletteOpen(true)} />
         <main className="flex-1 px-6 py-6">{children}</main>
