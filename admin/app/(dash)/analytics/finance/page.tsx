@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { Card } from '@/components/ui';
 import { formatPrice } from '@/lib/types';
 
 type SalesRow = {
@@ -201,15 +202,6 @@ export default function FinancePage() {
         )}
       </Card>
     </section>
-  );
-}
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad mb-4 space-y-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
   );
 }
 
