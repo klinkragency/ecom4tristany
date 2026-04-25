@@ -1,0 +1,411 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e9]: Shop
+      - button "Search ⌘K" [ref=e10]:
+        - img [ref=e11]
+        - generic [ref=e14]: Search
+        - generic [ref=e15]: ⌘K
+      - navigation [ref=e16]:
+        - link "Home" [ref=e19] [cursor=pointer]:
+          - /url: /
+          - img [ref=e20]
+          - generic [ref=e23]: Home
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - link "Orders" [ref=e26] [cursor=pointer]:
+              - /url: /orders
+              - img [ref=e27]
+              - generic [ref=e30]: Orders
+            - button "Collapse Orders" [ref=e233]:
+              - img [ref=e32]
+          - link "Returns" [ref=e36] [cursor=pointer]:
+            - /url: /returns
+            - generic [ref=e37]: Returns
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - link "Products" [ref=e40] [cursor=pointer]:
+              - /url: /products
+              - img [ref=e41]
+              - generic [ref=e45]: Products
+            - button "Expand Products" [ref=e46]:
+              - img [ref=e47]
+          - generic [ref=e50]:
+            - link "Collections" [ref=e51] [cursor=pointer]:
+              - /url: /collections
+              - generic [ref=e52]: Collections
+            - link "Inventory" [ref=e53] [cursor=pointer]:
+              - /url: /inventory
+              - generic [ref=e54]: Inventory
+            - link "Transfers" [ref=e55] [cursor=pointer]:
+              - /url: /inventory/transfers
+              - generic [ref=e56]: Transfers
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - link "Customers" [ref=e59] [cursor=pointer]:
+              - /url: /customers
+              - img [ref=e60]
+              - generic [ref=e65]: Customers
+            - button "Expand Customers" [ref=e66]:
+              - img [ref=e67]
+          - link "Segments" [ref=e71] [cursor=pointer]:
+            - /url: /segments
+            - generic [ref=e72]: Segments
+        - link "Discounts" [ref=e75] [cursor=pointer]:
+          - /url: /discounts
+          - img [ref=e76]
+          - generic [ref=e79]: Discounts
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - link "Content" [ref=e82] [cursor=pointer]:
+              - /url: /content
+              - img [ref=e83]
+              - generic [ref=e86]: Content
+            - button "Expand Content" [ref=e87]:
+              - img [ref=e88]
+          - generic [ref=e91]:
+            - link "Pages" [ref=e92] [cursor=pointer]:
+              - /url: /content/pages
+              - generic [ref=e93]: Pages
+            - link "Blog posts" [ref=e94] [cursor=pointer]:
+              - /url: /content/blog
+              - generic [ref=e95]: Blog posts
+            - link "Menus" [ref=e96] [cursor=pointer]:
+              - /url: /content/menus
+              - generic [ref=e97]: Menus
+            - link "Metaobjects" [ref=e98] [cursor=pointer]:
+              - /url: /content/metaobjects
+              - generic [ref=e99]: Metaobjects
+            - link "Files" [ref=e100] [cursor=pointer]:
+              - /url: /content/files
+              - generic [ref=e101]: Files
+        - link "Markets" [ref=e104] [cursor=pointer]:
+          - /url: /settings/currencies
+          - img [ref=e105]
+          - generic [ref=e108]: Markets
+        - link "Analytics" [ref=e111] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e112]
+          - generic [ref=e114]: Analytics
+      - link "Settings" [ref=e118] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e119]
+        - generic [ref=e122]: Settings
+    - generic [ref=e123]:
+      - banner [ref=e124]:
+        - button "Search anything… ⌘K" [ref=e126]:
+          - img [ref=e127]
+          - generic [ref=e130]: Search anything…
+          - generic [ref=e131]: ⌘K
+        - button "Switch to dark" [ref=e132]:
+          - img [ref=e133]
+        - button "Notifications" [ref=e135]:
+          - img [ref=e136]
+        - button "T Tristany" [ref=e235]:
+          - generic [ref=e236]: T
+          - generic [ref=e237]: Tristany
+          - img [ref=e238]
+      - main [ref=e139]:
+        - generic [ref=e141]:
+          - complementary [ref=e142]:
+            - heading "Settings" [level=2] [ref=e144]
+            - navigation [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]: Store
+                - link "General Name, URL, base currency" [ref=e149] [cursor=pointer]:
+                  - /url: /settings/general
+                  - img [ref=e150]
+                  - generic [ref=e154]:
+                    - generic [ref=e155]: General
+                    - generic [ref=e156]: Name, URL, base currency
+              - generic [ref=e157]:
+                - generic [ref=e158]: Markets & money
+                - generic [ref=e159]:
+                  - link "Currencies Active + exchange rates" [ref=e160] [cursor=pointer]:
+                    - /url: /settings/currencies
+                    - img [ref=e161]
+                    - generic [ref=e166]:
+                      - generic [ref=e167]: Currencies
+                      - generic [ref=e168]: Active + exchange rates
+                  - link "Taxes VAT per country" [active] [ref=e169] [cursor=pointer]:
+                    - /url: /settings/taxes
+                    - img [ref=e170]
+                    - generic [ref=e173]:
+                      - generic [ref=e174]: Taxes
+                      - generic [ref=e175]: VAT per country
+                  - link "Shipping Zones and rates" [ref=e176] [cursor=pointer]:
+                    - /url: /settings/shipping
+                    - img [ref=e177]
+                    - generic [ref=e182]:
+                      - generic [ref=e183]: Shipping
+                      - generic [ref=e184]: Zones and rates
+              - generic [ref=e185]:
+                - generic [ref=e186]: Operations
+                - link "Locations Warehouses, retail" [ref=e188] [cursor=pointer]:
+                  - /url: /settings/locations
+                  - img [ref=e189]
+                  - generic [ref=e192]:
+                    - generic [ref=e193]: Locations
+                    - generic [ref=e194]: Warehouses, retail
+              - generic [ref=e195]:
+                - generic [ref=e196]: People
+                - generic [ref=e197]:
+                  - link "Users and permissions Invite teammates" [ref=e198] [cursor=pointer]:
+                    - /url: /settings/users
+                    - img [ref=e199]
+                    - generic [ref=e204]:
+                      - generic [ref=e205]: Users and permissions
+                      - generic [ref=e206]: Invite teammates
+                  - link "Change password" [ref=e207] [cursor=pointer]:
+                    - /url: /settings/change-password
+                    - img [ref=e208]
+                    - generic [ref=e212]: Change password
+              - generic [ref=e213]:
+                - generic [ref=e214]: System
+                - link "Audit log Every admin action" [ref=e216] [cursor=pointer]:
+                  - /url: /settings/audit
+                  - img [ref=e217]
+                  - generic [ref=e220]:
+                    - generic [ref=e221]: Audit log
+                    - generic [ref=e222]: Every admin action
+          - generic [ref=e223]:
+            - generic [ref=e224]:
+              - heading "Taxes" [level=3] [ref=e270]
+              - button "Close settings" [ref=e226]:
+                - img [ref=e227]
+            - generic [ref=e271]:
+              - generic [ref=e272]:
+                - link "← Settings" [ref=e273] [cursor=pointer]:
+                  - /url: /settings
+                - heading "Tax rates" [level=1] [ref=e274]
+              - paragraph [ref=e275]: VAT applied at checkout is resolved by the shipping-address country. Countries without a row fall back to the shop default (SHOP_VAT_PERCENT in env / General settings). Prices are tax-inclusive — the number below is the effective rate used to back-solve tax out of the gross total.
+              - generic [ref=e276]:
+                - heading "Add or replace a country" [level=2] [ref=e277]
+                - generic [ref=e278]:
+                  - textbox "ISO-2" [ref=e279]
+                  - spinbutton [ref=e280]
+                  - textbox "Country name (optional)" [ref=e281]
+                  - button "Save" [ref=e282]
+              - table [ref=e283]:
+                - rowgroup [ref=e284]:
+                  - row "Country Name Rate" [ref=e285]:
+                    - columnheader "Country" [ref=e286]
+                    - columnheader "Name" [ref=e287]
+                    - columnheader "Rate" [ref=e288]
+                    - columnheader [ref=e289]
+                - rowgroup [ref=e290]:
+                  - row "AT Austria 20% Edit Delete" [ref=e291]:
+                    - cell "AT" [ref=e292]
+                    - cell "Austria" [ref=e293]
+                    - cell "20%" [ref=e294]
+                    - cell "Edit Delete" [ref=e295]:
+                      - button "Edit" [ref=e296]
+                      - button "Delete" [ref=e297]
+                  - row "BE Belgium 21% Edit Delete" [ref=e298]:
+                    - cell "BE" [ref=e299]
+                    - cell "Belgium" [ref=e300]
+                    - cell "21%" [ref=e301]
+                    - cell "Edit Delete" [ref=e302]:
+                      - button "Edit" [ref=e303]
+                      - button "Delete" [ref=e304]
+                  - row "BG Bulgaria 20% Edit Delete" [ref=e305]:
+                    - cell "BG" [ref=e306]
+                    - cell "Bulgaria" [ref=e307]
+                    - cell "20%" [ref=e308]
+                    - cell "Edit Delete" [ref=e309]:
+                      - button "Edit" [ref=e310]
+                      - button "Delete" [ref=e311]
+                  - row "CH Switzerland 8.1% Edit Delete" [ref=e312]:
+                    - cell "CH" [ref=e313]
+                    - cell "Switzerland" [ref=e314]
+                    - cell "8.1%" [ref=e315]
+                    - cell "Edit Delete" [ref=e316]:
+                      - button "Edit" [ref=e317]
+                      - button "Delete" [ref=e318]
+                  - row "CY Cyprus 19% Edit Delete" [ref=e319]:
+                    - cell "CY" [ref=e320]
+                    - cell "Cyprus" [ref=e321]
+                    - cell "19%" [ref=e322]
+                    - cell "Edit Delete" [ref=e323]:
+                      - button "Edit" [ref=e324]
+                      - button "Delete" [ref=e325]
+                  - row "CZ Czech Republic 21% Edit Delete" [ref=e326]:
+                    - cell "CZ" [ref=e327]
+                    - cell "Czech Republic" [ref=e328]
+                    - cell "21%" [ref=e329]
+                    - cell "Edit Delete" [ref=e330]:
+                      - button "Edit" [ref=e331]
+                      - button "Delete" [ref=e332]
+                  - row "DE Germany 19% Edit Delete" [ref=e333]:
+                    - cell "DE" [ref=e334]
+                    - cell "Germany" [ref=e335]
+                    - cell "19%" [ref=e336]
+                    - cell "Edit Delete" [ref=e337]:
+                      - button "Edit" [ref=e338]
+                      - button "Delete" [ref=e339]
+                  - row "DK Denmark 25% Edit Delete" [ref=e340]:
+                    - cell "DK" [ref=e341]
+                    - cell "Denmark" [ref=e342]
+                    - cell "25%" [ref=e343]
+                    - cell "Edit Delete" [ref=e344]:
+                      - button "Edit" [ref=e345]
+                      - button "Delete" [ref=e346]
+                  - row "EE Estonia 22% Edit Delete" [ref=e347]:
+                    - cell "EE" [ref=e348]
+                    - cell "Estonia" [ref=e349]
+                    - cell "22%" [ref=e350]
+                    - cell "Edit Delete" [ref=e351]:
+                      - button "Edit" [ref=e352]
+                      - button "Delete" [ref=e353]
+                  - row "ES Spain 21% Edit Delete" [ref=e354]:
+                    - cell "ES" [ref=e355]
+                    - cell "Spain" [ref=e356]
+                    - cell "21%" [ref=e357]
+                    - cell "Edit Delete" [ref=e358]:
+                      - button "Edit" [ref=e359]
+                      - button "Delete" [ref=e360]
+                  - row "FI Finland 25.5% Edit Delete" [ref=e361]:
+                    - cell "FI" [ref=e362]
+                    - cell "Finland" [ref=e363]
+                    - cell "25.5%" [ref=e364]
+                    - cell "Edit Delete" [ref=e365]:
+                      - button "Edit" [ref=e366]
+                      - button "Delete" [ref=e367]
+                  - row "FR France 20% Edit Delete" [ref=e368]:
+                    - cell "FR" [ref=e369]
+                    - cell "France" [ref=e370]
+                    - cell "20%" [ref=e371]
+                    - cell "Edit Delete" [ref=e372]:
+                      - button "Edit" [ref=e373]
+                      - button "Delete" [ref=e374]
+                  - row "GB United Kingdom 20% Edit Delete" [ref=e375]:
+                    - cell "GB" [ref=e376]
+                    - cell "United Kingdom" [ref=e377]
+                    - cell "20%" [ref=e378]
+                    - cell "Edit Delete" [ref=e379]:
+                      - button "Edit" [ref=e380]
+                      - button "Delete" [ref=e381]
+                  - row "GR Greece 24% Edit Delete" [ref=e382]:
+                    - cell "GR" [ref=e383]
+                    - cell "Greece" [ref=e384]
+                    - cell "24%" [ref=e385]
+                    - cell "Edit Delete" [ref=e386]:
+                      - button "Edit" [ref=e387]
+                      - button "Delete" [ref=e388]
+                  - row "HR Croatia 25% Edit Delete" [ref=e389]:
+                    - cell "HR" [ref=e390]
+                    - cell "Croatia" [ref=e391]
+                    - cell "25%" [ref=e392]
+                    - cell "Edit Delete" [ref=e393]:
+                      - button "Edit" [ref=e394]
+                      - button "Delete" [ref=e395]
+                  - row "HU Hungary 27% Edit Delete" [ref=e396]:
+                    - cell "HU" [ref=e397]
+                    - cell "Hungary" [ref=e398]
+                    - cell "27%" [ref=e399]
+                    - cell "Edit Delete" [ref=e400]:
+                      - button "Edit" [ref=e401]
+                      - button "Delete" [ref=e402]
+                  - row "IE Ireland 23% Edit Delete" [ref=e403]:
+                    - cell "IE" [ref=e404]
+                    - cell "Ireland" [ref=e405]
+                    - cell "23%" [ref=e406]
+                    - cell "Edit Delete" [ref=e407]:
+                      - button "Edit" [ref=e408]
+                      - button "Delete" [ref=e409]
+                  - row "IT Italy 22% Edit Delete" [ref=e410]:
+                    - cell "IT" [ref=e411]
+                    - cell "Italy" [ref=e412]
+                    - cell "22%" [ref=e413]
+                    - cell "Edit Delete" [ref=e414]:
+                      - button "Edit" [ref=e415]
+                      - button "Delete" [ref=e416]
+                  - row "LT Lithuania 21% Edit Delete" [ref=e417]:
+                    - cell "LT" [ref=e418]
+                    - cell "Lithuania" [ref=e419]
+                    - cell "21%" [ref=e420]
+                    - cell "Edit Delete" [ref=e421]:
+                      - button "Edit" [ref=e422]
+                      - button "Delete" [ref=e423]
+                  - row "LU Luxembourg 17% Edit Delete" [ref=e424]:
+                    - cell "LU" [ref=e425]
+                    - cell "Luxembourg" [ref=e426]
+                    - cell "17%" [ref=e427]
+                    - cell "Edit Delete" [ref=e428]:
+                      - button "Edit" [ref=e429]
+                      - button "Delete" [ref=e430]
+                  - row "LV Latvia 21% Edit Delete" [ref=e431]:
+                    - cell "LV" [ref=e432]
+                    - cell "Latvia" [ref=e433]
+                    - cell "21%" [ref=e434]
+                    - cell "Edit Delete" [ref=e435]:
+                      - button "Edit" [ref=e436]
+                      - button "Delete" [ref=e437]
+                  - row "MT Malta 18% Edit Delete" [ref=e438]:
+                    - cell "MT" [ref=e439]
+                    - cell "Malta" [ref=e440]
+                    - cell "18%" [ref=e441]
+                    - cell "Edit Delete" [ref=e442]:
+                      - button "Edit" [ref=e443]
+                      - button "Delete" [ref=e444]
+                  - row "NL Netherlands 21% Edit Delete" [ref=e445]:
+                    - cell "NL" [ref=e446]
+                    - cell "Netherlands" [ref=e447]
+                    - cell "21%" [ref=e448]
+                    - cell "Edit Delete" [ref=e449]:
+                      - button "Edit" [ref=e450]
+                      - button "Delete" [ref=e451]
+                  - row "NO Norway 25% Edit Delete" [ref=e452]:
+                    - cell "NO" [ref=e453]
+                    - cell "Norway" [ref=e454]
+                    - cell "25%" [ref=e455]
+                    - cell "Edit Delete" [ref=e456]:
+                      - button "Edit" [ref=e457]
+                      - button "Delete" [ref=e458]
+                  - row "PL Poland 23% Edit Delete" [ref=e459]:
+                    - cell "PL" [ref=e460]
+                    - cell "Poland" [ref=e461]
+                    - cell "23%" [ref=e462]
+                    - cell "Edit Delete" [ref=e463]:
+                      - button "Edit" [ref=e464]
+                      - button "Delete" [ref=e465]
+                  - row "PT Portugal 23% Edit Delete" [ref=e466]:
+                    - cell "PT" [ref=e467]
+                    - cell "Portugal" [ref=e468]
+                    - cell "23%" [ref=e469]
+                    - cell "Edit Delete" [ref=e470]:
+                      - button "Edit" [ref=e471]
+                      - button "Delete" [ref=e472]
+                  - row "RO Romania 19% Edit Delete" [ref=e473]:
+                    - cell "RO" [ref=e474]
+                    - cell "Romania" [ref=e475]
+                    - cell "19%" [ref=e476]
+                    - cell "Edit Delete" [ref=e477]:
+                      - button "Edit" [ref=e478]
+                      - button "Delete" [ref=e479]
+                  - row "SE Sweden 25% Edit Delete" [ref=e480]:
+                    - cell "SE" [ref=e481]
+                    - cell "Sweden" [ref=e482]
+                    - cell "25%" [ref=e483]
+                    - cell "Edit Delete" [ref=e484]:
+                      - button "Edit" [ref=e485]
+                      - button "Delete" [ref=e486]
+                  - row "SI Slovenia 22% Edit Delete" [ref=e487]:
+                    - cell "SI" [ref=e488]
+                    - cell "Slovenia" [ref=e489]
+                    - cell "22%" [ref=e490]
+                    - cell "Edit Delete" [ref=e491]:
+                      - button "Edit" [ref=e492]
+                      - button "Delete" [ref=e493]
+                  - row "SK Slovakia 23% Edit Delete" [ref=e494]:
+                    - cell "SK" [ref=e495]
+                    - cell "Slovakia" [ref=e496]
+                    - cell "23%" [ref=e497]
+                    - cell "Edit Delete" [ref=e498]:
+                      - button "Edit" [ref=e499]
+                      - button "Delete" [ref=e500]
+  - button "Open Next.js Dev Tools" [ref=e265] [cursor=pointer]:
+    - img [ref=e266]
+  - alert [ref=e269]

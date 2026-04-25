@@ -82,47 +82,33 @@ export default function ProductsListPage() {
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Products</h1>
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="h-page">Products</h1>
         <div className="flex items-center gap-2">
-          <a
-            href={`${API}/api/admin/catalog/exports/products`}
-            className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50"
-            download
-          >
+          <a href={`${API}/api/admin/catalog/exports/products`} className="btn btn-secondary" download>
             Export CSV
           </a>
           <button
             onClick={() => importInputRef.current?.click()}
             disabled={importing}
-            className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50"
+            className="btn btn-secondary"
           >
             {importing ? 'Importing…' : 'Import CSV'}
           </button>
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={onImportFile}
-          />
-          <Link
-            href="/products/new"
-            className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)]"
-          >
+          <input ref={importInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onImportFile} />
+          <Link href="/products/new" className="btn btn-primary">
             Add product
           </Link>
         </div>
       </div>
 
       {importResult && (
-        <div className="mb-3 rounded border border-[color:var(--color-border)] bg-white p-3 text-sm">
-          <div className="font-medium mb-1">Import complete</div>
+        <div className="card card-pad mb-4 text-sm">
+          <div className="mb-1 font-medium">Import complete</div>
           <div className="text-[color:var(--color-text-muted)]">
-            {importResult.rows} rows · {importResult.productsCreated} created /
-            {' '}{importResult.productsUpdated} updated · variants
-            {' '}{importResult.variantsCreated} created / {importResult.variantsUpdated} updated
-            {' '}· {importResult.errors.length} error{importResult.errors.length === 1 ? '' : 's'}
+            {importResult.rows} rows · {importResult.productsCreated} created / {importResult.productsUpdated} updated ·
+            variants {importResult.variantsCreated} created / {importResult.variantsUpdated} updated ·{' '}
+            {importResult.errors.length} error{importResult.errors.length === 1 ? '' : 's'}
           </div>
           {importResult.errors.length > 0 && (
             <ul className="mt-2 space-y-0.5 text-xs text-red-700">
@@ -131,15 +117,10 @@ export default function ProductsListPage() {
                   row {e.row}{e.handle ? ` (${e.handle})` : ''}: {e.message}
                 </li>
               ))}
-              {importResult.errors.length > 10 && (
-                <li>… and {importResult.errors.length - 10} more</li>
-              )}
+              {importResult.errors.length > 10 && <li>… and {importResult.errors.length - 10} more</li>}
             </ul>
           )}
-          <button
-            onClick={() => setImportResult(null)}
-            className="mt-2 text-xs text-[color:var(--color-text-muted)] hover:underline"
-          >
+          <button onClick={() => setImportResult(null)} className="btn btn-ghost btn-sm mt-2">
             Dismiss
           </button>
         </div>
@@ -151,82 +132,58 @@ export default function ProductsListPage() {
           placeholder="Search title, handle, vendor…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-80 px-3 py-2 rounded border border-[color:var(--color-border)]"
+          className="input w-80"
         />
       </form>
 
-      {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left">
+      {!page ? (
+        <div className="empty">Loading…</div>
+      ) : page.items.length === 0 ? (
+        <div className="empty">No products yet.</div>
+      ) : (
+        <table className="table-card">
+          <thead>
             <tr>
-              <th className="px-3 py-2 font-medium">Title</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Variants</th>
-              <th className="px-3 py-2 font-medium">Price</th>
-              <th className="px-3 py-2 font-medium">Vendor</th>
-              <th className="px-3 py-2 font-medium">Updated</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Variants</th>
+              <th>Price</th>
+              <th>Vendor</th>
+              <th>Updated</th>
             </tr>
           </thead>
           <tbody>
-            {!page && (
-              <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-[color:var(--color-text-muted)]">
-                  Loading…
-                </td>
-              </tr>
-            )}
-            {page && page.items.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-[color:var(--color-text-muted)]">
-                  No products yet.
-                </td>
-              </tr>
-            )}
-            {page?.items.map((p) => (
-              <tr key={p.id} className="border-t border-[color:var(--color-border)] hover:bg-gray-50">
-                <td className="px-3 py-2">
+            {page.items.map((p) => (
+              <tr key={p.id}>
+                <td>
                   <Link href={`/products/${p.id}`} className="font-medium hover:underline">
                     {p.title}
                   </Link>
-                  <div className="text-xs text-[color:var(--color-text-muted)]">{p.handle}</div>
+                  <div className="text-xs text-stone-500">{p.handle}</div>
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   <StatusPill status={p.status} />
                 </td>
-                <td className="px-3 py-2">{p.variantCount}</td>
-                <td className="px-3 py-2">
+                <td className="tabular-nums">{p.variantCount}</td>
+                <td className="tabular-nums">
                   {p.minPriceCents === p.maxPriceCents
                     ? formatPrice(p.minPriceCents)
                     : `${formatPrice(p.minPriceCents)} – ${formatPrice(p.maxPriceCents)}`}
                 </td>
-                <td className="px-3 py-2">{p.vendor || '—'}</td>
-                <td className="px-3 py-2 text-[color:var(--color-text-muted)]">
-                  {new Date(p.updatedAt).toLocaleDateString()}
-                </td>
+                <td>{p.vendor || <span className="text-stone-400">—</span>}</td>
+                <td className="text-stone-500">{new Date(p.updatedAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      )}
     </section>
   );
 }
 
 function StatusPill({ status }: { status: 'draft' | 'active' | 'archived' }) {
-  const styles = {
-    active: 'bg-green-100 text-green-800',
-    draft: 'bg-gray-100 text-gray-800',
-    archived: 'bg-amber-100 text-amber-800',
-  };
-  return (
-    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
-      {status}
-    </span>
-  );
+  const cls = status === 'active' ? 'badge-success' : status === 'archived' ? 'badge-warning' : 'badge-neutral';
+  return <span className={`badge ${cls}`}>{status}</span>;
 }

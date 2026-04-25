@@ -39,13 +39,188 @@ html, body {
 /* Tabular numbers wherever a class wants them (prices, quantities) */
 .tabular { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 
-/* Subtle elevation for cards */
+/* ─────────────────────────────────────────────────────────────────
+   Shared visual primitives — applied via class names on existing
+   pages so we don't refactor every list/form individually.
+   ───────────────────────────────────────────────────────────────── */
+
+/* Cards: rounded, soft shadow, hairline border */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
+.card-pad { padding: 20px; }
+
+/* Tables-as-cards. Apply to <table class="table-card"> for instant polish. */
+.table-card {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+.table-card thead { background: #faf9f7; }
+.table-card thead th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+}
+.table-card tbody tr { transition: background-color 100ms ease; }
+.table-card tbody tr:hover { background: #faf9f7; }
+.table-card tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.table-card tbody tr:last-child td { border-bottom: 0; }
+
+/* Empty states: dashed, generous, friendly */
+.empty {
+  border: 1.5px dashed var(--color-border);
+  border-radius: 16px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  background: #faf9f7;
+}
+
+/* Badges: pill-shaped, semantic colors, optional leading dot */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.badge::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.badge.no-dot::before { display: none; }
+.badge-success { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.badge-warning { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.badge-danger  { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.badge-info    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-neutral { background: #f5f5f4; color: #57534e; border-color: #e7e5e4; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  transition: background-color 120ms ease, border-color 120ms ease,
+              color 120ms ease, transform 100ms ease, box-shadow 120ms ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #fafaf9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.10);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: #faf9f7;
+  border-color: #d6d3d1;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: #faf9f7;
+  color: var(--color-text);
+}
+
+.btn-danger {
+  background: var(--color-surface);
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 8px; }
+.btn-lg { padding: 9px 18px; font-size: 15px; border-radius: 12px; }
+
+/* Inputs / textareas / selects */
+.input, .textarea, .select {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 14px;
+  color: var(--color-text);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.input:focus, .textarea:focus, .select:focus {
+  outline: none;
+  border-color: #a8a29e;
+  box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.06);
+}
+.textarea { resize: vertical; min-height: 80px; }
+
+/* Page heading */
+.h-page { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+
+/* Form helpers */
+.label { font-size: 12px; font-weight: 500; color: var(--color-text); margin-bottom: 4px; display: block; }
+.help  { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+
+/* Inline alert (errors, info) */
+.alert {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+.alert-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.alert-info  { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+.alert-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 
 /* Sidebar item hover/active states (data-active toggles via JS) */
 .sb-item {
