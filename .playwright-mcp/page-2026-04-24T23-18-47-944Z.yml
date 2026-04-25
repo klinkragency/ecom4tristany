@@ -1,0 +1,116 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e16] [cursor=pointer]:
+    - img [ref=e17]
+  - alert [ref=e10]
+  - generic [ref=e20]:
+    - complementary [ref=e21]:
+      - generic [ref=e22]:
+        - img [ref=e24]
+        - generic [ref=e27]: Shop
+      - button "Search ⌘K" [ref=e28]:
+        - img [ref=e29]
+        - generic [ref=e32]: Search
+        - generic [ref=e33]: ⌘K
+      - navigation [ref=e34]:
+        - link "Home" [ref=e37] [cursor=pointer]:
+          - /url: /
+          - img [ref=e38]
+          - generic [ref=e41]: Home
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - link "Orders" [ref=e44] [cursor=pointer]:
+              - /url: /orders
+              - img [ref=e45]
+              - generic [ref=e48]: Orders
+            - button "Expand Orders" [ref=e49]:
+              - img [ref=e50]
+          - link "Returns" [ref=e54] [cursor=pointer]:
+            - /url: /returns
+            - generic [ref=e55]: Returns
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - link "Products" [ref=e58] [cursor=pointer]:
+              - /url: /products
+              - img [ref=e59]
+              - generic [ref=e63]: Products
+            - button "Expand Products" [ref=e64]:
+              - img [ref=e65]
+          - generic [ref=e68]:
+            - link "Collections" [ref=e69] [cursor=pointer]:
+              - /url: /collections
+              - generic [ref=e70]: Collections
+            - link "Inventory" [ref=e71] [cursor=pointer]:
+              - /url: /inventory
+              - generic [ref=e72]: Inventory
+            - link "Transfers" [ref=e73] [cursor=pointer]:
+              - /url: /inventory/transfers
+              - generic [ref=e74]: Transfers
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - link "Customers" [ref=e77] [cursor=pointer]:
+              - /url: /customers
+              - img [ref=e78]
+              - generic [ref=e83]: Customers
+            - button "Expand Customers" [ref=e84]:
+              - img [ref=e85]
+          - link "Segments" [ref=e89] [cursor=pointer]:
+            - /url: /segments
+            - generic [ref=e90]: Segments
+        - link "Discounts" [ref=e93] [cursor=pointer]:
+          - /url: /discounts
+          - img [ref=e94]
+          - generic [ref=e97]: Discounts
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - link "Content" [ref=e100] [cursor=pointer]:
+              - /url: /content
+              - img [ref=e101]
+              - generic [ref=e104]: Content
+            - button "Expand Content" [ref=e105]:
+              - img [ref=e106]
+          - generic [ref=e109]:
+            - link "Pages" [ref=e110] [cursor=pointer]:
+              - /url: /content/pages
+              - generic [ref=e111]: Pages
+            - link "Blog posts" [ref=e112] [cursor=pointer]:
+              - /url: /content/blog
+              - generic [ref=e113]: Blog posts
+            - link "Menus" [ref=e114] [cursor=pointer]:
+              - /url: /content/menus
+              - generic [ref=e115]: Menus
+            - link "Metaobjects" [ref=e116] [cursor=pointer]:
+              - /url: /content/metaobjects
+              - generic [ref=e117]: Metaobjects
+            - link "Files" [ref=e118] [cursor=pointer]:
+              - /url: /content/files
+              - generic [ref=e119]: Files
+        - link "Markets" [ref=e122] [cursor=pointer]:
+          - /url: /settings/currencies
+          - img [ref=e123]
+          - generic [ref=e126]: Markets
+        - link "Analytics" [ref=e129] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e130]
+          - generic [ref=e132]: Analytics
+      - link "Settings" [ref=e136] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e137]
+        - generic [ref=e140]: Settings
+    - generic [ref=e141]:
+      - banner [ref=e142]:
+        - button "Search anything… ⌘K" [ref=e144]:
+          - img [ref=e145]
+          - generic [ref=e148]: Search anything…
+          - generic [ref=e149]: ⌘K
+        - button "Switch to dark" [ref=e150]:
+          - img [ref=e151]
+        - button "Notifications" [ref=e153]:
+          - img [ref=e154]
+        - button "T Tristany" [ref=e158]:
+          - generic [ref=e159]: T
+          - generic [ref=e160]: Tristany
+          - img [ref=e161]
+      - main [ref=e163]:
+        - generic [ref=e164]:
+          - heading "Dashboard" [level=1] [ref=e165]
+          - paragraph [ref=e166]: Welcome. This is the Phase 1 shell — real metrics will arrive in Phase 7 (Analytics).
