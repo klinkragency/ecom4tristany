@@ -28,41 +28,37 @@ export default function PagesListPage() {
 
   return (
     <section className="max-w-5xl">
-      <div className="flex items-center gap-3 mb-4">
-        <Link href="/content" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Content</Link>
-        <h1 className="text-2xl font-semibold flex-1">Pages</h1>
-        <Link href="/content/pages/new" className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white">+ New page</Link>
+      <div className="mb-5 flex items-center gap-3">
+        <Link href="/content" className="text-sm text-stone-500 hover:underline">← Content</Link>
+        <h1 className="h-page flex-1">Pages</h1>
+        <Link href="/content/pages/new" className="btn btn-primary">+ New page</Link>
       </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
       {items.length === 0 ? (
-        <div className="rounded border border-dashed border-[color:var(--color-border)] p-8 text-center text-sm text-[color:var(--color-text-muted)]">
-          No pages yet. Create one — About, FAQ, privacy policy, etc.
-        </div>
+        <div className="empty">No pages yet. Create one — About, FAQ, privacy policy, etc.</div>
       ) : (
-        <table className="w-full text-sm border border-[color:var(--color-border)] rounded bg-white">
-          <thead className="bg-gray-50 border-b border-[color:var(--color-border)]">
-            <tr className="text-left">
-              <th className="px-3 py-2 font-medium">Title</th>
-              <th className="px-3 py-2 font-medium">Slug</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Updated</th>
+        <table className="table-card">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Slug</th>
+              <th>Status</th>
+              <th>Updated</th>
             </tr>
           </thead>
           <tbody>
             {items.map((p) => (
-              <tr key={p.id} className="border-b border-[color:var(--color-border)] hover:bg-gray-50">
-                <td className="px-3 py-2 font-medium">
+              <tr key={p.id}>
+                <td className="font-medium">
                   <Link href={`/content/pages/${p.id}`} className="hover:underline">{p.title}</Link>
                 </td>
-                <td className="px-3 py-2 text-xs text-[color:var(--color-text-muted)] font-mono">/{p.slug}</td>
-                <td className="px-3 py-2">
-                  <span className={`text-xs rounded px-2 py-0.5 ${p.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                <td className="font-mono text-xs text-stone-500">/{p.slug}</td>
+                <td>
+                  <span className={`badge ${p.status === 'published' ? 'badge-success' : 'badge-neutral'}`}>
                     {p.status}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-xs text-[color:var(--color-text-muted)]">
-                  {new Date(p.updatedAt).toLocaleDateString()}
-                </td>
+                <td className="text-xs text-stone-500">{new Date(p.updatedAt).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
