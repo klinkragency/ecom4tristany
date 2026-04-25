@@ -154,22 +154,18 @@ function SectionRow({
   const hasSubs = !!section.subs?.length;
   const childActive = section.subs?.some((s) => isSubActive(pathname, s)) ?? false;
   const inSection = isSectionActive(pathname, section);
-  const onSection = pathname === section.href;
   // Two parent states:
   //   leaf   = strong indicator (sand bar). Used when no sub-item owns the focus.
   //   parent = soft indicator (bg lift only). Used when a sub-item is active so
   //            the bar visually belongs to the sub-item, not the parent.
   const parentState = !inSection ? null : childActive ? 'parent' : 'leaf';
 
-  // Click rules:
-  //   - On a different section → navigate (Link handles it) + force-OPEN the
-  //     subs so the user immediately sees where they landed.
-  //   - On the *same* section route already → toggle (allows collapsing the
-  //     row you're currently on without leaving it).
+  // Click always toggles the dropdown (in addition to whatever Link does
+  // for navigation). This gives the user one consistent rule: click a
+  // section → flip its sub-list. Closing a dropdown never requires a
+  // detour through another route.
   function handleClick() {
-    if (!hasSubs) return;
-    if (onSection) onSetOpen(!open);
-    else onSetOpen(true);
+    if (hasSubs) onSetOpen(!open);
   }
 
   return (
