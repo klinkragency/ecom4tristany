@@ -232,7 +232,7 @@ export default function CommandPalette({
 
   return (
     <div
-      className="cp-backdrop fixed inset-0 z-50 grid place-items-start bg-black/40 px-4 pt-[12vh] backdrop-blur-sm"
+      className="cp-backdrop fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-[12vh] backdrop-blur-sm"
       onClick={onClose}
     >
       <div
