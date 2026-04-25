@@ -47,9 +47,12 @@ export default function Sidebar({
     setManualOpen(readExpanded());
   }, []);
 
-  function toggleSection(href: string) {
+  function toggleSection(href: string, currentlyOpen: boolean) {
     setManualOpen((prev) => {
-      const next = { ...prev, [href]: !prev[href] };
+      // Toggle from the *visible* open state, not from manualOpen — otherwise
+      // a section that's auto-expanded (manualOpen undefined) would not
+      // collapse on first click.
+      const next = { ...prev, [href]: !currentlyOpen };
       writeExpanded(next);
       return next;
     });
