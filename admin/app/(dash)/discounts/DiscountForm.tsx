@@ -321,8 +321,7 @@ export default function DiscountForm({
       </Card>
 
       <div className="flex justify-end">
-        <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+        <button onClick={submit} disabled={saving} className="btn btn-primary">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -332,7 +331,7 @@ export default function DiscountForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-2">
+    <div className="card card-pad space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -341,8 +340,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <label className="block mb-3">
-      <div className="text-sm font-medium mb-1">{label}{required && <span className="text-red-600 ml-0.5">*</span>}</div>
+    <label className="mb-3 block">
+      <span className="label">{label}{required && <span className="ml-0.5 text-red-600">*</span>}</span>
       {children}
     </label>
   );
@@ -362,14 +361,14 @@ function MultiPicker({
   };
   return (
     <div className="mt-2">
-      <div className="text-sm font-medium mb-1">{label}</div>
+      <div className="label">{label}</div>
       {options.length === 0 ? (
-        <p className="text-xs text-[color:var(--color-text-muted)]">None available.</p>
+        <p className="text-xs text-stone-500">None available.</p>
       ) : (
-        <ul className="max-h-40 overflow-y-auto border border-[color:var(--color-border)] rounded text-sm divide-y divide-[color:var(--color-border)]">
+        <ul className="max-h-44 divide-y divide-stone-200/70 overflow-y-auto rounded-xl border border-stone-200 bg-white text-sm">
           {options.map((o) => (
             <li key={o.id}>
-              <label className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50">
+              <label className="flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-stone-50">
                 <input type="checkbox" checked={selected.includes(o.id)} onChange={() => toggle(o.id)} />
                 <span>{o.label}</span>
               </label>
