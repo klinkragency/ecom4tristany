@@ -145,7 +145,7 @@ export default function MenuEditor() {
 
       <div className="card card-pad mb-4">
         <label className="block text-sm">
-          <span className="label">Menu name</div>
+          <span className="label">Menu name</span>
           <input value={menu.name} onChange={(e) => setMenu({ ...menu, name: e.target.value })}
             className="input" />
           <div className="text-xs text-stone-500 mt-1 font-mono">handle: {menu.handle}</div>

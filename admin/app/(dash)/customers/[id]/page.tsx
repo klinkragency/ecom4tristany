@@ -462,12 +462,12 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
         <h2 className="font-semibold">Grant or adjust store credit</h2>
         {error && <div className="alert alert-error text-xs">{error}</div>}
         <label className="block">
-          <span className="label">Amount ({currency}) — negative to debit</div>
+          <span className="label">Amount ({currency}) — negative to debit</span>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
             className="input" />
         </label>
         <label className="block">
-          <span className="label">Reason</div>
+          <span className="label">Reason</span>
           <select value={reason} onChange={(e) => setReason(e.target.value)}
             className="select">
             <option value="grant">Grant (compensation / goodwill)</option>
@@ -478,7 +478,7 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
           </select>
         </label>
         <label className="block">
-          <span className="label">Note</div>
+          <span className="label">Note</span>
           <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />
         </label>
         <div className="flex justify-end gap-2 pt-2">

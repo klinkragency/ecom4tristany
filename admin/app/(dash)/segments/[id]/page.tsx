@@ -174,7 +174,7 @@ export default function SegmentDetailPage() {
 
       <div className="card card-pad mb-4 space-y-3 text-sm">
         <label className="block">
-          <span className="label">Name</div>
+          <span className="label">Name</span>
           <input
             value={s.name}
             onChange={(e) => update({ name: e.target.value })}
@@ -182,7 +182,7 @@ export default function SegmentDetailPage() {
           />
         </label>
         <label className="block">
-          <span className="label">Description</div>
+          <span className="label">Description</span>
           <input
             value={s.description}
             onChange={(e) => update({ description: e.target.value })}

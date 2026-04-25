@@ -74,7 +74,7 @@ export default function NewTransferPage() {
       <div className="space-y-4">
         <div className="rounded border border-stone-200 bg-white p-4 grid grid-cols-2 gap-3">
           <label className="block text-sm">
-            <span className="label">Source</div>
+            <span className="label">Source</span>
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
@@ -84,7 +84,7 @@ export default function NewTransferPage() {
             </select>
           </label>
           <label className="block text-sm">
-            <span className="label">Destination</div>
+            <span className="label">Destination</span>
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
@@ -94,7 +94,7 @@ export default function NewTransferPage() {
             </select>
           </label>
           <label className="block text-sm col-span-2">
-            <span className="label">Note (optional)</div>
+            <span className="label">Note (optional)</span>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
