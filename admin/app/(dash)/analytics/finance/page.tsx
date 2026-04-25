@@ -87,17 +87,17 @@ export default function FinancePage() {
   return (
     <section className="max-w-5xl">
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/analytics" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Analytics</Link>
+        <Link href="/analytics" className="text-sm text-stone-500 hover:underline">← Analytics</Link>
         <h1 className="text-2xl font-semibold flex-1">Finance</h1>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-          className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] bg-white">
+          className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
           <option value={90}>Last 90 days</option>
           <option value={365}>Last year</option>
         </select>
       </div>
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="mb-3 alert alert-error">{error}</div>}
 
       {/* Sales by country */}
       <Card title="Sales by country (VAT jurisdictions)">
@@ -105,10 +105,10 @@ export default function FinancePage() {
           <a href={csvHref} className="text-xs hover:underline">Download CSV →</a>
         </div>
         {sales.length === 0 ? (
-          <p className="text-sm text-[color:var(--color-text-muted)]">No paid orders in range.</p>
+          <p className="text-sm text-stone-500">No paid orders in range.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-[color:var(--color-text-muted)]">
+            <thead className="text-left text-xs text-stone-500">
               <tr>
                 <th className="py-1">Country</th>
                 <th className="py-1 text-right">Orders</th>
@@ -120,7 +120,7 @@ export default function FinancePage() {
             </thead>
             <tbody>
               {sales.map((s) => (
-                <tr key={s.country} className="border-t border-[color:var(--color-border)]">
+                <tr key={s.country} className="border-t border-stone-200">
                   <td className="py-1.5 font-mono">{s.country}</td>
                   <td className="py-1.5 text-right">{s.ordersPaid}</td>
                   <td className="py-1.5 text-right font-medium">{formatPrice(s.grossRevenueCents)}</td>
@@ -144,18 +144,18 @@ export default function FinancePage() {
           </div>
         ) : null}
         {refunds && refunds.byReason.length > 0 && (
-          <ul className="divide-y divide-[color:var(--color-border)] text-sm">
+          <ul className="divide-y divide-stone-200 text-sm">
             {refunds.byReason.map((b) => (
               <li key={b.reason} className="py-1.5 flex items-center gap-3">
                 <span className="flex-1 truncate">{b.reason}</span>
-                <span className="text-xs text-[color:var(--color-text-muted)]">{b.count}</span>
+                <span className="text-xs text-stone-500">{b.count}</span>
                 <span className="w-24 text-right font-medium">{formatPrice(b.amountCents)}</span>
               </li>
             ))}
           </ul>
         )}
         {refunds && refunds.byReason.length === 0 && (
-          <p className="text-sm text-[color:var(--color-text-muted)]">No refunds in range.</p>
+          <p className="text-sm text-stone-500">No refunds in range.</p>
         )}
       </Card>
 
@@ -172,10 +172,10 @@ export default function FinancePage() {
       {/* Stripe payouts */}
       <Card title="Recent Stripe payouts">
         {payouts.length === 0 ? (
-          <p className="text-sm text-[color:var(--color-text-muted)]">No payouts found (or Stripe not configured).</p>
+          <p className="text-sm text-stone-500">No payouts found (or Stripe not configured).</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-[color:var(--color-text-muted)]">
+            <thead className="text-left text-xs text-stone-500">
               <tr>
                 <th className="py-1">Arrival</th>
                 <th className="py-1">Status</th>
@@ -186,14 +186,14 @@ export default function FinancePage() {
             </thead>
             <tbody>
               {payouts.map((p) => (
-                <tr key={p.id} className="border-t border-[color:var(--color-border)]">
+                <tr key={p.id} className="border-t border-stone-200">
                   <td className="py-1.5">{new Date(p.arrivalDate * 1000).toLocaleDateString()}</td>
                   <td className="py-1.5">
                     <span className={`text-xs rounded px-1.5 py-0.5 ${payoutBadge(p.status)}`}>{p.status}</span>
                   </td>
                   <td className="py-1.5 text-xs">{p.method}</td>
                   <td className="py-1.5 text-right font-medium">{formatPrice(p.amountCents, p.currency.toUpperCase())}</td>
-                  <td className="py-1.5 font-mono text-xs text-[color:var(--color-text-muted)]">{p.id}</td>
+                  <td className="py-1.5 font-mono text-xs text-stone-500">{p.id}</td>
                 </tr>
               ))}
             </tbody>
@@ -206,7 +206,7 @@ export default function FinancePage() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 space-y-2">
+    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -216,9 +216,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <div className="text-xs text-[color:var(--color-text-muted)]">{label}</div>
+      <div className="text-xs text-stone-500">{label}</div>
       <div className="font-semibold">{value}</div>
-      {sub && <div className="text-xs text-[color:var(--color-text-muted)]">{sub}</div>}
+      {sub && <div className="text-xs text-stone-500">{sub}</div>}
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default function NewBlogPost() {
   return (
     <section>
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/content/blog" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Blog</Link>
+        <Link href="/content/blog" className="text-sm text-stone-500 hover:underline">← Blog</Link>
         <h1 className="text-2xl font-semibold">New post</h1>
       </div>
       <BlogForm initial={EMPTY_POST} onSave={save} saveLabel="Create" />

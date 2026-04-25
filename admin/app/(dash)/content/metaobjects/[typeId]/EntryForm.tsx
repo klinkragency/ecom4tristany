@@ -58,12 +58,12 @@ export default function EntryForm({
     }
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm';
+  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
         <Row label="Name" required>
@@ -82,7 +82,7 @@ export default function EntryForm({
 
       <Card title="Fields">
         {fieldDefs.length === 0 ? (
-          <p className="text-sm text-[color:var(--color-text-muted)]">
+          <p className="text-sm text-stone-500">
             This type has no fields yet. Add some in the schema editor to see inputs here.
           </p>
         ) : (
@@ -117,7 +117,7 @@ export default function EntryForm({
           </button>
         ) : <span />}
         <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          className="px-4 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -130,15 +130,15 @@ function FieldInput({ def, value, onChange }: {
   value: unknown;
   onChange: (v: unknown) => void;
 }) {
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm';
+  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
   const label = (
     <div className="text-sm font-medium mb-1">
       {def.name}{def.required && <span className="text-red-600 ml-0.5">*</span>}
-      <span className="ml-2 text-xs font-mono text-[color:var(--color-text-muted)]">{def.key}</span>
+      <span className="ml-2 text-xs font-mono text-stone-500">{def.key}</span>
     </div>
   );
   const help = def.help ? (
-    <div className="text-xs text-[color:var(--color-text-muted)] mt-1">{def.help}</div>
+    <div className="text-xs text-stone-500 mt-1">{def.help}</div>
   ) : null;
 
   const strVal = (value ?? '') as string;
@@ -183,7 +183,7 @@ function FieldInput({ def, value, onChange }: {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />
           <span className="font-medium">{def.name}</span>
-          <span className="text-xs font-mono text-[color:var(--color-text-muted)]">{def.key}</span>
+          <span className="text-xs font-mono text-stone-500">{def.key}</span>
           {help}
         </label>
       );
@@ -214,7 +214,7 @@ function FieldInput({ def, value, onChange }: {
           <div className="flex items-center gap-2">
             <input type="color" value={strVal || '#000000'}
               onChange={(e) => onChange(e.target.value)}
-              className="h-10 w-14 rounded border border-[color:var(--color-border)] cursor-pointer" />
+              className="h-10 w-14 rounded border border-stone-200 cursor-pointer" />
             <input className={input + ' font-mono uppercase'} value={strVal}
               placeholder="#RRGGBB" maxLength={7}
               onChange={(e) => onChange(e.target.value)} />
@@ -227,7 +227,7 @@ function FieldInput({ def, value, onChange }: {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

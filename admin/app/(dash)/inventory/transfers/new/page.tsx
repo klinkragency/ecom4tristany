@@ -61,24 +61,24 @@ export default function NewTransferPage() {
   return (
     <section className="max-w-3xl">
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/inventory/transfers" className="text-sm text-[color:var(--color-text-muted)] hover:underline">
+        <Link href="/inventory/transfers" className="text-sm text-stone-500 hover:underline">
           ← Transfers
         </Link>
         <h1 className="text-2xl font-semibold">New transfer</h1>
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
+        <div className="mb-3 alert alert-error">{error}</div>
       )}
 
       <div className="space-y-4">
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4 grid grid-cols-2 gap-3">
+        <div className="rounded border border-stone-200 bg-white p-4 grid grid-cols-2 gap-3">
           <label className="block text-sm">
             <div className="font-medium mb-1">Source</div>
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
             >
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -88,7 +88,7 @@ export default function NewTransferPage() {
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
             >
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -98,25 +98,25 @@ export default function NewTransferPage() {
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </label>
         </div>
 
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4">
+        <div className="rounded border border-stone-200 bg-white p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold">Items ({items.length})</h2>
             <button
               onClick={() => setPickerOpen(true)}
-              className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
             >
               Add variant…
             </button>
           </div>
           {items.length === 0 ? (
-            <p className="text-sm text-[color:var(--color-text-muted)]">No items yet.</p>
+            <p className="text-sm text-stone-500">No items yet.</p>
           ) : (
-            <ul className="divide-y divide-[color:var(--color-border)]">
+            <ul className="divide-y divide-stone-200">
               {items.map((it, i) => (
                 <li key={it.variantId + i} className="flex items-center gap-3 py-2 text-sm">
                   <span className="flex-1">{it.label}</span>
@@ -128,7 +128,7 @@ export default function NewTransferPage() {
                       const q = Math.max(1, parseInt(e.target.value || '1', 10));
                       setItems((arr) => arr.map((x, idx) => (idx === i ? { ...x, quantity: q } : x)));
                     }}
-                    className="w-20 px-2 py-1 rounded border border-[color:var(--color-border)] text-right"
+                    className="w-20 px-2 py-1 rounded border border-stone-200 text-right"
                   />
                   <button
                     onClick={() => setItems((arr) => arr.filter((_, idx) => idx !== i))}
@@ -145,12 +145,12 @@ export default function NewTransferPage() {
         <div className="flex justify-end gap-2">
           <Link
             href="/inventory/transfers"
-            className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)]"
+            className="px-3 py-2 text-sm rounded border border-stone-200"
           >Cancel</Link>
           <button
             onClick={submit}
             disabled={saving}
-            className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)] disabled:opacity-50"
+            className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
           >
             {saving ? 'Creating…' : 'Create draft'}
           </button>
@@ -208,28 +208,28 @@ function VariantPicker({
   return (
     <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
       <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl flex flex-col max-h-[80vh]">
-        <div className="p-4 border-b border-[color:var(--color-border)] flex items-center justify-between">
+        <div className="p-4 border-b border-stone-200 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Add variant to transfer</h2>
           <button onClick={onClose} className="text-sm">✕</button>
         </div>
-        <div className="p-4 border-b border-[color:var(--color-border)]">
+        <div className="p-4 border-b border-stone-200">
           <input
             value={search}
             onChange={(e) => { setSearch(e.target.value); load(e.target.value); }}
             placeholder="Search products…"
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+            className="w-full px-3 py-2 rounded border border-stone-200"
           />
         </div>
         <div className="overflow-y-auto flex-1 text-sm">
-          {!list && <div className="p-4 text-[color:var(--color-text-muted)]">Loading…</div>}
+          {!list && <div className="p-4 text-stone-500">Loading…</div>}
           {list?.items.map((p) => (
-            <div key={p.id} className="border-b border-[color:var(--color-border)]">
+            <div key={p.id} className="border-b border-stone-200">
               <button
                 onClick={() => (expanded === p.id ? setExpanded(null) : expand(p.id))}
                 className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between"
               >
                 <span>{p.title}</span>
-                <span className="text-xs text-[color:var(--color-text-muted)]">{p.variantCount} variant{p.variantCount === 1 ? '' : 's'}</span>
+                <span className="text-xs text-stone-500">{p.variantCount} variant{p.variantCount === 1 ? '' : 's'}</span>
               </button>
               {expanded === p.id && expandedDetail && (
                 <ul>
@@ -237,7 +237,7 @@ function VariantPicker({
                     <li key={v.id}>
                       <button
                         onClick={() => onPick(v.id, variantLabel(expandedDetail, v))}
-                        className="w-full text-left px-8 py-1.5 hover:bg-gray-100 text-[color:var(--color-text-muted)]"
+                        className="w-full text-left px-8 py-1.5 hover:bg-gray-100 text-stone-500"
                       >
                         {variantLabel(expandedDetail, v)} {v.sku && <span className="text-xs">· {v.sku}</span>}
                       </button>

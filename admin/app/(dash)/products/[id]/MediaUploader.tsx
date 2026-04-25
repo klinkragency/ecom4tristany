@@ -148,17 +148,17 @@ export default function MediaUploader({
         setDragOver(false);
         void onFiles(e.dataTransfer.files);
       }}
-      className={`rounded border-2 border-dashed p-4 transition-colors ${
-        dragOver ? 'border-[color:var(--color-accent)] bg-gray-50' : 'border-[color:var(--color-border)]'
+      className={`rounded-xl border-2 border-dashed p-4 transition-colors ${
+        dragOver ? 'border-stone-900 bg-stone-50' : 'border-stone-200'
       }`}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="text-sm text-[color:var(--color-text-muted)]">
+        <div className="text-sm text-stone-500">
           Drag & drop images here, or click to pick files (PNG, JPG, WebP, GIF, AVIF).
         </div>
         <button
           onClick={() => inputRef.current?.click()}
-          className="px-3 py-1.5 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50"
+          className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
         >
           Choose files…
         </button>
@@ -181,7 +181,7 @@ export default function MediaUploader({
             .slice()
             .sort((a, b) => a.position - b.position)
             .map((m, idx) => (
-              <div key={m.id} className="border border-[color:var(--color-border)] rounded overflow-hidden bg-white">
+              <div key={m.id} className="border border-stone-200 rounded overflow-hidden bg-white">
                 <div className="aspect-square bg-gray-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={m.url} alt={m.alt} className="w-full h-full object-cover" />
@@ -193,14 +193,14 @@ export default function MediaUploader({
                     onBlur={(e) => {
                       if (e.target.value !== m.alt) void updateAlt(m.id, e.target.value);
                     }}
-                    className="w-full px-2 py-1 text-xs rounded border border-[color:var(--color-border)]"
+                    className="w-full px-2 py-1 text-xs rounded border border-stone-200"
                   />
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex gap-1">
                       <button
                         disabled={idx === 0}
                         onClick={() => move(m.id, -1)}
-                        className="px-1.5 py-0.5 rounded border border-[color:var(--color-border)] disabled:opacity-30"
+                        className="px-1.5 py-0.5 rounded border border-stone-200 disabled:opacity-30"
                         title="Move earlier"
                       >
                         ↑
@@ -208,7 +208,7 @@ export default function MediaUploader({
                       <button
                         disabled={idx === product.media.length - 1}
                         onClick={() => move(m.id, 1)}
-                        className="px-1.5 py-0.5 rounded border border-[color:var(--color-border)] disabled:opacity-30"
+                        className="px-1.5 py-0.5 rounded border border-stone-200 disabled:opacity-30"
                         title="Move later"
                       >
                         ↓
@@ -227,11 +227,11 @@ export default function MediaUploader({
           {uploading.map((u) => (
             <div
               key={u.name}
-              className="border border-[color:var(--color-border)] rounded bg-white p-2 text-xs"
+              className="border border-stone-200 rounded bg-white p-2 text-xs"
             >
               <div className="aspect-square bg-gray-100 grid place-items-center mb-2">
                 {u.status === 'uploading' ? (
-                  <span className="text-[color:var(--color-text-muted)]">Uploading…</span>
+                  <span className="text-stone-500">Uploading…</span>
                 ) : (
                   <span className="text-red-700">Failed</span>
                 )}

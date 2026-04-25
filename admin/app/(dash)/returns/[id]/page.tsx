@@ -82,54 +82,54 @@ export default function ReturnDetailPage() {
     }
   }
 
-  if (!ret) return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p></section>;
+  if (!ret) return <section><p className="text-stone-500">Loading…</p></section>;
 
   return (
     <section className="max-w-4xl">
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/returns" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Returns</Link>
+        <Link href="/returns" className="text-sm text-stone-500 hover:underline">← Returns</Link>
         <h1 className="text-2xl font-semibold flex-1">{ret.rmaNumber}</h1>
         <span className="text-xs rounded px-2 py-0.5 bg-gray-100 text-gray-800">{ret.status}</span>
       </div>
 
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="mb-3 alert alert-error">{error}</div>}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 text-sm">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-4 text-sm">
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div>
-            <div className="text-xs text-[color:var(--color-text-muted)]">Order</div>
+            <div className="text-xs text-stone-500">Order</div>
             <Link href={`/orders/${ret.orderId}`} className="font-medium hover:underline">{ret.orderNumber}</Link>
           </div>
           <div>
-            <div className="text-xs text-[color:var(--color-text-muted)]">Requested by</div>
+            <div className="text-xs text-stone-500">Requested by</div>
             <div className="font-medium capitalize">{ret.requestedBy}</div>
           </div>
           <div>
-            <div className="text-xs text-[color:var(--color-text-muted)]">Requested at</div>
+            <div className="text-xs text-stone-500">Requested at</div>
             <div>{new Date(ret.requestedAt).toLocaleString()}</div>
           </div>
           <div>
-            <div className="text-xs text-[color:var(--color-text-muted)]">Estimated refund</div>
+            <div className="text-xs text-stone-500">Estimated refund</div>
             <div className="font-medium">{formatPrice(ret.estimatedCents, ret.currency)}</div>
           </div>
         </div>
         {ret.customerNote && (
-          <div className="border-t border-[color:var(--color-border)] pt-2 text-xs">
-            <div className="font-semibold text-[color:var(--color-text-muted)] mb-1">Customer note</div>
+          <div className="border-t border-stone-200 pt-2 text-xs">
+            <div className="font-semibold text-stone-500 mb-1">Customer note</div>
             <div>{ret.customerNote}</div>
           </div>
         )}
       </div>
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-4">
         <h2 className="text-sm font-semibold mb-2">Items</h2>
-        <ul className="divide-y divide-[color:var(--color-border)] text-sm">
+        <ul className="divide-y divide-stone-200 text-sm">
           {ret.items.map((l) => (
             <li key={l.id} className="py-2 flex items-center gap-3">
               <div className="flex-1">
                 <div className="font-medium">{l.productTitle}</div>
-                {l.variantTitle && <div className="text-xs text-[color:var(--color-text-muted)]">{l.variantTitle}</div>}
-                <div className="text-xs text-[color:var(--color-text-muted)]">
+                {l.variantTitle && <div className="text-xs text-stone-500">{l.variantTitle}</div>}
+                <div className="text-xs text-stone-500">
                   Reason: {l.reason.replace(/_/g, ' ')}
                   {l.note && ` · ${l.note}`}
                   {l.restocked && ' · restocked'}
@@ -145,7 +145,7 @@ export default function ReturnDetailPage() {
       </div>
 
       {/* Actions */}
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 flex flex-wrap gap-2">
+      <div className="rounded border border-stone-200 bg-white p-4 flex flex-wrap gap-2">
         {ret.status === 'requested' && (
           <>
             <button disabled={busy} onClick={() => act('approve')}
@@ -160,11 +160,11 @@ export default function ReturnDetailPage() {
         )}
         {ret.status === 'received' && (
           <button disabled={busy} onClick={() => setRefundOpen(true)}
-            className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">Issue refund</button>
+            className="px-3 py-2 text-sm rounded bg-stone-900 text-white disabled:opacity-50">Issue refund</button>
         )}
         {ret.status !== 'refunded' && ret.status !== 'cancelled' && (
           <button disabled={busy} onClick={() => act('cancel')}
-            className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)] disabled:opacity-50">Cancel return</button>
+            className="px-3 py-2 text-sm rounded border border-stone-200 disabled:opacity-50">Cancel return</button>
         )}
       </div>
 
@@ -216,13 +216,13 @@ function ReceiveModal({
           <label className="block">
             <div className="font-medium mb-1">Restock to location</div>
             <select value={locationId} onChange={(e) => setLocationId(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white">
+              className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
               {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
           </label>
         )}
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
           <button onClick={() => onReceive(restock, locationId)} disabled={busy || (restock && !locationId)}
             className="px-3 py-2 rounded bg-emerald-700 text-white disabled:opacity-50">
             {busy ? 'Saving…' : 'Mark received'}
@@ -255,9 +255,9 @@ function RefundModal({
         <label className="block">
           <div className="font-medium mb-1">Amount ({ret.currency})</div>
           <input type="number" step="0.01" value={amountStr} onChange={(e) => setAmountStr(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+            className="w-full px-3 py-2 rounded border border-stone-200" />
           {ret.estimatedCents > maxRefundable && (
-            <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
+            <div className="text-xs text-stone-500 mt-1">
               Return value is {formatPrice(ret.estimatedCents, ret.currency)}, but only{' '}
               {formatPrice(maxRefundable, ret.currency)} is left refundable on the original charge
               (the rest was covered by store credit or already refunded).
@@ -267,7 +267,7 @@ function RefundModal({
         <label className="block">
           <div className="font-medium mb-1">Refund to</div>
           <select value={refundTo} onChange={(e) => setRefundTo(e.target.value as 'card' | 'store_credit')}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white">
+            className="w-full px-3 py-2 rounded border border-stone-200 bg-white">
             <option value="card">Original payment method (Stripe)</option>
             <option value="store_credit">Store credit</option>
           </select>
@@ -275,14 +275,14 @@ function RefundModal({
         <label className="block">
           <div className="font-medium mb-1">Note (optional)</div>
           <input value={note} onChange={(e) => setNote(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]" />
+            className="w-full px-3 py-2 rounded border border-stone-200" />
         </label>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-[color:var(--color-border)]">Cancel</button>
+          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">Cancel</button>
           <button
             onClick={() => onRefund(Math.round(parseFloat(amountStr) * 100), refundTo, note)}
             disabled={busy}
-            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50"
+            className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50"
           >
             {busy ? 'Refunding…' : 'Issue refund'}
           </button>

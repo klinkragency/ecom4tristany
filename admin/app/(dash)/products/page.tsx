@@ -105,7 +105,7 @@ export default function ProductsListPage() {
       {importResult && (
         <div className="card card-pad mb-4 text-sm">
           <div className="mb-1 font-medium">Import complete</div>
-          <div className="text-[color:var(--color-text-muted)]">
+          <div className="text-stone-500">
             {importResult.rows} rows · {importResult.productsCreated} created / {importResult.productsUpdated} updated ·
             variants {importResult.variantsCreated} created / {importResult.variantsUpdated} updated ·{' '}
             {importResult.errors.length} error{importResult.errors.length === 1 ? '' : 's'}

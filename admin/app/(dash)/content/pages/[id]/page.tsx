@@ -47,13 +47,13 @@ export default function EditContentPage() {
   }
 
   if (!initial) {
-    return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
+    return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
   }
 
   return (
     <section>
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/content/pages" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Pages</Link>
+        <Link href="/content/pages" className="text-sm text-stone-500 hover:underline">← Pages</Link>
         <h1 className="text-2xl font-semibold">{initial.title || 'Edit page'}</h1>
       </div>
       <PageForm initial={initial} onSave={save} saveLabel="Save changes" onDelete={del} />

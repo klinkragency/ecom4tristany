@@ -35,13 +35,13 @@ export default function NewEntryPage() {
   }
 
   if (!fieldDefs) {
-    return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
+    return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
   }
 
   return (
     <section>
       <div className="flex items-center gap-3 mb-4">
-        <Link href={`/content/metaobjects/${typeId}`} className="text-sm text-[color:var(--color-text-muted)] hover:underline">← {typeName}</Link>
+        <Link href={`/content/metaobjects/${typeId}`} className="text-sm text-stone-500 hover:underline">← {typeName}</Link>
         <h1 className="text-2xl font-semibold">New entry</h1>
       </div>
       <EntryForm initial={EMPTY_ENTRY} fieldDefs={fieldDefs} onSave={save} saveLabel="Create" />

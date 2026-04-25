@@ -97,12 +97,12 @@ export default function TypeForm({
     setV({ ...v, fieldDefs: next });
   }
 
-  const input = 'w-full px-3 py-2 rounded border border-[color:var(--color-border)] text-sm';
+  const input = 'w-full px-3 py-2 rounded border border-stone-200 text-sm';
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {error && <div className="rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
-      {saved && <div className="rounded border border-green-200 bg-green-50 text-green-800 text-sm px-3 py-2">Saved.</div>}
+      {error && <div className="alert alert-error">{error}</div>}
+      {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
         <Field label="Name" required>
@@ -116,7 +116,7 @@ export default function TypeForm({
         <Field label="Handle" required>
           <input className={input + ' font-mono'} value={v.handle}
             onChange={(e) => setV({ ...v, handle: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })} />
-          <div className="text-xs text-[color:var(--color-text-muted)] mt-1">
+          <div className="text-xs text-stone-500 mt-1">
             Entries are fetched on the storefront as <span className="font-mono">/metaobjects/{v.handle || '…'}</span>.
           </div>
         </Field>
@@ -128,13 +128,13 @@ export default function TypeForm({
 
       <Card title="Fields">
         {v.fieldDefs.length === 0 ? (
-          <p className="text-xs text-[color:var(--color-text-muted)]">
+          <p className="text-xs text-stone-500">
             No fields yet. Add at least one so this type is useful.
           </p>
         ) : (
           <ul className="space-y-2">
             {v.fieldDefs.map((f, i) => (
-              <li key={i} className="border border-[color:var(--color-border)] rounded p-3 space-y-2 text-sm">
+              <li key={i} className="border border-stone-200 rounded p-3 space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="flex flex-col">
                     <button onClick={() => moveField(i, -1)} className="text-xs hover:bg-gray-100 rounded w-5 h-4 leading-none">▲</button>
@@ -164,7 +164,7 @@ export default function TypeForm({
           </ul>
         )}
         <button onClick={addField}
-          className="mt-3 text-xs px-3 py-1.5 rounded border border-[color:var(--color-border)] hover:bg-gray-50">
+          className="mt-3 text-xs px-3 py-1.5 rounded border border-stone-200 hover:bg-gray-50">
           + Add field
         </button>
       </Card>
@@ -177,7 +177,7 @@ export default function TypeForm({
           </button>
         ) : <span />}
         <button onClick={submit} disabled={saving}
-          className="px-4 py-2 rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+          className="px-4 py-2 rounded bg-stone-900 text-white disabled:opacity-50">
           {saving ? 'Saving…' : saveLabel}
         </button>
       </div>
@@ -187,7 +187,7 @@ export default function TypeForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

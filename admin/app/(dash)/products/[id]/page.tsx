@@ -94,7 +94,7 @@ export default function EditProductPage() {
   if (!product) {
     return (
       <section>
-        <p className="text-[color:var(--color-text-muted)]">Loading…</p>
+        <p className="text-stone-500">Loading…</p>
         {error && <div className="mt-3 text-red-700 text-sm">{error}</div>}
       </section>
     );
@@ -104,14 +104,14 @@ export default function EditProductPage() {
     <section className="max-w-4xl">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link href="/products" className="text-sm text-[color:var(--color-text-muted)] hover:underline">
+          <Link href="/products" className="text-sm text-stone-500 hover:underline">
             ← Products
           </Link>
           <h1 className="text-2xl font-semibold">{product.title}</h1>
         </div>
         <div className="flex items-center gap-2 text-sm">
           {savedAt && (
-            <span className="text-[color:var(--color-text-muted)]">
+            <span className="text-stone-500">
               Saved {savedAt.toLocaleTimeString()}
             </span>
           )}
@@ -124,7 +124,7 @@ export default function EditProductPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-3 py-2 rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)] disabled:opacity-50"
+            className="px-3 py-2 rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -132,7 +132,7 @@ export default function EditProductPage() {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
+        <div className="mb-3 alert alert-error">
           {error}
         </div>
       )}
@@ -143,14 +143,14 @@ export default function EditProductPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </Field>
           <Field label="Handle (URL slug)">
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] font-mono text-sm"
+              className="w-full px-3 py-2 rounded border border-stone-200 font-mono text-sm"
             />
           </Field>
           <Field label="Description">
@@ -177,7 +177,7 @@ export default function EditProductPage() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as typeof status)}
-                className="w-full px-3 py-2 rounded border border-[color:var(--color-border)] bg-white"
+                className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
               >
                 <option value="draft">Draft</option>
                 <option value="active">Active</option>
@@ -188,21 +188,21 @@ export default function EditProductPage() {
               <input
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+                className="w-full px-3 py-2 rounded border border-stone-200"
               />
             </Field>
             <Field label="Product type">
               <input
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+                className="w-full px-3 py-2 rounded border border-stone-200"
               />
             </Field>
             <Field label="Tags (comma-separated)">
               <input
                 value={tagsStr}
                 onChange={(e) => setTagsStr(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+                className="w-full px-3 py-2 rounded border border-stone-200"
               />
             </Field>
           </div>
@@ -213,7 +213,7 @@ export default function EditProductPage() {
             <input
               value={seoTitle}
               onChange={(e) => setSeoTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </Field>
           <Field label="SEO description">
@@ -221,7 +221,7 @@ export default function EditProductPage() {
               rows={2}
               value={seoDesc}
               onChange={(e) => setSeoDesc(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </Field>
         </Card>
@@ -297,12 +297,12 @@ function OptionsEditor({
   return (
     <Card title={`Options (${product.options.length} / 3)`}>
       {product.options.length === 0 && (
-        <p className="text-sm text-[color:var(--color-text-muted)]">
+        <p className="text-sm text-stone-500">
           No options yet. A product with no options has one default variant.
         </p>
       )}
       {product.options.map((o) => (
-        <div key={o.id} className="border border-[color:var(--color-border)] rounded p-3">
+        <div key={o.id} className="border border-stone-200 rounded p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium text-sm">{o.name}</div>
             <button onClick={() => del(o.id)} className="text-xs text-red-700 hover:underline">
@@ -331,8 +331,8 @@ function OptionsEditor({
       ))}
 
       {product.options.length < 3 && (
-        <div className="border-t border-[color:var(--color-border)] pt-3">
-          <div className="text-xs uppercase tracking-wide text-[color:var(--color-text-muted)] mb-2">
+        <div className="border-t border-stone-200 pt-3">
+          <div className="text-xs uppercase tracking-wide text-stone-500 mb-2">
             Add new option
           </div>
           <div className="grid grid-cols-[1fr_2fr_auto] gap-2">
@@ -340,13 +340,13 @@ function OptionsEditor({
               placeholder="Option name (e.g. Size)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="px-3 py-2 rounded border border-[color:var(--color-border)] text-sm"
+              className="px-3 py-2 rounded border border-stone-200 text-sm"
             />
             <input
               placeholder="Values, comma-separated (e.g. S, M, L)"
               value={values}
               onChange={(e) => setValues(e.target.value)}
-              className="px-3 py-2 rounded border border-[color:var(--color-border)] text-sm"
+              className="px-3 py-2 rounded border border-stone-200 text-sm"
             />
             <button
               onClick={add}
@@ -369,14 +369,14 @@ function AddValueInput({ onAdd }: { onAdd: (v: string) => void }) {
         value={v}
         onChange={(e) => setV(e.target.value)}
         placeholder="New value…"
-        className="flex-1 px-2 py-1 rounded border border-[color:var(--color-border)] text-sm"
+        className="flex-1 px-2 py-1 rounded border border-stone-200 text-sm"
       />
       <button
         onClick={() => {
           onAdd(v);
           setV('');
         }}
-        className="px-2 py-1 text-sm rounded border border-[color:var(--color-border)] hover:bg-gray-50"
+        className="px-2 py-1 text-sm rounded border border-stone-200 hover:bg-gray-50"
       >
         Add value
       </button>
@@ -412,7 +412,7 @@ function VariantsEditor({
   return (
     <Card title={`Variants (${product.variants.length})`}>
       {product.variants.length === 0 && (
-        <p className="text-sm text-[color:var(--color-text-muted)]">No variants yet.</p>
+        <p className="text-sm text-stone-500">No variants yet.</p>
       )}
       <div className="space-y-2">
         {product.variants.map((v) => (
@@ -486,25 +486,25 @@ function VariantRow({
     <div
       data-testid="variant-row"
       data-variant-label={describeVariant(product, variant)}
-      className="grid grid-cols-[1.5fr_1fr_1fr_auto_auto] gap-2 items-center border border-[color:var(--color-border)] rounded p-2 text-sm"
+      className="grid grid-cols-[1.5fr_1fr_1fr_auto_auto] gap-2 items-center border border-stone-200 rounded p-2 text-sm"
     >
       <div className="font-medium">{describeVariant(product, variant)}</div>
       <input
         placeholder="SKU"
         value={sku}
         onChange={(e) => setSku(e.target.value)}
-        className="px-2 py-1 rounded border border-[color:var(--color-border)]"
+        className="px-2 py-1 rounded border border-stone-200"
       />
       <input
         placeholder="Price"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
-        className="px-2 py-1 rounded border border-[color:var(--color-border)]"
+        className="px-2 py-1 rounded border border-stone-200"
       />
       <button
         onClick={save}
         disabled={saving}
-        className="px-2 py-1 rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50"
+        className="px-2 py-1 rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50"
       >
         {saving ? '…' : 'Save'}
       </button>
@@ -556,8 +556,8 @@ function AddVariantForm({
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-[color:var(--color-border)] space-y-2">
-      <div className="text-xs uppercase tracking-wide text-[color:var(--color-text-muted)]">
+    <div className="mt-3 pt-3 border-t border-stone-200 space-y-2">
+      <div className="text-xs uppercase tracking-wide text-stone-500">
         Add variant
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2">
@@ -566,7 +566,7 @@ function AddVariantForm({
             key={o.id}
             value={values[o.id] || ''}
             onChange={(e) => setValues({ ...values, [o.id]: e.target.value })}
-            className="px-2 py-1 text-sm rounded border border-[color:var(--color-border)] bg-white"
+            className="px-2 py-1 text-sm rounded border border-stone-200 bg-white"
           >
             <option value="">{o.name}…</option>
             {o.values.map((v) => (
@@ -580,13 +580,13 @@ function AddVariantForm({
           placeholder="SKU"
           value={sku}
           onChange={(e) => setSku(e.target.value)}
-          className="px-2 py-1 text-sm rounded border border-[color:var(--color-border)]"
+          className="px-2 py-1 text-sm rounded border border-stone-200"
         />
         <input
           placeholder="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="px-2 py-1 text-sm rounded border border-[color:var(--color-border)]"
+          className="px-2 py-1 text-sm rounded border border-stone-200"
         />
         <button
           onClick={add}
@@ -601,7 +601,7 @@ function AddVariantForm({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+    <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>

@@ -28,17 +28,17 @@ export default function TransfersListPage() {
         <h1 className="text-2xl font-semibold">Stock transfers</h1>
         <Link
           href="/inventory/transfers/new"
-          className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)]"
+          className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800"
         >
           New transfer
         </Link>
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>
+        <div className="mb-3 alert alert-error">{error}</div>
       )}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white overflow-hidden">
+      <div className="rounded border border-stone-200 bg-white overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -49,17 +49,17 @@ export default function TransfersListPage() {
             </tr>
           </thead>
           <tbody>
-            {!list && <tr><td colSpan={4} className="px-3 py-6 text-center text-[color:var(--color-text-muted)]">Loading…</td></tr>}
+            {!list && <tr><td colSpan={4} className="px-3 py-6 text-center text-stone-500">Loading…</td></tr>}
             {list && list.length === 0 && (
-              <tr><td colSpan={4} className="px-3 py-6 text-center text-[color:var(--color-text-muted)]">No transfers yet.</td></tr>
+              <tr><td colSpan={4} className="px-3 py-6 text-center text-stone-500">No transfers yet.</td></tr>
             )}
             {list?.map((t) => (
-              <tr key={t.id} className="border-t border-[color:var(--color-border)] hover:bg-gray-50">
+              <tr key={t.id} className="border-t border-stone-200 hover:bg-gray-50">
                 <td className="px-3 py-2">
                   <Link href={`/inventory/transfers/${t.id}`} className="hover:underline">
                     {t.fromName} → {t.toName}
                   </Link>
-                  {t.note && <div className="text-xs text-[color:var(--color-text-muted)]">{t.note}</div>}
+                  {t.note && <div className="text-xs text-stone-500">{t.note}</div>}
                 </td>
                 <td className="px-3 py-2">
                   <span className={`inline-block rounded px-2 py-0.5 text-xs ${BADGE[t.status]}`}>
@@ -67,7 +67,7 @@ export default function TransfersListPage() {
                   </span>
                 </td>
                 <td className="px-3 py-2">{t.totalUnits}</td>
-                <td className="px-3 py-2 text-[color:var(--color-text-muted)]">
+                <td className="px-3 py-2 text-stone-500">
                   {new Date(t.createdAt).toLocaleDateString()}
                 </td>
               </tr>

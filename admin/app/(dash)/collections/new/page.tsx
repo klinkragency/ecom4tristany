@@ -43,27 +43,27 @@ export default function NewCollectionPage() {
   return (
     <section className="max-w-2xl">
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/collections" className="text-sm text-[color:var(--color-text-muted)] hover:underline">
+        <Link href="/collections" className="text-sm text-stone-500 hover:underline">
           ← Collections
         </Link>
         <h1 className="text-2xl font-semibold">New collection</h1>
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">
+        <div className="mb-3 alert alert-error">
           {error}
         </div>
       )}
 
       <form onSubmit={submit} className="space-y-4">
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+        <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
           <label className="block">
             <div className="text-sm font-medium mb-1">Title</div>
             <input
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+              className="w-full px-3 py-2 rounded border border-stone-200"
             />
           </label>
           <label className="block">
@@ -77,7 +77,7 @@ export default function NewCollectionPage() {
           </label>
         </div>
 
-        <div className="rounded border border-[color:var(--color-border)] bg-white p-4 space-y-3">
+        <div className="rounded border border-stone-200 bg-white p-4 space-y-3">
           <div className="text-sm font-semibold">Collection type</div>
           <label className="flex items-start gap-2 text-sm">
             <input
@@ -89,7 +89,7 @@ export default function NewCollectionPage() {
             />
             <div>
               <div className="font-medium">Manual</div>
-              <div className="text-xs text-[color:var(--color-text-muted)]">
+              <div className="text-xs text-stone-500">
                 Pick products one by one. Order can be rearranged.
               </div>
             </div>
@@ -104,7 +104,7 @@ export default function NewCollectionPage() {
             />
             <div>
               <div className="font-medium">Rule-based (smart)</div>
-              <div className="text-xs text-[color:var(--color-text-muted)]">
+              <div className="text-xs text-stone-500">
                 Products auto-match conditions (price, tag, status, …). Updates as the catalog changes.
               </div>
             </div>
@@ -127,14 +127,14 @@ export default function NewCollectionPage() {
         <div className="flex gap-2 justify-end">
           <Link
             href="/collections"
-            className="px-3 py-2 text-sm rounded border border-[color:var(--color-border)]"
+            className="px-3 py-2 text-sm rounded border border-stone-200"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={pending}
-            className="px-3 py-2 text-sm rounded bg-[color:var(--color-accent)] text-white hover:bg-[color:var(--color-accent-hover)] disabled:opacity-50"
+            className="px-3 py-2 text-sm rounded bg-stone-900 text-white hover:bg-stone-800 disabled:opacity-50"
           >
             {pending ? 'Creating…' : 'Create collection'}
           </button>

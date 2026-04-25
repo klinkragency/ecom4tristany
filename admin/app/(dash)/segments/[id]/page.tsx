@@ -146,7 +146,7 @@ export default function SegmentDetailPage() {
     }
   }
 
-  if (!s) return <section><p className="text-[color:var(--color-text-muted)]">Loading…</p></section>;
+  if (!s) return <section><p className="text-stone-500">Loading…</p></section>;
 
   const update = (patch: Partial<Segment>) => setS({ ...s, ...patch });
   const updateRule = (i: number, patch: Partial<Rule>) => {
@@ -162,23 +162,23 @@ export default function SegmentDetailPage() {
   return (
     <section className="max-w-4xl">
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/segments" className="text-sm text-[color:var(--color-text-muted)] hover:underline">← Segments</Link>
+        <Link href="/segments" className="text-sm text-stone-500 hover:underline">← Segments</Link>
         <h1 className="text-2xl font-semibold flex-1">{s.name || 'Untitled segment'}</h1>
         <button onClick={del} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">Delete</button>
-        <button onClick={save} disabled={saving} className="px-3 py-1.5 text-sm rounded bg-[color:var(--color-accent)] text-white disabled:opacity-50">
+        <button onClick={save} disabled={saving} className="px-3 py-1.5 text-sm rounded bg-stone-900 text-white disabled:opacity-50">
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
 
-      {error && <div className="mb-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2">{error}</div>}
+      {error && <div className="mb-3 alert alert-error">{error}</div>}
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 space-y-3 text-sm">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-3 text-sm">
         <label className="block">
           <div className="font-medium mb-1">Name</div>
           <input
             value={s.name}
             onChange={(e) => update({ name: e.target.value })}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+            className="w-full px-3 py-2 rounded border border-stone-200"
           />
         </label>
         <label className="block">
@@ -186,7 +186,7 @@ export default function SegmentDetailPage() {
           <input
             value={s.description}
             onChange={(e) => update({ description: e.target.value })}
-            className="w-full px-3 py-2 rounded border border-[color:var(--color-border)]"
+            className="w-full px-3 py-2 rounded border border-stone-200"
           />
         </label>
         <label className="flex items-center gap-2 text-xs">
@@ -207,15 +207,15 @@ export default function SegmentDetailPage() {
         </label>
       </div>
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 space-y-3 text-sm">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-3 text-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Rules</h2>
-          <button onClick={addRule} className="px-3 py-1 text-xs rounded border border-[color:var(--color-border)] hover:bg-gray-50">
+          <button onClick={addRule} className="px-3 py-1 text-xs rounded border border-stone-200 hover:bg-gray-50">
             + Add rule
           </button>
         </div>
         {s.rules.length === 0 ? (
-          <p className="text-xs text-[color:var(--color-text-muted)]">
+          <p className="text-xs text-stone-500">
             No rules — segment matches every customer.
           </p>
         ) : (
@@ -234,14 +234,14 @@ export default function SegmentDetailPage() {
                       const firstOp = list[0]?.v ?? 'equals';
                       updateRule(i, { field: f, operator: firstOp });
                     }}
-                    className="px-2 py-1.5 rounded border border-[color:var(--color-border)] bg-white text-xs"
+                    className="px-2 py-1.5 rounded border border-stone-200 bg-white text-xs"
                   >
                     {FIELDS.map((f) => <option key={f.v} value={f.v}>{f.l}</option>)}
                   </select>
                   <select
                     value={r.operator}
                     onChange={(e) => updateRule(i, { operator: e.target.value })}
-                    className="px-2 py-1.5 rounded border border-[color:var(--color-border)] bg-white text-xs"
+                    className="px-2 py-1.5 rounded border border-stone-200 bg-white text-xs"
                   >
                     {ops.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
                   </select>
@@ -250,7 +250,7 @@ export default function SegmentDetailPage() {
                       value={r.value}
                       onChange={(e) => updateRule(i, { value: e.target.value })}
                       placeholder="value"
-                      className="flex-1 px-2 py-1.5 rounded border border-[color:var(--color-border)] text-xs"
+                      className="flex-1 px-2 py-1.5 rounded border border-stone-200 text-xs"
                     />
                   )}
                   <button
@@ -266,27 +266,27 @@ export default function SegmentDetailPage() {
         )}
       </div>
 
-      <div className="rounded border border-[color:var(--color-border)] bg-white p-4 mb-4 space-y-3 text-sm">
+      <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-3 text-sm">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Members ({s.memberCount})</h2>
-          <button onClick={previewMembers} disabled={loadingMembers} className="px-3 py-1 text-xs rounded border border-[color:var(--color-border)] hover:bg-gray-50 disabled:opacity-50">
+          <button onClick={previewMembers} disabled={loadingMembers} className="px-3 py-1 text-xs rounded border border-stone-200 hover:bg-gray-50 disabled:opacity-50">
             {loadingMembers ? 'Loading…' : 'Preview matches'}
           </button>
         </div>
         {members.length === 0 ? (
-          <p className="text-xs text-[color:var(--color-text-muted)]">
+          <p className="text-xs text-stone-500">
             Click &ldquo;Preview matches&rdquo; to load the first 100 members.
           </p>
         ) : (
           <>
-            <p className="text-xs text-[color:var(--color-text-muted)]">
+            <p className="text-xs text-stone-500">
               Showing {members.length} of {memberTotal} matching customers.
             </p>
-            <ul className="divide-y divide-[color:var(--color-border)] text-xs">
+            <ul className="divide-y divide-stone-200 text-xs">
               {members.map((m) => (
                 <li key={m.id} className="py-1.5 flex items-center gap-3">
                   <Link href={`/customers/${m.id}`} className="font-medium hover:underline flex-1">{m.email}</Link>
-                  <span className="text-[color:var(--color-text-muted)]">{m.firstName} {m.lastName}</span>
+                  <span className="text-stone-500">{m.firstName} {m.lastName}</span>
                   <span className="w-16 text-right">{m.orderCount} ords</span>
                 </li>
               ))}
