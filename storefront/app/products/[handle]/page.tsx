@@ -8,11 +8,9 @@ import type { Product } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
-export const dynamic = 'force-dynamic';
-
 async function getProduct(handle: string): Promise<Product | null> {
   const res = await fetch(`${API}/api/storefront/products/${encodeURIComponent(handle)}`, {
-    cache: 'no-store',
+    next: { revalidate: 60, tags: ['products', `product:${handle}`] },
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`failed to load product (${res.status})`);
