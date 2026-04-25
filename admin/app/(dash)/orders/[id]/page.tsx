@@ -599,7 +599,7 @@ function RefundModal({
               onClick={() => setRefundTo('card')}
               className={`px-3 py-2 text-sm rounded border ${
                 refundTo === 'card'
-                  ? 'border-[color:var(--color-accent)] bg-stone-900 text-white'
+                  ? 'border-stone-900 bg-stone-900 text-white'
                   : 'border-stone-200 bg-white hover:bg-gray-50'
               }`}
             >
@@ -612,7 +612,7 @@ function RefundModal({
               title={canRefundToCredit ? 'Add back to the customer\u2019s store credit' : 'Guest order — no customer account'}
               className={`px-3 py-2 text-sm rounded border disabled:opacity-50 disabled:cursor-not-allowed ${
                 refundTo === 'store_credit'
-                  ? 'border-[color:var(--color-accent)] bg-stone-900 text-white'
+                  ? 'border-stone-900 bg-stone-900 text-white'
                   : 'border-stone-200 bg-white hover:bg-gray-50'
               }`}
             >
