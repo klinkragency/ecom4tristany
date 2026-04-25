@@ -42,7 +42,7 @@ export function hrefFor(item: MenuItem): string {
 export async function fetchMenu(handle: string): Promise<Menu> {
   try {
     const res = await fetch(`${API}/api/storefront/menus/${encodeURIComponent(handle)}`, {
-      cache: 'no-store',
+      next: { revalidate: 300, tags: ['menus', `menu:${handle}`] },
     });
     if (!res.ok) return { handle, name: '', items: [] };
     return res.json();
