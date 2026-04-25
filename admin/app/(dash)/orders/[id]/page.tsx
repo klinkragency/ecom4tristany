@@ -574,9 +574,9 @@ function RefundModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl p-4 space-y-3 text-sm">
-        <h2 className="font-semibold">Issue refund</h2>
+    <div className="cp-backdrop fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 backdrop-blur-sm">
+      <div className="cp-panel w-full max-w-md rounded-2xl bg-white p-5 shadow-xl text-sm space-y-3">
+        <h2 className="text-base font-semibold">Issue refund</h2>
         <p className="text-stone-500">
           Refundable: {formatPrice(refundable, order.currency)} of {formatPrice(order.totalCents, order.currency)}
         </p>
@@ -586,16 +586,12 @@ function RefundModal({
         )}
 
         <div className="block">
-          <div className="font-medium mb-1">Refund to</div>
+          <span className="label">Refund to</span>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setRefundTo('card')}
-              className={`px-3 py-2 text-sm rounded border ${
-                refundTo === 'card'
-                  ? 'border-stone-900 bg-stone-900 text-white'
-                  : 'border-stone-200 bg-white hover:bg-gray-50'
-              }`}
+              className={`rounded-lg border px-3 py-2 text-sm transition-colors ${refundTo === "card" ? "border-stone-900 bg-stone-900 text-white" : "border-stone-200 bg-white hover:bg-stone-50"}`}
             >
               Original payment method
             </button>
@@ -604,24 +600,22 @@ function RefundModal({
               disabled={!canRefundToCredit}
               onClick={() => setRefundTo('store_credit')}
               title={canRefundToCredit ? 'Add back to the customer\u2019s store credit' : 'Guest order — no customer account'}
-              className={`px-3 py-2 text-sm rounded border disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                 refundTo === 'store_credit'
                   ? 'border-stone-900 bg-stone-900 text-white'
-                  : 'border-stone-200 bg-white hover:bg-gray-50'
+                  : 'border-stone-200 bg-white hover:bg-stone-50'
               }`}
             >
               Store credit
             </button>
           </div>
           {refundTo === 'store_credit' && (
-            <p className="text-xs text-stone-500 mt-1">
-              No Stripe refund fee — money is added to the customer&rsquo;s balance.
-            </p>
+            <span className="help">No Stripe refund fee — money is added to the customer&rsquo;s balance.</span>
           )}
         </div>
 
         <label className="block">
-          <div className="font-medium mb-1">Amount ({order.currency})</div>
+          <span className="label">Amount ({order.currency})</span>
           <input
             type="number"
             min="0.01"
@@ -629,18 +623,14 @@ function RefundModal({
             max={(refundable / 100).toFixed(2)}
             value={amountStr}
             onChange={(e) => setAmountStr(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-stone-200"
+            className="input"
           />
         </label>
 
         {refundTo === 'card' && (
           <label className="block">
-            <div className="font-medium mb-1">Reason (Stripe)</div>
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value as typeof reason)}
-              className="w-full px-3 py-2 rounded border border-stone-200 bg-white"
-            >
+            <span className="label">Reason (Stripe)</span>
+            <select value={reason} onChange={(e) => setReason(e.target.value as typeof reason)} className="select">
               <option value="requested_by_customer">Requested by customer</option>
               <option value="duplicate">Duplicate</option>
               <option value="fraudulent">Fraudulent</option>
@@ -650,24 +640,13 @@ function RefundModal({
         )}
 
         <label className="block">
-          <div className="font-medium mb-1">Internal note (optional)</div>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Damaged on arrival…"
-            className="w-full px-3 py-2 rounded border border-stone-200"
-          />
+          <span className="label">Internal note (optional)</span>
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Damaged on arrival…" className="input" />
         </label>
 
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border border-stone-200">
-            Cancel
-          </button>
-          <button
-            onClick={submit}
-            disabled={submitting}
-            className="px-3 py-2 rounded bg-stone-900 text-white disabled:opacity-50"
-          >
+          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+          <button onClick={submit} disabled={submitting} className="btn btn-primary">
             {submitting ? 'Refunding…' : 'Issue refund'}
           </button>
         </div>
@@ -678,7 +657,7 @@ function RefundModal({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4 mb-4 space-y-2">
+    <div className="card card-pad mb-4 space-y-2">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
@@ -719,12 +698,12 @@ function NoteField({ initial, onSave, busy }: { initial: string; onSave: (v: str
         rows={3}
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        className="w-full px-3 py-2 rounded border border-stone-200 text-sm"
+        className="textarea text-sm"
       />
       <button
         onClick={() => onSave(val)}
         disabled={!dirty || busy}
-        className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50"
+        className="btn btn-secondary btn-sm"
       >
         Save note
       </button>
@@ -743,12 +722,12 @@ function TagsField({ initial, onSave, busy }: { initial: string[]; onSave: (v: s
         value={val}
         onChange={(e) => setVal(e.target.value)}
         placeholder="vip, gift, …"
-        className="w-full px-3 py-2 rounded border border-stone-200 text-sm"
+        className="textarea text-sm"
       />
       <button
         onClick={() => onSave(val)}
         disabled={!dirty || busy}
-        className="px-3 py-1 text-xs rounded border border-stone-200 disabled:opacity-50"
+        className="btn btn-secondary btn-sm"
       >
         Save tags
       </button>
