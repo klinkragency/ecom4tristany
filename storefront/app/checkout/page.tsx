@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
@@ -259,10 +260,9 @@ export default function CheckoutPage() {
           <ul className="divide-y divide-[color:var(--color-border)]">
             {cart?.items.map((it) => (
               <li key={it.id} className="flex items-start gap-3 py-2">
-                <div className="w-12 h-12 rounded bg-gray-100 overflow-hidden shrink-0">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-gray-100">
                   {it.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.imageUrl} alt="" className="w-full h-full object-cover" />
+                    <Image src={it.imageUrl} alt="" fill sizes="48px" className="object-cover" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

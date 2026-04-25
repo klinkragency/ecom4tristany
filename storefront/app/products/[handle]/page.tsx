@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import VariantPicker from './VariantPicker';
 import SafeHtml from './SafeHtml';
@@ -64,20 +65,28 @@ function Gallery({ product }: { product: Product }) {
   }
   return (
     <div>
-      <div className="aspect-square w-full rounded bg-gray-100 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={first.url} alt={first.alt || product.title} className="w-full h-full object-cover" />
+      <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-100">
+        <Image
+          src={first.url}
+          alt={first.alt || product.title}
+          fill
+          priority
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="object-cover"
+        />
       </div>
       {product.media.length > 1 && (
         <div className="mt-2 grid grid-cols-5 gap-2">
           {product.media.slice(0, 5).map((m) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={m.id}
-              src={m.url}
-              alt={m.alt || ''}
-              className="aspect-square w-full rounded bg-gray-100 object-cover"
-            />
+            <div key={m.id} className="relative aspect-square w-full overflow-hidden rounded bg-gray-100">
+              <Image
+                src={m.url}
+                alt={m.alt || ''}
+                fill
+                sizes="(min-width: 768px) 10vw, 20vw"
+                className="object-cover"
+              />
+            </div>
           ))}
         </div>
       )}

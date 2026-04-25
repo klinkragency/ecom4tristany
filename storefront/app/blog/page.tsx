@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
@@ -31,8 +32,15 @@ export default async function BlogIndex() {
             <li key={p.id} className="border-b border-[color:var(--color-border)] pb-6">
               <Link href={`/blog/${p.slug}`} className="block group">
                 {p.featuredImageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.featuredImageUrl} alt="" className="w-full h-48 object-cover rounded mb-3" />
+                  <div className="relative mb-3 h-48 w-full overflow-hidden rounded">
+                    <Image
+                      src={p.featuredImageUrl}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 768px, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
                 )}
                 <h2 className="text-xl font-semibold group-hover:underline mb-1">{p.title}</h2>
                 <div className="text-xs text-[color:var(--color-text-muted)] mb-2">
