@@ -44,9 +44,11 @@ export default function SettingsModal({ children }: { children: React.ReactNode 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Prefer the most-specific match for the title
-  const title =
-    Object.entries(TITLES).find(([href]) => pathname === href || pathname.startsWith(href + '/'))?.[1] ?? 'Settings';
+  // Prefer the most-specific (longest) match for the title.
+  const title = Object.entries(TITLES)
+    .sort(([a], [b]) => b.length - a.length)
+    .find(([href]) => pathname === href || pathname.startsWith(href + '/'))?.[1]
+    ?? 'Settings';
 
   return (
     <div
