@@ -123,7 +123,7 @@ export default function PageForm({
 
       <div className="flex justify-between">
         {onDelete ? (
-          <button onClick={() => onDelete()} className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">
+          <button onClick={() => onDelete()} className="btn btn-danger btn-sm">
             Delete
           </button>
         ) : <span />}

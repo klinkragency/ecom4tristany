@@ -87,7 +87,7 @@ export default function TransferDetailPage() {
 
       {t.note && (
         <div className="mb-4 rounded border border-stone-200 bg-white p-3 text-sm">
-          <div className="font-medium mb-1">Note</div>
+          <span className="label">Note</div>
           <div className="text-stone-500">{t.note}</div>
         </div>
       )}

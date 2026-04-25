@@ -90,7 +90,7 @@ export default function FinancePage() {
         <Link href="/analytics" className="text-sm text-stone-500 hover:underline">← Analytics</Link>
         <h1 className="h-page flex-1">Finance</h1>
         <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-          className="px-3 py-1.5 text-sm rounded border border-stone-200 bg-white">
+          className="select w-auto">
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
           <option value={90}>Last 90 days</option>

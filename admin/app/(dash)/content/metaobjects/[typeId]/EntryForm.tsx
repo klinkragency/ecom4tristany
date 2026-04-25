@@ -112,7 +112,7 @@ export default function EntryForm({
       <div className="flex justify-between">
         {onDelete ? (
           <button onClick={() => onDelete()}
-            className="px-3 py-1.5 text-xs rounded border border-red-300 text-red-700 hover:bg-red-50">
+            className="btn btn-danger btn-sm">
             Delete entry
           </button>
         ) : <span />}

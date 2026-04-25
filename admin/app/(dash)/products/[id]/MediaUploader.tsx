@@ -158,7 +158,7 @@ export default function MediaUploader({
         </div>
         <button
           onClick={() => inputRef.current?.click()}
-          className="px-3 py-1.5 text-sm rounded border border-stone-200 hover:bg-gray-50"
+          className="btn btn-secondary btn-sm"
         >
           Choose files…
         </button>
