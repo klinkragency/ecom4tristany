@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { api, ApiError } from '@/lib/api';
 import { cartStore, useCart } from '@/lib/cart-store';
@@ -11,11 +11,15 @@ import { track } from '@/lib/analytics';
 import { formatPrice } from '@/lib/types';
 import PaymentStep from './PaymentStep';
 
+// Stripe.js must be loaded once per page session, not per checkout attempt.
+// The publishable key is safe to ship in the bundle (it's public by design).
+const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
+
 type InitResponse = {
   orderId: string;
   orderNumber: string;
   clientSecret: string;
-  publishableKey: string;
   currency: string;
   subtotalCents: number;
   discountCents: number;
@@ -68,7 +72,6 @@ export default function CheckoutPage() {
   const [ratesLoading, setRatesLoading] = useState(false);
 
   const [initResp, setInitResp] = useState<InitResponse | null>(null);
-  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -140,7 +143,6 @@ export default function CheckoutPage() {
         }),
       });
       setInitResp(res);
-      setStripePromise(loadStripe(res.publishableKey));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not start payment');
     } finally {
