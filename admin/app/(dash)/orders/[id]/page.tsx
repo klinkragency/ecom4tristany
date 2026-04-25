@@ -297,7 +297,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Timeline */}
-        <Card title="Timeline">
+        <Card title="Timeline" className="mb-4 space-y-2">
           {order.events.length === 0 ? (
             <p className="text-sm text-stone-500">No events yet.</p>
           ) : (
@@ -321,28 +321,28 @@ export default function OrderDetailPage() {
       </div>
 
       <aside className="space-y-4 text-sm">
-        <Card title="Customer">
+        <Card title="Customer" className="mb-4 space-y-2">
           <div className="font-medium">{order.customerName || '—'}</div>
           <div className="text-stone-500">{order.email}</div>
           {order.phone && <div className="text-stone-500">{order.phone}</div>}
         </Card>
 
         {order.shippingAddress && (
-          <Card title="Shipping address">
+          <Card title="Shipping address" className="mb-4 space-y-2">
             <AddressBlock a={order.shippingAddress} />
           </Card>
         )}
         {order.billingAddress && (
-          <Card title="Billing address">
+          <Card title="Billing address" className="mb-4 space-y-2">
             <AddressBlock a={order.billingAddress} />
           </Card>
         )}
 
-        <Card title="Note">
+        <Card title="Note" className="mb-4 space-y-2">
           <NoteField initial={order.note} onSave={saveNote} busy={busy} />
         </Card>
 
-        <Card title="Tags">
+        <Card title="Tags" className="mb-4 space-y-2">
           <TagsField initial={order.tags} onSave={saveTags} busy={busy} />
         </Card>
 
