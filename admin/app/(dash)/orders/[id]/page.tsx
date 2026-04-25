@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { Card } from '@/components/ui';
 import { formatPrice, type Order, type FinancialStatus, type FulfillmentStatus } from '@/lib/types';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
@@ -161,7 +162,7 @@ export default function OrderDetailPage() {
         {error && <div className="alert alert-error mb-4">{error}</div>}
 
         {/* Line items */}
-        <Card title={`Items (${order.lineItems.length})`}>
+        <Card title={`Items (${order.lineItems.length})`} className="mb-4 space-y-2">
           <ul className="divide-y divide-stone-200">
             {order.lineItems.map((li) => (
               <li key={li.id} className="flex items-center gap-3 py-2 text-sm">
@@ -196,7 +197,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {/* Payments */}
-        <Card title={`Payments (${order.payments.length})`}>
+        <Card title={`Payments (${order.payments.length})`} className="mb-4 space-y-2">
           {order.payments.length === 0 ? (
             <p className="text-sm text-stone-500">No payments recorded.</p>
           ) : (
@@ -218,7 +219,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {/* Fulfillments */}
-        <Card title={`Fulfillments (${fulfillments.length})`}>
+        <Card title={`Fulfillments (${fulfillments.length})`} className="mb-4 space-y-2">
           {fulfillments.length === 0 ? (
             <p className="text-sm text-stone-500">Nothing shipped yet.</p>
           ) : (
@@ -277,7 +278,7 @@ export default function OrderDetailPage() {
 
         {/* Returns */}
         {returnsList.length > 0 && (
-          <Card title={`Returns (${returnsList.length})`}>
+          <Card title={`Returns (${returnsList.length})`} className="mb-4 space-y-2">
             <ul className="space-y-2 text-sm">
               {returnsList.map((r) => (
                 <li key={r.id} className="flex items-center gap-2 rounded-xl border border-stone-200 p-2.5">
@@ -296,7 +297,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Timeline */}
-        <Card title="Timeline">
+        <Card title="Timeline" className="mb-4 space-y-2">
           {order.events.length === 0 ? (
             <p className="text-sm text-stone-500">No events yet.</p>
           ) : (
@@ -320,28 +321,28 @@ export default function OrderDetailPage() {
       </div>
 
       <aside className="space-y-4 text-sm">
-        <Card title="Customer">
+        <Card title="Customer" className="mb-4 space-y-2">
           <div className="font-medium">{order.customerName || '—'}</div>
           <div className="text-stone-500">{order.email}</div>
           {order.phone && <div className="text-stone-500">{order.phone}</div>}
         </Card>
 
         {order.shippingAddress && (
-          <Card title="Shipping address">
+          <Card title="Shipping address" className="mb-4 space-y-2">
             <AddressBlock a={order.shippingAddress} />
           </Card>
         )}
         {order.billingAddress && (
-          <Card title="Billing address">
+          <Card title="Billing address" className="mb-4 space-y-2">
             <AddressBlock a={order.billingAddress} />
           </Card>
         )}
 
-        <Card title="Note">
+        <Card title="Note" className="mb-4 space-y-2">
           <NoteField initial={order.note} onSave={saveNote} busy={busy} />
         </Card>
 
-        <Card title="Tags">
+        <Card title="Tags" className="mb-4 space-y-2">
           <TagsField initial={order.tags} onSave={saveTags} busy={busy} />
         </Card>
 
@@ -651,15 +652,6 @@ function RefundModal({
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad mb-4 space-y-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
     </div>
   );
 }

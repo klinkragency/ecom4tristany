@@ -7,6 +7,7 @@ import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Collection, type CollectionRule, type SortOrder } from '@/lib/types';
 import ProductPicker from './ProductPicker';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Card, Field } from '@/components/ui';
 
 const FIELD_LABELS: Record<CollectionRule['field'], string> = {
   title: 'Title',
@@ -175,7 +176,7 @@ export default function EditCollectionPage() {
       )}
 
       <div className="space-y-4">
-        <Card title="Basic info">
+        <Card title="Basic info" className="space-y-3">
           <Field label="Title">
             <input
               value={title}
@@ -431,20 +432,3 @@ function ProductList({
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad space-y-3">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="label">{label}</span>
-      {children}
-    </label>
-  );
-}
