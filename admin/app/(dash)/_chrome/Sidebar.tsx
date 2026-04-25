@@ -47,12 +47,9 @@ export default function Sidebar({
     setManualOpen(readExpanded());
   }, []);
 
-  function toggleSection(href: string, currentlyOpen: boolean) {
+  function setOpen(href: string, value: boolean) {
     setManualOpen((prev) => {
-      // Toggle from the *visible* open state, not from manualOpen — otherwise
-      // a section that's auto-expanded (manualOpen undefined) would not
-      // collapse on first click.
-      const next = { ...prev, [href]: !currentlyOpen };
+      const next = { ...prev, [href]: value };
       writeExpanded(next);
       return next;
     });
@@ -117,7 +114,7 @@ export default function Sidebar({
               section={s}
               pathname={pathname}
               open={open}
-              onToggle={() => toggleSection(s.href, open)}
+              onSetOpen={(v) => setOpen(s.href, v)}
             />
           );
         })}
@@ -133,7 +130,7 @@ export default function Sidebar({
               section={s}
               pathname={pathname}
               open={open}
-              onToggle={() => toggleSection(s.href, open)}
+              onSetOpen={(v) => setOpen(s.href, v)}
             />
           );
         })}
@@ -146,27 +143,33 @@ function SectionRow({
   section,
   pathname,
   open,
-  onToggle,
+  onSetOpen,
 }: {
   section: NavSection;
   pathname: string;
   open: boolean;
-  onToggle: () => void;
+  onSetOpen: (value: boolean) => void;
 }) {
   const Icon = section.icon;
   const hasSubs = !!section.subs?.length;
   const childActive = section.subs?.some((s) => isSubActive(pathname, s)) ?? false;
   const inSection = isSectionActive(pathname, section);
+  const onSection = pathname === section.href;
   // Two parent states:
   //   leaf   = strong indicator (sand bar). Used when no sub-item owns the focus.
   //   parent = soft indicator (bg lift only). Used when a sub-item is active so
   //            the bar visually belongs to the sub-item, not the parent.
   const parentState = !inSection ? null : childActive ? 'parent' : 'leaf';
 
-  // One Link handles BOTH navigation and expand. Clicking the row navigates
-  // to the section route and toggles the sub-list. Chevron is decorative only.
+  // Click rules:
+  //   - On a different section → navigate (Link handles it) + force-OPEN the
+  //     subs so the user immediately sees where they landed.
+  //   - On the *same* section route already → toggle (allows collapsing the
+  //     row you're currently on without leaving it).
   function handleClick() {
-    if (hasSubs) onToggle();
+    if (!hasSubs) return;
+    if (onSection) onSetOpen(!open);
+    else onSetOpen(true);
   }
 
   return (
