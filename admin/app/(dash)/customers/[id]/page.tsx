@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { Card } from '@/components/ui';
 import { formatPrice, type CustomerDetail, type FinancialStatus } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -80,7 +81,7 @@ export default function CustomerDetailPage() {
           <div className="mb-3 alert alert-error">{error}</div>
         )}
 
-        <Card title="Summary">
+        <Card title="Summary" className="mb-4 space-y-2">
           <div className="grid grid-cols-3 gap-4 text-sm">
             <Stat label="Orders" value={String(c.orderCount)} />
             <Stat label="Spent" value={formatPrice(c.totalSpentCents, c.storeCreditCurrency)} />
@@ -168,7 +169,7 @@ export default function CustomerDetailPage() {
       </div>
 
       <aside className="space-y-4 text-sm">
-        <Card title="Contact">
+        <Card title="Contact" className="mb-4 space-y-2">
           <div className="font-medium">{name}</div>
           <div className="text-stone-500">{c.email}</div>
           {c.phone && <div className="text-stone-500">{c.phone}</div>}
@@ -177,11 +178,11 @@ export default function CustomerDetailPage() {
           </div>
         </Card>
 
-        <Card title="Note">
+        <Card title="Note" className="mb-4 space-y-2">
           <NoteField initial={c.note} onSave={saveNote} busy={busy} />
         </Card>
 
-        <Card title="Tags">
+        <Card title="Tags" className="mb-4 space-y-2">
           <TagsField initial={c.tags} onSave={saveTags} busy={busy} />
         </Card>
 
@@ -230,15 +231,6 @@ export default function CustomerDetailPage() {
         />
       )}
     </section>
-  );
-}
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="card card-pad mb-4 space-y-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </div>
   );
 }
 
