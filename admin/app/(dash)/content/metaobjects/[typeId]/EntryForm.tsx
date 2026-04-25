@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Card, Field } from '@/components/ui';
 import type { FieldDef } from '../TypeForm';
 import { ApiError } from '@/lib/api';
 
@@ -66,18 +67,18 @@ export default function EntryForm({
       {saved && <div className="alert alert-success">Saved.</div>}
 
       <Card title="Basics">
-        <Row label="Name" required>
+        <Field label="Name" required>
           <input className={input} value={v.name}
             onChange={(e) => {
               const name = e.target.value;
               const wasAuto = slugify(v.name) === v.handle || v.handle === '';
               setV(wasAuto ? { ...v, name, handle: slugify(name) } : { ...v, name });
             }} />
-        </Row>
-        <Row label="Handle" required>
+        </Field>
+        <Field label="Handle" required>
           <input className={input + ' font-mono'} value={v.handle}
             onChange={(e) => setV({ ...v, handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} />
-        </Row>
+        </Field>
       </Card>
 
       <Card title="Fields">
