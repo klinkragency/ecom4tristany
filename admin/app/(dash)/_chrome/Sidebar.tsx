@@ -109,28 +109,34 @@ export default function Sidebar({
 
       {/* Top navigation */}
       <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto pr-1">
-        {TOP_NAV.map((s) => (
-          <SectionRow
-            key={s.href}
-            section={s}
-            pathname={pathname}
-            open={sectionOpen(s)}
-            onToggle={() => toggleSection(s.href)}
-          />
-        ))}
+        {TOP_NAV.map((s) => {
+          const open = sectionOpen(s);
+          return (
+            <SectionRow
+              key={s.href}
+              section={s}
+              pathname={pathname}
+              open={open}
+              onToggle={() => toggleSection(s.href, open)}
+            />
+          );
+        })}
       </nav>
 
       {/* Bottom navigation (Settings) */}
       <div className="space-y-0.5 border-t pt-2" style={{ borderColor: 'var(--color-sidebar-border)' }}>
-        {BOTTOM_NAV.map((s) => (
-          <SectionRow
-            key={s.href}
-            section={s}
-            pathname={pathname}
-            open={sectionOpen(s)}
-            onToggle={() => toggleSection(s.href)}
-          />
-        ))}
+        {BOTTOM_NAV.map((s) => {
+          const open = sectionOpen(s);
+          return (
+            <SectionRow
+              key={s.href}
+              section={s}
+              pathname={pathname}
+              open={open}
+              onToggle={() => toggleSection(s.href, open)}
+            />
+          );
+        })}
       </div>
     </aside>
   );
