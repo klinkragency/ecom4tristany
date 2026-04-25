@@ -18,12 +18,10 @@ type ListResp = {
   type: { handle: string; name: string; description: string; fieldDefs: FieldDef[] };
 };
 
-export const dynamic = 'force-dynamic';
-
 async function getList(typeHandle: string): Promise<ListResp | null> {
   const r = await fetch(
     `${API}/api/storefront/metaobjects/${encodeURIComponent(typeHandle)}`,
-    { cache: 'no-store' },
+    { next: { revalidate: 300, tags: ['metaobjects', `metaobjects:${typeHandle}`] } },
   );
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(`failed to load (${r.status})`);
