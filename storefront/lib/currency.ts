@@ -35,10 +35,13 @@ export const fallbackCurrency: Currency = {
 
 // fetchCurrencies pulls the active storefront list. Server-safe: called
 // from the root layout (Server Component) so the switcher SSRs with real
-// options. No-store cache so admins see changes immediately.
+// options. Cached for 5 minutes; admins can call revalidateTag('currencies')
+// to push changes immediately.
 export async function fetchCurrencies(): Promise<Currency[]> {
   try {
-    const r = await fetch(`${API}/api/storefront/currencies`, { cache: 'no-store' });
+    const r = await fetch(`${API}/api/storefront/currencies`, {
+      next: { revalidate: 300, tags: ['currencies'] },
+    });
     if (!r.ok) return [fallbackCurrency];
     const data: { items: Currency[] } = await r.json();
     return data.items?.length > 0 ? data.items : [fallbackCurrency];
