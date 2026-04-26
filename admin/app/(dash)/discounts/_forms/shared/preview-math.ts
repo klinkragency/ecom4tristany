@@ -80,6 +80,8 @@ export function computePreview(v: DiscountPayload, type: TypeURL): PreviewResult
     }
   }
 
+  discountCents = Math.max(0, discountCents);
+
   // Apply min-subtotal gate
   if (subtotalCents < v.minSubtotalCents) {
     discountCents = 0;

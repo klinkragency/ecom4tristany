@@ -57,4 +57,28 @@ describe('validate', () => {
     const v = { ...initialForType('buy-x-get-y'), title: 'X', bogoBuyQuantity: 0 };
     expect(hasErrors(validate(v, 'buy-x-get-y'))).toBe(true);
   });
+
+  test('negative minSubtotalCents is an error', () => {
+    const v = { ...initialForType('amount-off-order'), title: 'X', minSubtotalCents: -100 };
+    const issues = validate(v, 'amount-off-order');
+    expect(issuesFor(issues, 'minSubtotalCents')).toEqual([
+      { field: 'minSubtotalCents', variant: 'error', message: 'Minimum cannot be negative' },
+    ]);
+  });
+
+  test('negative usageLimit is an error', () => {
+    const v = { ...initialForType('amount-off-order'), title: 'X', usageLimit: -1 };
+    const issues = validate(v, 'amount-off-order');
+    expect(issuesFor(issues, 'usageLimit')).toEqual([
+      { field: 'usageLimit', variant: 'error', message: 'Total uses cannot be negative' },
+    ]);
+  });
+
+  test('negative usageLimitPerCustomer is an error', () => {
+    const v = { ...initialForType('amount-off-order'), title: 'X', usageLimitPerCustomer: -5 };
+    const issues = validate(v, 'amount-off-order');
+    expect(issuesFor(issues, 'usageLimitPerCustomer')).toEqual([
+      { field: 'usageLimitPerCustomer', variant: 'error', message: 'Per-customer uses cannot be negative' },
+    ]);
+  });
 });

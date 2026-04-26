@@ -46,6 +46,16 @@ export function validate(v: DiscountPayload, type: TypeURL): Issue[] {
     }
   }
 
+  if (v.minSubtotalCents < 0) {
+    issues.push({ field: 'minSubtotalCents', variant: 'error', message: 'Minimum cannot be negative' });
+  }
+  if (v.usageLimit != null && v.usageLimit < 0) {
+    issues.push({ field: 'usageLimit', variant: 'error', message: 'Total uses cannot be negative' });
+  }
+  if (v.usageLimitPerCustomer != null && v.usageLimitPerCustomer < 0) {
+    issues.push({ field: 'usageLimitPerCustomer', variant: 'error', message: 'Per-customer uses cannot be negative' });
+  }
+
   // Schedule rules
   if (v.startsAt && v.endsAt && new Date(v.endsAt) < new Date(v.startsAt)) {
     issues.push({ field: 'endsAt', variant: 'error', message: 'End date is before start date' });
