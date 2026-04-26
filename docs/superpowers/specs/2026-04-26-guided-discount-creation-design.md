@@ -51,6 +51,8 @@ admin/app/(dash)/discounts/
     │   ├── LimitsSection.tsx
     │   ├── ScheduleSection.tsx
     │   ├── ActiveSection.tsx
+    │   ├── BogoBuySection.tsx          # BOGO-only, wraps AppliesToProductsCollectionsSection
+    │   ├── BogoGetSection.tsx          # BOGO-only, adds discount % field
     │   ├── LivePreview.tsx
     │   ├── DataSuggestion.tsx
     │   ├── FieldHint.tsx
@@ -253,11 +255,11 @@ Client-side only. Server-side validation remains source of truth; on server erro
 }
 ```
 
-Implemented in `backend/internal/discount/admin.go` as `(*Handler).Suggestions`. Three SQL queries:
+Implemented in `backend/internal/discount/admin.go` as `(*Handler).Suggestions`. Three SQL queries (column/table names verified against migrations during implementation — see `00003_orders.sql`, `00004_customers.sql`):
 
-- `SELECT COALESCE(AVG(total_cents), 0)::bigint, COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY total_cents), 0)::bigint FROM orders WHERE financial_status = 'paid'`
-- `SELECT COUNT(*) FROM customers`
-- `SELECT product_id FROM order_items GROUP BY product_id ORDER BY SUM(quantity) DESC LIMIT 5`
+- Average + p50 of paid order totals (filter on whatever the existing paid-status indicator is — `financial_status`, `payment_status`, or join with `payments`)
+- Count of customers
+- Top 5 product ids by units sold (sum of quantity in order line items)
 
 Wired in [backend/internal/server/router.go](../../../backend/internal/server/router.go) discount block:
 ```go
