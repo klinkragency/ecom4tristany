@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { CreateDiscountButton } from './CreateDiscountButton';
 
 type Discount = {
   id: string;
@@ -46,9 +47,7 @@ export default function DiscountsPage() {
     <section className="max-w-5xl">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="h-page">Discounts</h1>
-        <Link href="/discounts/new" className="btn btn-primary">
-          + New discount
-        </Link>
+        <CreateDiscountButton />
       </div>
       {error && <div className="alert alert-error mb-4">{error}</div>}
 
