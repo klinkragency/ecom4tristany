@@ -490,3 +490,61 @@ func codeOrConflict(err error) int {
 	}
 	return http.StatusInternalServerError
 }
+
+// Suggestions returns lightweight aggregates used by the guided discount
+// creation UI to show "💡 …" hints (panier moyen, top products, customer
+// count). Read-only, no side effects, owner+admin+staff allowed.
+func (h *Handler) Suggestions(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var avgCents, p50Cents int64
+	err := h.db.QueryRow(ctx, `
+        SELECT
+            COALESCE(AVG(total_cents), 0)::bigint AS avg_cents,
+            COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY total_cents), 0)::bigint AS p50_cents
+        FROM orders
+        WHERE financial_status = 'paid'
+    `).Scan(&avgCents, &p50Cents)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+
+	var totalCustomers int64
+	if err := h.db.QueryRow(ctx, `SELECT COUNT(*) FROM customers`).Scan(&totalCustomers); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+
+	rows, err := h.db.Query(ctx, `
+        SELECT product_id::text
+        FROM order_line_items
+        WHERE product_id IS NOT NULL
+        GROUP BY product_id
+        ORDER BY SUM(quantity) DESC
+        LIMIT 5
+    `)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+	defer rows.Close()
+
+	topProductIDs := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "scan_error", err.Error())
+			return
+		}
+		topProductIDs = append(topProductIDs, id)
+	}
+
+	httpx.JSON(w, http.StatusOK, map[string]any{
+		"averageOrderValueCents": avgCents,
+		"p50OrderValueCents":     p50Cents,
+		"totalCustomers":         totalCustomers,
+		"topProductIds":          topProductIDs,
+		"currency":               "EUR",
+	})
+}

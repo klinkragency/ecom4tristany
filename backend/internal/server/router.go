@@ -234,6 +234,7 @@ func NewRouter(d Deps) http.Handler {
 			// Discounts — write requires admin or owner.
 			discH := discount.NewHandler(d.DB)
 			r.Get("/discounts", discH.List)
+			r.Get("/discounts/suggestions", discH.Suggestions)
 			r.Get("/discounts/{id}", discH.Get)
 			r.Group(func(r chi.Router) {
 				r.Use(auth.RequireRole(d.DB, auth.RoleOwner, auth.RoleAdmin))
