@@ -21,6 +21,7 @@ export function EligibilitySection({
         <label className="flex items-center gap-2 text-sm">
           <input
             type="radio"
+            name="discount-eligibility"
             checked={values.eligibility === 'all'}
             onChange={() => onChange({ eligibility: 'all' })}
           />
@@ -29,6 +30,7 @@ export function EligibilitySection({
         <label className="flex items-center gap-2 text-sm">
           <input
             type="radio"
+            name="discount-eligibility"
             checked={values.eligibility === 'segments'}
             onChange={() => onChange({ eligibility: 'segments' })}
           />

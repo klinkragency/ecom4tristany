@@ -33,18 +33,19 @@ export function AppliesToProductsCollectionsSection({
   products: Product[];
   collections: Collection[];
 }) {
-  const productIds = (values as any)[productIdsField] as string[];
-  const collectionIds = (values as any)[collectionIdsField] as string[];
+  const productIds = values[productIdsField];
+  const collectionIds = values[collectionIdsField];
+  const radioName = `scope-${productIdsField}`;
 
   return (
     <Card title={title}>
       <div className="space-y-2 mb-3">
         <label className="flex items-center gap-2 text-sm">
-          <input type="radio" checked={scope === 'products'} onChange={() => setScope('products')} />
+          <input type="radio" name={radioName} checked={scope === 'products'} onChange={() => setScope('products')} />
           Specific products
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="radio" checked={scope === 'collections'} onChange={() => setScope('collections')} />
+          <input type="radio" name={radioName} checked={scope === 'collections'} onChange={() => setScope('collections')} />
           Collections
         </label>
       </div>

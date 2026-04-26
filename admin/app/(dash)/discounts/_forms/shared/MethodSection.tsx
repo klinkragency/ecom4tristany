@@ -22,7 +22,7 @@ export function MethodSection({
   // Mode is derived: empty code = automatic, non-empty = code-mode.
   // We hold a local "mode" too so the user can switch to "code" with an
   // empty input ready for typing without losing autoderive flow.
-  const [mode, setMode] = useState<Mode>(values.code ? 'code' : 'code');
+  const [mode, setMode] = useState<Mode>(values.code ? 'code' : 'automatic');
   const codeTouched = useRef<boolean>(values.code.length > 0);
 
   // Auto-derive code from title only if user hasn't manually edited it.
@@ -36,10 +36,8 @@ export function MethodSection({
 
   function setModeAndClear(m: Mode) {
     setMode(m);
-    if (m === 'automatic') {
-      onChange({ code: '' });
-      codeTouched.current = false;
-    }
+    onChange({ code: '' });
+    codeTouched.current = false;
   }
 
   return (
