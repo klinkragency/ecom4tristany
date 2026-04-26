@@ -46,7 +46,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		limit = 50
 	}
 
-	args := []any{LowStockThreshold, limit}
+	args := []any{}
 	whereParts := []string{}
 
 	// Search (title / SKU / handle / variant_title) — case-insensitive
@@ -54,26 +54,31 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	// SKUs; can move to a tsv later.
 	if q != "" {
 		args = append(args, "%"+q+"%")
-		idx := len(args)
+		idx := strconv.Itoa(len(args))
 		whereParts = append(whereParts,
-			"(p.title ILIKE $"+strconv.Itoa(idx)+
-				" OR v.sku ILIKE $"+strconv.Itoa(idx)+
-				" OR p.handle ILIKE $"+strconv.Itoa(idx)+")")
+			"(p.title ILIKE $"+idx+
+				" OR v.sku ILIKE $"+idx+
+				" OR p.handle ILIKE $"+idx+")")
 	}
 
-	// Status filter is applied post-aggregation via HAVING. Casts are
-	// explicit to keep pgx happy when the parameter only appears in
-	// comparisons.
+	// Status filter is applied post-aggregation via HAVING. The threshold
+	// param is only added when it's actually referenced — otherwise Postgres
+	// can't infer the type of an unused $N (SQLSTATE 42P18).
 	having := ""
 	switch status {
 	case "low":
+		args = append(args, LowStockThreshold)
+		thIdx := strconv.Itoa(len(args))
 		having = "HAVING (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) > 0" +
-			" AND (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= $1::int" +
+			" AND (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= $" + thIdx + "::int" +
 			" AND v.track_inventory = true"
 	case "out":
 		having = "HAVING (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= 0" +
 			" AND v.track_inventory = true"
 	}
+
+	args = append(args, limit)
+	limitIdx := strconv.Itoa(len(args))
 
 	where := ""
 	if len(whereParts) > 0 {
@@ -109,7 +114,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
         ORDER BY v.track_inventory DESC,
                  (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) ASC,
                  p.title
-        LIMIT $2
+        LIMIT $` + limitIdx + `
     `
 
 	rows, err := h.db.Query(r.Context(), sql, args...)
