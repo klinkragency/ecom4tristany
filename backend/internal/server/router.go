@@ -154,6 +154,7 @@ func NewRouter(d Deps) http.Handler {
 			r.Delete("/locations/{id}", invH.DeleteLocation)
 
 			r.Get("/products/{id}/inventory", invH.ProductMatrix)
+			r.Get("/inventory", invH.Dashboard)
 			r.Post("/inventory/set", invH.SetLevels)
 			r.Post("/inventory/adjust", invH.Adjust)
 

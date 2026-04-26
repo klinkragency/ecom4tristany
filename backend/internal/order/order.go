@@ -11,6 +11,7 @@ import (
 
 	"github.com/3mg/shop/backend/internal/auth"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/inventory"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -297,6 +298,46 @@ func (h *Handler) Cancel(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusConflict, "paid_needs_refund",
 			"paid orders must be refunded before cancelling (see refund endpoint)")
 		return
+	}
+
+	// Release the committed stock that this order reserved at create-time.
+	// We only release for lines that are NOT yet fulfilled — fulfilled lines
+	// already had their committed decremented at ship-time, and bumping it
+	// back would double-count. The cancellation contract is "the buyer never
+	// got the goods", so for unfulfilled lines we re-open the stock for sale.
+	rows, err := tx.Query(r.Context(), `
+        SELECT li.variant_id, li.committed_location_id, li.quantity
+        FROM order_line_items li
+        WHERE li.order_id = $1
+          AND li.committed_location_id IS NOT NULL
+          AND li.quantity > COALESCE((
+              SELECT SUM(fi.quantity)
+              FROM fulfillment_items fi
+              JOIN fulfillments f ON f.id = fi.fulfillment_id
+              WHERE fi.order_line_item_id = li.id AND f.status <> 'cancelled'
+          ), 0)
+    `, id)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "release_query", err.Error())
+		return
+	}
+	type rel struct{ variantID, locID string; qty int }
+	var releases []rel
+	for rows.Next() {
+		var r0 rel
+		if err := rows.Scan(&r0.variantID, &r0.locID, &r0.qty); err != nil {
+			rows.Close()
+			httpx.Error(w, http.StatusInternalServerError, "release_scan", err.Error())
+			return
+		}
+		releases = append(releases, r0)
+	}
+	rows.Close()
+	for _, rl := range releases {
+		if err := inventory.Release(r.Context(), tx, rl.variantID, rl.locID, rl.qty); err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "release_error", err.Error())
+			return
+		}
 	}
 
 	_, err = tx.Exec(r.Context(),

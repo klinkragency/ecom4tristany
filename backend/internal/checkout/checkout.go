@@ -11,6 +11,7 @@ import (
 	"github.com/3mg/shop/backend/internal/config"
 	"github.com/3mg/shop/backend/internal/discount"
 	"github.com/3mg/shop/backend/internal/httpx"
+	"github.com/3mg/shop/backend/internal/inventory"
 	"github.com/3mg/shop/backend/internal/payments"
 	"github.com/3mg/shop/backend/internal/session"
 	shipping_ "github.com/3mg/shop/backend/internal/shipping"
@@ -270,6 +271,34 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Hard stock check inside the transaction. Available = sum(on_hand) -
+	// sum(committed) across all locations. Variants with track_inventory=false
+	// are skipped. Rejected here means the buyer never sees a Stripe payment
+	// intent — much better than billing them and refunding because the last
+	// unit slipped between cart-add and checkout.
+	stockReq := make([]inventory.LineRequest, 0, len(lines))
+	for _, l := range lines {
+		stockReq = append(stockReq, inventory.LineRequest{VariantID: l.variantID, Quantity: l.quantity})
+	}
+	if serr := inventory.CheckAvailability(r.Context(), tx, stockReq); serr != nil {
+		if errors.Is(serr, inventory.ErrInsufficientStock) {
+			httpx.Error(w, http.StatusConflict, "out_of_stock", serr.Error())
+			return
+		}
+		httpx.Error(w, http.StatusInternalServerError, "stock_check_error", serr.Error())
+		return
+	}
+
+	// Pick the location where we'll reserve stock. Empty = no fulfillment
+	// location configured yet → we still create the order but skip the commit
+	// (available stays equal to on_hand for that variant; not ideal but
+	// non-blocking for shops in setup).
+	commitLoc, err := inventory.PrimaryFulfillmentLocation(r.Context(), tx)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "commit_loc_error", err.Error())
+		return
+	}
+
 	// Build per-line discount map (line index → cents off) from the engine result.
 	lineDiscountCents := make([]int, len(lines))
 	for _, ld := range discRes.LineDiscounts {
@@ -298,6 +327,13 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Line items: snapshot everything including any per-line discount.
+	// Each line records the location whose `committed` we bumped, so cancel /
+	// fulfillment / refund can release the same row later (avoids
+	// per-location committed counters drifting).
+	var commitLocArg any
+	if commitLoc != "" {
+		commitLocArg = commitLoc
+	}
 	for i, l := range lines {
 		lineSubtotal := l.unitPriceCents * l.quantity
 		lineDiscount := lineDiscountCents[i]
@@ -309,13 +345,20 @@ func (h *Handler) Init(w http.ResponseWriter, r *http.Request) {
             INSERT INTO order_line_items (order_id, variant_id, product_id,
                                           product_title, variant_title, sku, image_url,
                                           unit_price_cents, quantity, subtotal_cents,
-                                          discount_cents, tax_cents, total_cents)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12)
+                                          discount_cents, tax_cents, total_cents,
+                                          committed_location_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, $12, $13)
         `, orderID, l.variantID, l.productID,
 			l.productTitle, l.variantTitle, l.sku, l.imageURL,
-			l.unitPriceCents, l.quantity, lineSubtotal, lineDiscount, lineTotal)
+			l.unitPriceCents, l.quantity, lineSubtotal, lineDiscount, lineTotal,
+			commitLocArg)
 		if err != nil {
 			httpx.Error(w, http.StatusInternalServerError, "line_insert", err.Error())
+			return
+		}
+		// Reserve the stock at the committed location.
+		if err := inventory.Commit(r.Context(), tx, l.variantID, commitLoc, l.quantity); err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "commit_error", err.Error())
 			return
 		}
 	}
