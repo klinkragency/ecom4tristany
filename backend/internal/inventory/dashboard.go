@@ -61,12 +61,14 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 				" OR p.handle ILIKE $"+strconv.Itoa(idx)+")")
 	}
 
-	// Status filter is applied post-aggregation via HAVING.
+	// Status filter is applied post-aggregation via HAVING. Casts are
+	// explicit to keep pgx happy when the parameter only appears in
+	// comparisons.
 	having := ""
 	switch status {
 	case "low":
 		having = "HAVING (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) > 0" +
-			" AND (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= $1" +
+			" AND (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= $1::int" +
 			" AND v.track_inventory = true"
 	case "out":
 		having = "HAVING (COALESCE(SUM(il.on_hand), 0) - COALESCE(SUM(il.committed), 0)) <= 0" +
@@ -136,13 +138,15 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Totals (across the unfiltered table) — useful for the header KPIs.
+	// Explicit ::int cast on $1: pgx can't infer the type of a parameter
+	// used solely as the right-hand side of a comparison in a FILTER clause.
 	var totalSKUs, lowCount, outCount int
 	_ = h.db.QueryRow(r.Context(), `
         SELECT
           COUNT(*) FILTER (WHERE v.track_inventory = true) AS sku_count,
           COUNT(*) FILTER (
             WHERE v.track_inventory = true
-              AND (sub.available > 0 AND sub.available <= $1)
+              AND (sub.available > 0 AND sub.available <= $1::int)
           ) AS low_count,
           COUNT(*) FILTER (
             WHERE v.track_inventory = true
