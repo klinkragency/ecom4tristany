@@ -245,27 +245,24 @@ html, body {
 }
 .sb-item:active { transform: scale(0.99); }
 
-/* Active = current route. We split this into two visual roles:
-   - parent active: just a lift on bg (no left bar — that goes to sub-items)
-   - sub-item active: bg lift + sand bar on the left */
+/* Active = current route. Two visual roles, one focal point at a time:
+   - parent active (a sub is active, parent only "containerizes"):
+     keep its bg flat — only the text + icon brighten so the sub-item below
+     holds the visual focus on its own.
+   - leaf active (parent route is the actual destination):
+     full sand-tint bg lift + bolder weight (still no left bar — leaves
+     the bar treatment to sub-items so the two states never compete). */
 .sb-item[data-active="parent"] {
-  background: var(--color-sidebar-active-bg);
   color: var(--color-sidebar-fg-strong);
+}
+.sb-item[data-active="parent"] .sb-icon {
+  color: var(--color-sidebar-accent);
+  transform: scale(1.05);
 }
 .sb-item[data-active="leaf"] {
-  background: rgba(214, 207, 184, 0.14);
+  background: rgba(214, 207, 184, 0.10);
   color: var(--color-sidebar-fg-strong);
   font-weight: 500;
-}
-.sb-item[data-active="leaf"]::before {
-  content: "";
-  position: absolute;
-  left: -2px;
-  top: 7px;
-  bottom: 7px;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--color-sidebar-accent);
 }
 
 /* Icon micro-interaction */
