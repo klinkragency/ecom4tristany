@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { CreateDiscountButton } from './CreateDiscountButton';
+import { RowActionsMenu } from './RowActionsMenu';
+import { DeleteDiscountDialog } from './DeleteDiscountDialog';
+import type { DiscountPayload } from './_forms/shared/types';
 
 type Discount = {
   id: string;
@@ -32,6 +35,8 @@ function describe(d: Discount): string {
 export default function DiscountsPage() {
   const [items, setItems] = useState<Discount[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<Discount | null>(null);
 
   async function load() {
     try {
@@ -42,6 +47,32 @@ export default function DiscountsPage() {
     }
   }
   useEffect(() => { load(); }, []);
+
+  async function toggleActive(d: Discount) {
+    setPendingId(d.id);
+    setError(null);
+    try {
+      // PUT requires the full payload — fetch the canonical record first so
+      // we don't drop fields not present in the list response.
+      const full = await api<DiscountPayload>(`/api/admin/discounts/${d.id}`);
+      await api(`/api/admin/discounts/${d.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ...full, active: !d.active }),
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Update failed');
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!toDelete) return;
+    await api(`/api/admin/discounts/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    await load();
+  }
 
   return (
     <section className="max-w-5xl">
@@ -63,11 +94,12 @@ export default function DiscountsPage() {
               <th>Scope</th>
               <th>Used</th>
               <th>Status</th>
+              <th className="w-12"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((d) => (
-              <tr key={d.id}>
+              <tr key={d.id} className={pendingId === d.id ? 'opacity-60' : ''}>
                 <td className="font-medium">
                   <Link href={`/discounts/${d.id}`} className="hover:underline">{d.title}</Link>
                 </td>
@@ -84,11 +116,35 @@ export default function DiscountsPage() {
                     {d.active ? 'active' : 'inactive'}
                   </span>
                 </td>
+                <td>
+                  <RowActionsMenu
+                    label={`Actions for ${d.title}`}
+                    actions={[
+                      {
+                        label: d.active ? 'Deactivate' : 'Activate',
+                        onClick: () => toggleActive(d),
+                        disabled: pendingId === d.id,
+                      },
+                      {
+                        label: 'Delete',
+                        destructive: true,
+                        onClick: () => setToDelete(d),
+                      },
+                    ]}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      <DeleteDiscountDialog
+        open={toDelete !== null}
+        title={toDelete?.title ?? ''}
+        onCancel={() => setToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </section>
   );
 }
