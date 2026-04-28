@@ -27,11 +27,14 @@ test.describe('Guided discount creation', () => {
 
     // Switch to "Discount code" mode so the auto-derived code field is visible.
     await page.getByLabel('Discount code').check();
-    const title = `E2E test 10% ${Date.now()}`;
+    const stamp = Date.now();
+    const title = `E2E test 10% ${stamp}`;
     await page.getByLabel('Title (admin-facing)').fill(title);
-    // Auto-derived code; assert it's populated (deriveCode strips non-alphanum
-    // and keeps up to the first 3 tokens).
-    await expect(page.getByLabel(/Code/)).toHaveValue(/E2ETEST10/);
+    // Auto-derived code is "E2ETEST10" (first 3 tokens) — re-runs would hit the
+    // DB unique-code constraint, so overwrite with a stamped variant.
+    await expect(page.getByLabel('Code (customers type this at checkout)')).toHaveValue(/E2ETEST10/);
+    const code = `E2EORDER${stamp}`.slice(0, 20);
+    await page.getByLabel('Code (customers type this at checkout)').fill(code);
 
     await page.getByRole('button', { name: 'Create discount' }).click();
     await expect(page).toHaveURL(/\/discounts$/);
