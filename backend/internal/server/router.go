@@ -137,6 +137,9 @@ func NewRouter(d Deps) http.Handler {
 			collH := collection.NewHandler(d.DB)
 			r.Get("/collections", collH.List)
 			r.Post("/collections", collH.Create)
+			// Preview must be declared before the /{id} routes so chi does not
+			// match "preview" as a collection id.
+			r.Post("/collections/preview", collH.Preview)
 			r.Get("/collections/{id}", collH.Get)
 			r.Put("/collections/{id}", collH.Update)
 			r.Delete("/collections/{id}", collH.Delete)
