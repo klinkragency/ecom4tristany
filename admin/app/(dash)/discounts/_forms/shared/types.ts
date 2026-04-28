@@ -88,6 +88,43 @@ export function discountToTypeURL(d: Pick<DiscountPayload, 'kind' | 'scope'>): T
   return d.scope === 'all' ? 'amount-off-order' : 'amount-off-products';
 }
 
+// The server response uses *omitempty* on nullable / empty-array fields and
+// includes read-only metadata (id, usageCount, createdAt, …). Normalize
+// against EMPTY_DISCOUNT so we can hand a clean writable payload to forms or
+// to PUT /api/admin/discounts/{id} (which rejects unknown fields).
+export type DiscountResponse = Partial<DiscountPayload> & { code?: string | null };
+
+export function normalizeDiscount(d: DiscountResponse): DiscountPayload {
+  return {
+    ...EMPTY_DISCOUNT,
+    code: d.code ?? '',
+    title: d.title ?? '',
+    kind: (d.kind as DiscountPayload['kind']) ?? EMPTY_DISCOUNT.kind,
+    valuePercent: d.valuePercent ?? null,
+    valueCents: d.valueCents ?? null,
+    scope: (d.scope as DiscountPayload['scope']) ?? EMPTY_DISCOUNT.scope,
+    eligibility: (d.eligibility as DiscountPayload['eligibility']) ?? EMPTY_DISCOUNT.eligibility,
+    usageLimit: d.usageLimit ?? null,
+    usageLimitPerCustomer: d.usageLimitPerCustomer ?? null,
+    minSubtotalCents: d.minSubtotalCents ?? 0,
+    bogoBuyQuantity: d.bogoBuyQuantity ?? null,
+    bogoGetQuantity: d.bogoGetQuantity ?? null,
+    bogoGetDiscountPercent: d.bogoGetDiscountPercent ?? null,
+    bogoBuyScope: d.bogoBuyScope ?? null,
+    bogoGetScope: d.bogoGetScope ?? null,
+    active: d.active ?? true,
+    startsAt: d.startsAt ?? null,
+    endsAt: d.endsAt ?? null,
+    productIds: d.productIds ?? [],
+    collectionIds: d.collectionIds ?? [],
+    buyProductIds: d.buyProductIds ?? [],
+    buyCollectionIds: d.buyCollectionIds ?? [],
+    getProductIds: d.getProductIds ?? [],
+    getCollectionIds: d.getCollectionIds ?? [],
+    segmentIds: d.segmentIds ?? [],
+  };
+}
+
 // Initialize a fresh payload pre-filled for the chosen type-URL. The form
 // then mutates from there.
 export function initialForType(type: TypeURL): DiscountPayload {

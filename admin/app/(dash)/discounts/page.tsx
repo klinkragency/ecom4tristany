@@ -6,7 +6,7 @@ import { api, ApiError } from '@/lib/api';
 import { CreateDiscountButton } from './CreateDiscountButton';
 import { RowActionsMenu } from './RowActionsMenu';
 import { DeleteDiscountDialog } from './DeleteDiscountDialog';
-import type { DiscountPayload } from './_forms/shared/types';
+import { normalizeDiscount, type DiscountResponse } from './_forms/shared/types';
 
 type Discount = {
   id: string;
@@ -52,9 +52,11 @@ export default function DiscountsPage() {
     setPendingId(d.id);
     setError(null);
     try {
-      // PUT requires the full payload — fetch the canonical record first so
-      // we don't drop fields not present in the list response.
-      const full = await api<DiscountPayload>(`/api/admin/discounts/${d.id}`);
+      // PUT requires the full writable payload — fetch the canonical record
+      // and normalize away read-only fields (id, usageCount, …) that the
+      // backend's DisallowUnknownFields decoder rejects.
+      const raw = await api<DiscountResponse>(`/api/admin/discounts/${d.id}`);
+      const full = normalizeDiscount(raw);
       await api(`/api/admin/discounts/${d.id}`, {
         method: 'PUT',
         body: JSON.stringify({ ...full, active: !d.active }),
@@ -76,9 +78,31 @@ export default function DiscountsPage() {
 
   return (
     <section className="max-w-5xl">
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <h1 className="h-page">Discounts</h1>
         <CreateDiscountButton />
+      </div>
+      <div className="mb-5 flex items-center gap-4 text-xs text-stone-500">
+        <span>
+          <span className="tabular font-semibold text-stone-900">{items.length}</span>{' '}
+          {items.length === 1 ? 'discount' : 'discounts'}
+        </span>
+        <span aria-hidden>·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+          <span className="tabular font-semibold text-stone-900">
+            {items.filter((d) => d.active).length}
+          </span>{' '}
+          active
+        </span>
+        <span aria-hidden>·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-stone-300" aria-hidden />
+          <span className="tabular font-semibold text-stone-900">
+            {items.filter((d) => !d.active).length}
+          </span>{' '}
+          inactive
+        </span>
       </div>
       {error && <div className="alert alert-error mb-4">{error}</div>}
 

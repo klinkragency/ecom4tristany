@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { MoreVertical } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 
 export type RowAction = {
   label: string;
@@ -41,9 +41,13 @@ export function RowActionsMenu({ actions, label = 'Actions' }: { actions: RowAct
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className="grid h-8 w-8 place-items-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+        className={`grid h-9 w-9 place-items-center rounded-lg border transition-colors ${
+          open
+            ? 'border-stone-300 bg-stone-100 text-stone-900'
+            : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900'
+        }`}
       >
-        <MoreVertical size={16} />
+        <MoreHorizontal size={16} />
       </button>
       {open && (
         <div
