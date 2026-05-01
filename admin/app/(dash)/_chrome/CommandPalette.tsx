@@ -76,7 +76,12 @@ const QUICK_ACTIONS: Item[] = [
 function navItems(): Item[] {
   const out: Item[] = [];
   for (const s of [...TOP_NAV, ...BOTTOM_NAV]) {
-    out.push({ id: `nav-${s.href}`, group: 'Navigation', icon: s.icon, title: s.label, href: s.href, kind: 'nav' });
+    // Group-only sections (no href) don't get a top-level entry — only their
+    // subs are surfaced. The "Sales / Catalog / Audience" headers are not
+    // destinations themselves.
+    if (s.href) {
+      out.push({ id: `nav-${s.href}`, group: 'Navigation', icon: s.icon, title: s.label, href: s.href, kind: 'nav' });
+    }
     for (const sub of s.subs ?? []) {
       out.push({
         id: `nav-${sub.href}`,

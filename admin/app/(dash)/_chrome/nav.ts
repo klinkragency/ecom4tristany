@@ -12,43 +12,53 @@ import {
 } from 'lucide-react';
 
 export type NavSub = { href: string; label: string };
+// A section is either:
+//   - a leaf with `href` (no subs)
+//   - a group label (no `href`, only `key` + subs). Clicking the group only
+//     toggles the dropdown; the primary destination lives as the first sub.
+// This avoids the dual-purpose parent (link + toggle) that confused users.
 export type NavSection = {
-  href: string;
+  key: string; // stable id for storage / active checks
+  href?: string;
   label: string;
   icon: LucideIcon;
   subs?: NavSub[];
 };
 
 export const TOP_NAV: NavSection[] = [
-  { href: '/', label: 'Home', icon: Home },
+  { key: 'home', href: '/', label: 'Home', icon: Home },
   {
-    href: '/orders',
-    label: 'Orders',
+    key: 'sales',
+    label: 'Sales',
     icon: ShoppingBag,
     subs: [
+      { href: '/orders', label: 'Orders' },
       { href: '/returns', label: 'Returns' },
-      // Drafts + Abandoned land here in later phases.
     ],
   },
   {
-    href: '/products',
-    label: 'Products',
+    key: 'catalog',
+    label: 'Catalog',
     icon: Package,
     subs: [
+      { href: '/products', label: 'Products' },
       { href: '/collections', label: 'Collections' },
       { href: '/inventory', label: 'Inventory' },
       { href: '/inventory/transfers', label: 'Transfers' },
     ],
   },
   {
-    href: '/customers',
-    label: 'Customers',
+    key: 'audience',
+    label: 'Audience',
     icon: Users,
-    subs: [{ href: '/segments', label: 'Segments' }],
+    subs: [
+      { href: '/customers', label: 'Customers' },
+      { href: '/segments', label: 'Segments' },
+    ],
   },
-  { href: '/discounts', label: 'Discounts', icon: Tag },
+  { key: 'discounts', href: '/discounts', label: 'Discounts', icon: Tag },
   {
-    href: '/content',
+    key: 'content',
     label: 'Content',
     icon: FileText,
     subs: [
@@ -59,21 +69,19 @@ export const TOP_NAV: NavSection[] = [
       { href: '/content/files', label: 'Files' },
     ],
   },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { key: 'analytics', href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 export const BOTTOM_NAV: NavSection[] = [
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { key: 'settings', href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 // Returns true when the current pathname matches the section's parent href
-// or any of its sub hrefs (treats parent as a prefix only when no exact
-// sub matches first — this is what tells us when to auto-expand).
+// or any of its sub hrefs. Group-only sections (no href) match purely via subs.
 export function isSectionActive(pathname: string, section: NavSection): boolean {
-  if (pathname === section.href) return true;
+  if (section.href && pathname === section.href) return true;
   if (section.subs?.some((s) => pathname === s.href || pathname.startsWith(s.href + '/'))) return true;
-  // Allow parent prefix matches except for the bare home "/".
-  if (section.href !== '/' && pathname.startsWith(section.href + '/')) return true;
+  if (section.href && section.href !== '/' && pathname.startsWith(section.href + '/')) return true;
   return false;
 }
 

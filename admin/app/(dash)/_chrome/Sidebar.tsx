@@ -47,9 +47,9 @@ export default function Sidebar({
     setManualOpen(readExpanded());
   }, []);
 
-  function setOpen(href: string, value: boolean) {
+  function setOpen(key: string, value: boolean) {
     setManualOpen((prev) => {
-      const next = { ...prev, [href]: value };
+      const next = { ...prev, [key]: value };
       writeExpanded(next);
       return next;
     });
@@ -57,7 +57,7 @@ export default function Sidebar({
 
   function sectionOpen(s: NavSection): boolean {
     if (!s.subs?.length) return false;
-    const m = manualOpen[s.href];
+    const m = manualOpen[s.key];
     if (m !== undefined) return m;
     return isSectionActive(pathname, s); // auto-open if active
   }
@@ -110,11 +110,11 @@ export default function Sidebar({
           const open = sectionOpen(s);
           return (
             <SectionRow
-              key={s.href}
+              key={s.key}
               section={s}
               pathname={pathname}
               open={open}
-              onSetOpen={(v) => setOpen(s.href, v)}
+              onSetOpen={(v) => setOpen(s.key, v)}
             />
           );
         })}
@@ -126,11 +126,11 @@ export default function Sidebar({
           const open = sectionOpen(s);
           return (
             <SectionRow
-              key={s.href}
+              key={s.key}
               section={s}
               pathname={pathname}
               open={open}
-              onSetOpen={(v) => setOpen(s.href, v)}
+              onSetOpen={(v) => setOpen(s.key, v)}
             />
           );
         })}
@@ -154,33 +154,42 @@ function SectionRow({
   const hasSubs = !!section.subs?.length;
   const childActive = section.subs?.some((s) => isSubActive(pathname, s)) ?? false;
   const inSection = isSectionActive(pathname, section);
-  // Two parent states:
-  //   leaf   = strong indicator (sand bar). Used when no sub-item owns the focus.
-  //   parent = soft indicator (bg lift only). Used when a sub-item is active so
-  //            the bar visually belongs to the sub-item, not the parent.
+  // Parent state used purely for visual emphasis:
+  //   leaf   = strong indicator. Used on link-leaves currently active.
+  //   parent = soft indicator. Used on group rows whose sub-item owns focus.
   const parentState = !inSection ? null : childActive ? 'parent' : 'leaf';
-
-  // Click always toggles the dropdown (in addition to whatever Link does
-  // for navigation). This gives the user one consistent rule: click a
-  // section → flip its sub-list. Closing a dropdown never requires a
-  // detour through another route.
-  function handleClick() {
-    if (hasSubs) onSetOpen(!open);
-  }
 
   return (
     <div>
-      <Link
-        href={section.href}
-        onClick={handleClick}
-        className="sb-item"
-        data-active={parentState ?? undefined}
-        aria-expanded={hasSubs ? open : undefined}
-      >
-        <Icon className="sb-icon h-4 w-4" />
-        <span className="flex-1 truncate">{section.label}</span>
-        {hasSubs && <ChevronRight className="sb-chevron" data-open={open} aria-hidden />}
-      </Link>
+      {section.href ? (
+        // Leaf-with-link OR (legacy) parent that also navigates. Today every
+        // section with subs is group-only, but we keep this branch in case a
+        // future leaf carries a primary destination.
+        <Link
+          href={section.href}
+          onClick={() => { if (hasSubs) onSetOpen(!open); }}
+          className="sb-item"
+          data-active={parentState ?? undefined}
+          aria-expanded={hasSubs ? open : undefined}
+        >
+          <Icon className="sb-icon h-4 w-4" />
+          <span className="flex-1 truncate">{section.label}</span>
+          {hasSubs && <ChevronRight className="sb-chevron" data-open={open} aria-hidden />}
+        </Link>
+      ) : (
+        // Group-only header: no navigation, click toggles the dropdown only.
+        <button
+          type="button"
+          onClick={() => onSetOpen(!open)}
+          className="sb-item w-full text-left"
+          data-active={parentState ?? undefined}
+          aria-expanded={open}
+        >
+          <Icon className="sb-icon h-4 w-4" />
+          <span className="flex-1 truncate">{section.label}</span>
+          <ChevronRight className="sb-chevron" data-open={open} aria-hidden />
+        </button>
+      )}
 
       {hasSubs && (
         <div className="sb-subs" data-open={open}>
