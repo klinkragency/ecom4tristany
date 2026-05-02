@@ -203,6 +203,7 @@ func NewRouter(d Deps) http.Handler {
 			// Customers (admin view + CRM actions).
 			custAdminH := customer.NewHandler(d.DB, d.Sessions)
 			r.Get("/customers", custAdminH.AdminList)
+			r.Post("/customers", custAdminH.AdminCreate)
 			r.Get("/customers/{id}", custAdminH.AdminGet)
 			r.Put("/customers/{id}/note", custAdminH.AdminSetNote)
 			r.Put("/customers/{id}/tags", custAdminH.AdminSetTags)
