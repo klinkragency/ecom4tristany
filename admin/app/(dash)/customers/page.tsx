@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type CustomerListPage } from '@/lib/types';
+import { NewCustomerDialog } from './NewCustomerDialog';
 
 export default function CustomersListPage() {
+  const router = useRouter();
   const [page, setPage] = useState<CustomerListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [creating, setCreating] = useState(false);
 
   async function load(q = '') {
     try {
@@ -26,8 +30,23 @@ export default function CustomersListPage() {
   return (
     <section>
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="h-page">Customers</h1>
-        {page && <span className="badge badge-neutral no-dot">{page.total} total</span>}
+        <div className="flex items-center gap-3">
+          <h1 className="h-page">Customers</h1>
+          {page && <span className="badge badge-neutral no-dot">{page.total} total</span>}
+        </div>
+        <button type="button" onClick={() => setCreating(true)} className="btn btn-primary">
+          + New customer
+        </button>
+      </div>
+
+      <NewCustomerDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onCreated={(c) => {
+          setCreating(false);
+          router.push(`/customers/${c.id}`);
+        }}
+      />
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); load(search); }} className="mb-4">
