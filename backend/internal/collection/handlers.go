@@ -409,6 +409,68 @@ func (h *Handler) DeleteRule(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// ─── Live preview for smart collections ─────────────────────────────────
+//
+// POST /api/admin/collections/preview returns the products that currently
+// match the given rule set without persisting anything. Powers the smart
+// collection form's live preview while the user is editing rules.
+
+type PreviewReq struct {
+	Rules     []RuleReq `json:"rules"`
+	MatchAll  bool      `json:"matchAll"`
+	SortOrder string    `json:"sortOrder"`
+	Limit     int       `json:"limit,omitempty"`
+}
+
+type PreviewResp struct {
+	Items []ProductRef `json:"items"`
+}
+
+func (h *Handler) Preview(w http.ResponseWriter, r *http.Request) {
+	var req PreviewReq
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid_body", err.Error())
+		return
+	}
+	limit := req.Limit
+	if limit <= 0 || limit > 100 {
+		limit = 24
+	}
+	sortOrder := req.SortOrder
+	if !validSortOrders[sortOrder] || sortOrder == "manual" {
+		sortOrder = "created_desc"
+	}
+	// Translate the wire-level RuleReq into the shared Rule shape used by
+	// the SQL builder. We only need the rule fields (no IDs/positions).
+	rules := make([]Rule, 0, len(req.Rules))
+	for _, rr := range req.Rules {
+		if !validFields[rr.Field] {
+			httpx.Error(w, http.StatusBadRequest, "invalid_field", "invalid field "+rr.Field)
+			return
+		}
+		if !validOperators[rr.Operator] {
+			httpx.Error(w, http.StatusBadRequest, "invalid_operator", "invalid operator "+rr.Operator)
+			return
+		}
+		rules = append(rules, Rule{Field: rr.Field, Operator: rr.Operator, Value: rr.Value})
+	}
+
+	// Reuse ListProducts via a synthetic Collection so that all rule-matching
+	// SQL stays in one place.
+	c := &Collection{
+		IsRulesBased: true,
+		MatchAll:     req.MatchAll,
+		SortOrder:    sortOrder,
+		Rules:        rules,
+	}
+	items, err := ListProducts(r.Context(), h.db, c, false, limit)
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "preview_error", err.Error())
+		return
+	}
+	httpx.JSON(w, http.StatusOK, PreviewResp{Items: items})
+}
+
 // ─── Handle helpers ──────────────────────────────────────────────────────
 
 var nonSlug = regexp.MustCompile(`[^a-z0-9]+`)

@@ -1,26 +1,5 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import DiscountForm, { EMPTY_DISCOUNT, type DiscountPayload } from '../DiscountForm';
-
-export default function NewDiscountPage() {
-  const router = useRouter();
-  async function save(p: DiscountPayload) {
-    await api('/api/admin/discounts', {
-      method: 'POST',
-      body: JSON.stringify(p),
-    });
-    router.push('/discounts');
-  }
-  return (
-    <section>
-      <div className="flex items-center gap-3 mb-4">
-        <Link href="/discounts" className="text-sm text-stone-500 hover:underline">← Discounts</Link>
-        <h1 className="h-page">New discount</h1>
-      </div>
-      <DiscountForm initial={EMPTY_DISCOUNT} onSave={save} saveLabel="Create" />
-    </section>
-  );
+export default function NewDiscountIndex() {
+  redirect('/discounts?new=1');
 }

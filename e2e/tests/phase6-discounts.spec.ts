@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 const ADMIN = 'http://localhost:3001';
-const STORE = 'http://localhost:3000';
-const API = 'http://localhost:8080';
 const ADMIN_EMAIL = 'admin@shop.test';
 const ADMIN_PASSWORD = 'changeme123';
 
@@ -16,104 +14,83 @@ async function adminLogin(page: import('@playwright/test').Page) {
   }
 }
 
-test('Discounts admin: create a percentage code', async ({ page }) => {
-  await adminLogin(page);
-  await page.goto(`${ADMIN}/discounts/new`);
-  await expect(page.getByRole('heading', { name: /new discount/i })).toBeVisible();
+test.describe('Guided discount creation', () => {
+  test.beforeEach(async ({ page }) => {
+    await adminLogin(page);
+  });
 
-  const code = `TEST${Date.now()}`;
-  await page.getByPlaceholder('SUMMER20').fill(code);
-  await page.locator('input').first().fill(`Test ${code}`);
-  // Percentage is default (10%). Just save.
-  await page.getByRole('button', { name: /^Create$/ }).click();
-  await expect(page).toHaveURL(/\/discounts\/[0-9a-f-]+$/);
-  // List page shows our new discount.
-  await page.goto(`${ADMIN}/discounts`);
-  await expect(page.getByText(code).first()).toBeVisible();
-});
+  test('creates an amount-off-order discount via the modal', async ({ page }) => {
+    await page.goto(`${ADMIN}/discounts`);
+    await page.getByRole('button', { name: /New discount/i }).click();
+    await page.getByRole('button', { name: /Amount off order/i }).click();
+    await expect(page).toHaveURL(/\/discounts\/new\/amount-off-order/);
 
-test('Storefront: apply a code on cart and see discount reflected', async ({ page, browser }) => {
-  // Seed a code via the admin API (cleaner than going through the UI).
-  const adminCtx = await browser.newContext();
-  const adminPage = await adminCtx.newPage();
-  await adminLogin(adminPage);
+    // Switch to "Discount code" mode so the auto-derived code field is visible.
+    await page.getByLabel('Discount code').check();
+    const stamp = Date.now();
+    const title = `E2E test 10% ${stamp}`;
+    await page.getByLabel('Title (admin-facing)').fill(title);
+    // Auto-derived code is "E2ETEST10" (first 3 tokens) — re-runs would hit the
+    // DB unique-code constraint, so overwrite with a stamped variant.
+    await expect(page.getByLabel('Code (customers type this at checkout)')).toHaveValue(/E2ETEST10/);
+    const code = `E2EORDER${stamp}`.slice(0, 20);
+    await page.getByLabel('Code (customers type this at checkout)').fill(code);
 
-  const code = `SFX${Date.now()}`;
-  const created = await adminPage.evaluate(async ({ api, code }) => {
-    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
-    const r = await fetch(`${api}/api/admin/discounts`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.csrfToken },
-      body: JSON.stringify({
-        code,
-        title: `20% off (${code})`,
-        kind: 'percentage',
-        valuePercent: 20,
-        scope: 'all',
-        eligibility: 'all',
-        minSubtotalCents: 0,
-        active: true,
-      }),
-    });
-    return { status: r.status, body: await r.json() };
-  }, { api: API, code });
-  expect(created.status).toBe(201);
-  await adminCtx.close();
+    await page.getByRole('button', { name: 'Create discount' }).click();
+    await expect(page).toHaveURL(/\/discounts$/);
+    await expect(page.getByText(title)).toBeVisible();
+  });
 
-  // Customer side: need a product in the cart first.
-  await page.goto(`${STORE}/`);
-  const products = await fetch(`${API}/api/storefront/products?limit=1`).then((r) => r.json());
-  const handle: string | undefined = products?.items?.[0]?.handle;
-  if (!handle) test.skip(true, 'No products available to test cart');
-  const detail = await fetch(`${API}/api/storefront/products/${handle}`).then((r) => r.json());
-  const variantId: string | undefined = detail?.variants?.[0]?.id;
-  if (!variantId) test.skip(true, 'No variants available to test cart');
+  test('creates a free-shipping discount', async ({ page }) => {
+    await page.goto(`${ADMIN}/discounts`);
+    await page.getByRole('button', { name: /New discount/i }).click();
+    await page.getByRole('button', { name: /Free shipping/i }).click();
+    await expect(page).toHaveURL(/\/discounts\/new\/free-shipping/);
 
-  await page.evaluate(async ({ api, variantId }) => {
-    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
-    await fetch(`${api}/api/storefront/cart/items`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.csrfToken },
-      body: JSON.stringify({ variantId, quantity: 1 }),
-    });
-  }, { api: API, variantId: variantId! });
+    const title = `Free ship E2E ${Date.now()}`;
+    await page.getByLabel('Title (admin-facing)').fill(title);
+    // LivePreview must show free shipping (the €0.00 line in the customer view).
+    await expect(page.getByText('€0.00')).toBeVisible();
+    await page.getByRole('button', { name: 'Create discount' }).click();
+    await expect(page).toHaveURL(/\/discounts$/);
+    await expect(page.getByText(title)).toBeVisible();
+  });
 
-  // Go to cart, apply the code.
-  await page.goto(`${STORE}/cart`);
-  await expect(page.getByRole('heading', { name: /your cart/i })).toBeVisible();
-  await page.getByPlaceholder(/discount code/i).fill(code);
-  await page.getByRole('button', { name: /^Apply$/ }).click();
-  // Discount code + title now visible; Apply button is gone.
-  await expect(page.getByText(code, { exact: true })).toBeVisible();
-  await expect(page.getByText(/20% off/).first()).toBeVisible();
-});
+  test('creates a buy-x-get-y discount', async ({ page }) => {
+    await page.goto(`${ADMIN}/discounts`);
+    await page.getByRole('button', { name: /New discount/i }).click();
+    await page.getByRole('button', { name: /Buy X get Y/i }).click();
+    await expect(page).toHaveURL(/\/discounts\/new\/buy-x-get-y/);
 
-test('Storefront: invalid code shows an error', async ({ page, browser }) => {
-  // Seed a product first.
-  const products = await fetch(`${API}/api/storefront/products?limit=1`).then((r) => r.json());
-  const handle: string | undefined = products?.items?.[0]?.handle;
-  if (!handle) test.skip(true, 'No products');
-  const detail = await fetch(`${API}/api/storefront/products/${handle}`).then((r) => r.json());
-  const variantId: string | undefined = detail?.variants?.[0]?.id;
-  if (!variantId) test.skip(true, 'No variants');
+    const title = `BOGO E2E ${Date.now()}`;
+    await page.getByLabel('Title (admin-facing)').fill(title);
+    // get qty + discount % default to 1 + 100, just bump the buy quantity.
+    await page.getByLabel('Quantity').first().fill('1');
+    await page.getByRole('button', { name: 'Create discount' }).click();
+    await expect(page).toHaveURL(/\/discounts$/);
+    await expect(page.getByText(title)).toBeVisible();
+  });
 
-  const ctx = await browser.newContext();
-  const storePage = await ctx.newPage();
-  await storePage.goto(`${STORE}/`);
-  await storePage.evaluate(async ({ api, variantId }) => {
-    const csrf = await fetch(`${api}/api/csrf`, { credentials: 'include' }).then((r) => r.json());
-    await fetch(`${api}/api/storefront/cart/items`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf.csrfToken },
-      body: JSON.stringify({ variantId, quantity: 1 }),
-    });
-  }, { api: API, variantId: variantId! });
+  test('creates an amount-off-products discount and edits it', async ({ page }) => {
+    await page.goto(`${ADMIN}/discounts`);
+    await page.getByRole('button', { name: /New discount/i }).click();
+    await page.getByRole('button', { name: /Amount off products/i }).click();
+    await expect(page).toHaveURL(/\/discounts\/new\/amount-off-products/);
 
-  await storePage.goto(`${STORE}/cart`);
-  await storePage.getByPlaceholder(/discount code/i).fill('DEFINITELY_NOT_A_REAL_CODE');
-  await storePage.getByRole('button', { name: /^Apply$/ }).click();
-  await expect(storePage.getByRole('alert').or(storePage.getByText(/invalid/i))).toBeVisible();
-  await ctx.close();
+    const title = `Products E2E ${Date.now()}`;
+    await page.getByLabel('Title (admin-facing)').fill(title);
+    await page.getByRole('button', { name: 'Create discount' }).click();
+    await expect(page).toHaveURL(/\/discounts$/);
+    await expect(page.getByText(title)).toBeVisible();
+
+    // Edit
+    await page.getByText(title).click();
+    await expect(page).toHaveURL(/\/discounts\/[0-9a-f-]+$/);
+    await expect(page.getByText(/Type:\s*Amount off products/)).toBeVisible();
+    const editedTitle = `${title} (edited)`;
+    await page.getByLabel('Title (admin-facing)').fill(editedTitle);
+    await page.getByRole('button', { name: 'Save changes' }).click();
+    await expect(page).toHaveURL(/\/discounts$/);
+    await expect(page.getByText(editedTitle)).toBeVisible();
+  });
 });

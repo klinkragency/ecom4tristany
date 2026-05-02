@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { CreateDiscountButton } from './CreateDiscountButton';
+import { RowActionsMenu } from './RowActionsMenu';
+import { DeleteDiscountDialog } from './DeleteDiscountDialog';
+import { normalizeDiscount, type DiscountResponse } from './_forms/shared/types';
 
 type Discount = {
   id: string;
@@ -31,6 +35,8 @@ function describe(d: Discount): string {
 export default function DiscountsPage() {
   const [items, setItems] = useState<Discount[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<Discount | null>(null);
 
   async function load() {
     try {
@@ -42,13 +48,61 @@ export default function DiscountsPage() {
   }
   useEffect(() => { load(); }, []);
 
+  async function toggleActive(d: Discount) {
+    setPendingId(d.id);
+    setError(null);
+    try {
+      // PUT requires the full writable payload — fetch the canonical record
+      // and normalize away read-only fields (id, usageCount, …) that the
+      // backend's DisallowUnknownFields decoder rejects.
+      const raw = await api<DiscountResponse>(`/api/admin/discounts/${d.id}`);
+      const full = normalizeDiscount(raw);
+      await api(`/api/admin/discounts/${d.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ...full, active: !d.active }),
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Update failed');
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!toDelete) return;
+    await api(`/api/admin/discounts/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    await load();
+  }
+
   return (
     <section className="max-w-5xl">
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <h1 className="h-page">Discounts</h1>
-        <Link href="/discounts/new" className="btn btn-primary">
-          + New discount
-        </Link>
+        <CreateDiscountButton />
+      </div>
+      <div className="mb-5 flex items-center gap-4 text-xs text-stone-500">
+        <span>
+          <span className="tabular font-semibold text-stone-900">{items.length}</span>{' '}
+          {items.length === 1 ? 'discount' : 'discounts'}
+        </span>
+        <span aria-hidden>·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+          <span className="tabular font-semibold text-stone-900">
+            {items.filter((d) => d.active).length}
+          </span>{' '}
+          active
+        </span>
+        <span aria-hidden>·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-stone-300" aria-hidden />
+          <span className="tabular font-semibold text-stone-900">
+            {items.filter((d) => !d.active).length}
+          </span>{' '}
+          inactive
+        </span>
       </div>
       {error && <div className="alert alert-error mb-4">{error}</div>}
 
@@ -64,11 +118,12 @@ export default function DiscountsPage() {
               <th>Scope</th>
               <th>Used</th>
               <th>Status</th>
+              <th className="w-12"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((d) => (
-              <tr key={d.id}>
+              <tr key={d.id} className={pendingId === d.id ? 'opacity-60' : ''}>
                 <td className="font-medium">
                   <Link href={`/discounts/${d.id}`} className="hover:underline">{d.title}</Link>
                 </td>
@@ -85,11 +140,35 @@ export default function DiscountsPage() {
                     {d.active ? 'active' : 'inactive'}
                   </span>
                 </td>
+                <td>
+                  <RowActionsMenu
+                    label={`Actions for ${d.title}`}
+                    actions={[
+                      {
+                        label: d.active ? 'Deactivate' : 'Activate',
+                        onClick: () => toggleActive(d),
+                        disabled: pendingId === d.id,
+                      },
+                      {
+                        label: 'Delete',
+                        destructive: true,
+                        onClick: () => setToDelete(d),
+                      },
+                    ]}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      <DeleteDiscountDialog
+        open={toDelete !== null}
+        title={toDelete?.title ?? ''}
+        onCancel={() => setToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </section>
   );
 }

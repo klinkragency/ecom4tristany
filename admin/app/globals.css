@@ -11,6 +11,7 @@
   --color-text-muted: #78716c;  /* stone-500 — secondary */
   --color-accent: #1c1917;      /* stone-900 — primary buttons */
   --color-accent-hover: #292524;/* stone-800 */
+  --color-illustration: #d6cfb8;  /* sand — matches sidebar accent */
 
   /* Sidebar tokens */
   --color-sidebar: #1c1917;
