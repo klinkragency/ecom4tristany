@@ -336,6 +336,13 @@ html, body {
 .cp-panel { animation: cp-in 160ms cubic-bezier(.4,0,.2,1) both; }
 .cp-backdrop { animation: cp-in 160ms ease both; }
 
+/* Select popover entrance — slightly snappier than the modal cp-in. */
+@keyframes cp-select-in {
+  from { opacity: 0; transform: translateY(-2px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cp-select-pop { animation: cp-select-in 150ms cubic-bezier(.4,0,.2,1) both; transform-origin: top; }
+
 /* Rich-text editor (contentEditable). Normal weight by default; marks only
    apply when the user explicitly toggles them via toolbar or keyboard. */
 .rte-editor { font-weight: 400; font-style: normal; text-decoration: none; }
