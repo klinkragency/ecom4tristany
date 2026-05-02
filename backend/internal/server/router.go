@@ -210,6 +210,7 @@ func NewRouter(d Deps) http.Handler {
 			r.Put("/customers/{id}/note", custAdminH.AdminSetNote)
 			r.Put("/customers/{id}/tags", custAdminH.AdminSetTags)
 			r.Post("/customers/{id}/store-credit", custAdminH.AdminGrantCredit)
+			r.Post("/customers/{id}/send-password-setup", custAdminH.AdminSendPasswordSetup)
 
 			// GDPR (admin-side)
 			r.Get("/customers/{id}/data-export", custAdminH.AdminDataExport)

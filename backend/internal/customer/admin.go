@@ -451,6 +451,33 @@ func (h *Handler) AdminCreate(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// AdminSendPasswordSetup re-sends a "set your password" email to an existing
+// customer (e.g. when the original invite was missed). Reuses the same token
+// flow as AdminCreate; returns 204 on success and 404 if the customer is gone.
+func (h *Handler) AdminSendPasswordSetup(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	var em, first, last string
+	err := h.db.QueryRow(r.Context(), `
+        SELECT email, first_name, last_name
+        FROM customers WHERE id = $1
+    `, id).Scan(&em, &first, &last)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			httpx.Error(w, http.StatusNotFound, "not_found", "customer not found")
+			return
+		}
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+
+	if err := h.sendInviteEmail(r.Context(), id, em, first, last, clientIPFromRequest(r), r.UserAgent()); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "email_error", err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // sendInviteEmail generates a password-reset token (TTL = resetTTL, same as
 // the public reset flow) and emails the customer a "set your password" link.
 // Internally it reuses the customer_password_resets table.
