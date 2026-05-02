@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { formatPrice, type ProductListPage } from '@/lib/types';
+import { formatPrice, type Product, type ProductListItem, type ProductListPage, type ProductStatus } from '@/lib/types';
+import { ConfirmDialog, RowActionsMenu } from '@/components/ui';
+import { storefrontUrl } from '@/lib/storefront';
 
 type ImportResult = {
   rows: number;
@@ -17,12 +20,50 @@ type ImportResult = {
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 export default function ProductsListPage() {
+  const router = useRouter();
   const [page, setPage] = useState<ProductListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<ProductListItem | null>(null);
+
+  async function setStatus(p: ProductListItem, status: ProductStatus) {
+    if (p.status === status) return;
+    setBusyId(p.id);
+    setError(null);
+    try {
+      const full = await api<Product>(`/api/admin/products/${p.id}`);
+      await api(`/api/admin/products/${p.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: full.title,
+          handle: full.handle,
+          descriptionHtml: full.descriptionHtml,
+          status,
+          vendor: full.vendor,
+          productType: full.productType,
+          tags: full.tags,
+          seoTitle: full.seoTitle,
+          seoDescription: full.seoDescription,
+        }),
+      });
+      await load(search);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Update failed');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!toDelete) return;
+    await api(`/api/admin/products/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    await load(search);
+  }
 
   async function load(q = '') {
     try {
@@ -152,11 +193,12 @@ export default function ProductsListPage() {
               <th>Price</th>
               <th>Vendor</th>
               <th>Updated</th>
+              <th className="w-12"></th>
             </tr>
           </thead>
           <tbody>
             {page.items.map((p) => (
-              <tr key={p.id}>
+              <tr key={p.id} className={busyId === p.id ? 'opacity-60' : ''}>
                 <td>
                   <Link href={`/products/${p.id}`} className="font-medium hover:underline">
                     {p.title}
@@ -174,11 +216,61 @@ export default function ProductsListPage() {
                 </td>
                 <td>{p.vendor || <span className="text-stone-400">—</span>}</td>
                 <td className="text-stone-500">{new Date(p.updatedAt).toLocaleDateString()}</td>
+                <td>
+                  <RowActionsMenu
+                    label={`Actions for ${p.title}`}
+                    actions={[
+                      {
+                        label: 'Edit',
+                        onClick: () => router.push(`/products/${p.id}`),
+                      },
+                      {
+                        label: 'Set status: Active',
+                        onClick: () => setStatus(p, 'active'),
+                        disabled: p.status === 'active' || busyId === p.id,
+                      },
+                      {
+                        label: 'Set status: Draft',
+                        onClick: () => setStatus(p, 'draft'),
+                        disabled: p.status === 'draft' || busyId === p.id,
+                      },
+                      {
+                        label: 'Set status: Archived',
+                        onClick: () => setStatus(p, 'archived'),
+                        disabled: p.status === 'archived' || busyId === p.id,
+                      },
+                      {
+                        label: 'View on storefront',
+                        onClick: () =>
+                          window.open(
+                            `${storefrontUrl()}/products/${p.handle}`,
+                            '_blank',
+                            'noopener,noreferrer',
+                          ),
+                      },
+                      {
+                        label: 'Delete',
+                        destructive: true,
+                        onClick: () => setToDelete(p),
+                      },
+                    ]}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        title="Delete product?"
+        description="This cannot be undone. Variants and inventory levels are removed too."
+        confirmLabel="Delete product"
+        destructive
+        onCancel={() => setToDelete(null)}
+        onConfirm={confirmDelete}
+      />
     </section>
   );
 }
