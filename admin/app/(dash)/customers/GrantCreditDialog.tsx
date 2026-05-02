@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { Modal } from '@/components/ui';
+import { Modal, Select } from '@/components/ui';
 
 // Lightweight grant/adjust dialog used from the customers list. The detail
 // page has a richer version inline; we mirror the same backend contract
@@ -87,20 +87,21 @@ export function GrantCreditDialog({
           className="input"
         />
       </label>
-      <label className="block">
+      <div className="block">
         <span className="label">Reason</span>
-        <select
+        <Select
+          ariaLabel="Reason"
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="select"
-        >
-          <option value="grant">Grant (compensation / goodwill)</option>
-          <option value="promotional">Promotional (birthday, etc.)</option>
-          <option value="adjustment">Adjustment (correction)</option>
-          <option value="refund">Refund-to-credit</option>
-          <option value="expiration">Expiration (debit)</option>
-        </select>
-      </label>
+          onChange={setReason}
+          options={[
+            { value: 'grant', label: 'Grant (compensation / goodwill)' },
+            { value: 'promotional', label: 'Promotional (birthday, etc.)' },
+            { value: 'adjustment', label: 'Adjustment (correction)' },
+            { value: 'refund', label: 'Refund-to-credit' },
+            { value: 'expiration', label: 'Expiration (debit)' },
+          ]}
+        />
+      </div>
       <label className="block">
         <span className="label">Note</span>
         <input

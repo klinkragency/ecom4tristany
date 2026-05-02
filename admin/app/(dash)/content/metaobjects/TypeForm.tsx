@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Field } from '@/components/ui';
+import { Card, Field, Select } from '@/components/ui';
 import { ApiError } from '@/lib/api';
 
 export type FieldType =

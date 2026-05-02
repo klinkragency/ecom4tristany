@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { Modal } from '@/components/ui';
+import { Modal, Select } from '@/components/ui';
 
 export type UserRole = 'owner' | 'admin' | 'staff';
 
@@ -80,16 +80,15 @@ export function ChangeRoleDialog({
       }
     >
       {err && <div className="alert alert-error text-xs">{err}</div>}
-      <label className="block">
+      <div className="block">
         <span className="label">New role</span>
-        <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="select">
-          {ROLES.filter((r) => r.value !== currentRole).map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-      </label>
+        <Select<UserRole>
+          ariaLabel="New role"
+          value={role}
+          onChange={setRole}
+          options={ROLES.filter((r) => r.value !== currentRole).map((r) => ({ value: r.value, label: r.label }))}
+        />
+      </div>
       <p className="text-xs text-stone-500">Current role: {currentRole}.</p>
     </Modal>
   );

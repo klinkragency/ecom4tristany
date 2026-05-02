@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { ConfirmDialog } from '@/components/ui';
+import { ConfirmDialog, Select } from '@/components/ui';
 
 type Pending =
   | { kind: 'zone'; id: string }
@@ -303,17 +303,18 @@ function RateModal({
             className="input"
           />
         </label>
-        <label className="block">
+        <div className="block">
           <span className="label">Kind</span>
-          <select
+          <Select<'flat' | 'weight'>
+            ariaLabel="Kind"
             value={rate.kind ?? 'flat'}
-            onChange={(e) => update({ kind: e.target.value as 'flat' | 'weight' })}
-            className="select"
-          >
-            <option value="flat">Flat fee</option>
-            <option value="weight">Weight-based (per kg)</option>
-          </select>
-        </label>
+            onChange={(v) => update({ kind: v })}
+            options={[
+              { value: 'flat', label: 'Flat fee' },
+              { value: 'weight', label: 'Weight-based (per kg)' },
+            ]}
+          />
+        </div>
         {rate.kind === 'weight' ? (
           <>
             <label className="block">

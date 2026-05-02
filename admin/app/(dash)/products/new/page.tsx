@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import type { Product } from '@/lib/types';
 import RichTextEditor from '@/components/RichTextEditor';
-import { Card, Field } from '@/components/ui';
+import { Card, Field, Select } from '@/components/ui';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -65,10 +65,15 @@ export default function NewProductPage() {
         <Card title="Organization" className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Status">
-              <select value={status} onChange={(e) => setStatus(e.target.value as 'draft' | 'active')} className="select">
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-              </select>
+              <Select<'draft' | 'active'>
+                ariaLabel="Status"
+                value={status}
+                onChange={setStatus}
+                options={[
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'active', label: 'Active' },
+                ]}
+              />
             </Field>
             <Field label="Vendor">
               <input value={vendor} onChange={(e) => setVendor(e.target.value)} className="input" />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { ConfirmDialog } from '@/components/ui';
+import { ConfirmDialog, Select } from '@/components/ui';
 
 type Currency = {
   code: string;
@@ -215,17 +215,18 @@ function AddModal({
           </label>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block">
+          <div className="block">
             <span className="label">Symbol position</span>
-            <select
+            <Select<'before' | 'after'>
+              ariaLabel="Symbol position"
               value={d.symbolPosition}
-              onChange={(e) => setD({ ...d, symbolPosition: e.target.value as 'before' | 'after' })}
-              className="select"
-            >
-              <option value="before">Before (e.g. $100)</option>
-              <option value="after">After (e.g. 100 €)</option>
-            </select>
-          </label>
+              onChange={(v) => setD({ ...d, symbolPosition: v })}
+              options={[
+                { value: 'before', label: 'Before (e.g. $100)' },
+                { value: 'after', label: 'After (e.g. 100 €)' },
+              ]}
+            />
+          </div>
           <label className="block">
             <span className="label">Decimal places</span>
             <input

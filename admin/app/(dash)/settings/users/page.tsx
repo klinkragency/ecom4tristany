@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { ConfirmDialog, RowActionsMenu, type RowAction } from '@/components/ui';
+import { ConfirmDialog, RowActionsMenu, Select, type RowAction } from '@/components/ui';
 import { ChangeRoleDialog, type UserRole } from './ChangeRoleDialog';
 
 type AdminUser = {
@@ -195,14 +195,19 @@ function InviteModal({
           <span className="label">Name</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className="block">
+        <div className="block">
           <span className="label">Role</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="select">
-            <option value="staff">Staff — day-to-day ops, no refunds or deletes</option>
-            <option value="admin">Admin — everything except managing admins</option>
-            <option value="owner">Owner — full rights</option>
-          </select>
-        </label>
+          <Select<UserRole>
+            ariaLabel="Role"
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: 'staff', label: 'Staff — day-to-day ops, no refunds or deletes' },
+              { value: 'admin', label: 'Admin — everything except managing admins' },
+              { value: 'owner', label: 'Owner — full rights' },
+            ]}
+          />
+        </div>
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button onClick={submit} disabled={busy || !email.trim() || !name.trim()} className="btn btn-primary">
