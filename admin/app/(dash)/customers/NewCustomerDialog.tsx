@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Modal, Field } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 
-type Created = { id: string; email: string };
+type Created = { id: string; email: string; inviteSent: boolean };
 
 export function NewCustomerDialog({
   open,
@@ -19,6 +19,7 @@ export function NewCustomerDialog({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [sendInvite, setSendInvite] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -27,6 +28,7 @@ export function NewCustomerDialog({
     setFirstName('');
     setLastName('');
     setPhone('');
+    setSendInvite(false);
     setErr(null);
   }
 
@@ -43,7 +45,7 @@ export function NewCustomerDialog({
     try {
       const c = await api<Created>('/api/admin/customers', {
         method: 'POST',
-        body: JSON.stringify({ email, firstName, lastName, phone }),
+        body: JSON.stringify({ email, firstName, lastName, phone, sendInvite }),
       });
       reset();
       onCreated(c);
@@ -112,10 +114,25 @@ export function NewCustomerDialog({
             placeholder="+33 …"
           />
         </Field>
-        <p className="text-xs text-stone-500">
-          The customer will be created without a password. They can use the password reset
-          flow if they want to log in to their account.
-        </p>
+        <label className="flex items-start gap-2 cursor-pointer rounded-md border border-stone-200 p-3 hover:bg-stone-50">
+          <input
+            type="checkbox"
+            checked={sendInvite}
+            onChange={(e) => setSendInvite(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span className="text-sm">
+            <span className="font-medium block">Send a password setup email</span>
+            <span className="text-xs text-stone-500">
+              The customer gets an email with a link to set their password and log in. The link expires in 1 hour.
+            </span>
+          </span>
+        </label>
+        {!sendInvite && (
+          <p className="text-xs text-stone-500">
+            The account is created without a usable password. The customer can request a reset themselves later if needed.
+          </p>
+        )}
         {err && <p className="text-sm text-red-600">{err}</p>}
       </form>
     </Modal>

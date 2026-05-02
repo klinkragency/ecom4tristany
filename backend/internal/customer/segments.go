@@ -253,8 +253,31 @@ func (h *Handler) PreviewSegment(w http.ResponseWriter, r *http.Request) {
 		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
 	}
+	h.runSegmentPreview(w, r, s.MatchAll, s.Rules)
+}
 
-	clause, args, err := buildSegmentWhere(s.MatchAll, s.Rules)
+// PreviewSegmentRules runs a live preview against an unsaved rule set. Used by
+// the admin form so the right-rail "Members preview" can update as the user
+// types without round-tripping through a save.
+func (h *Handler) PreviewSegmentRules(w http.ResponseWriter, r *http.Request) {
+	var req SegmentInput
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid_body", err.Error())
+		return
+	}
+	if err := validateRules(req.Rules); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid_rule", err.Error())
+		return
+	}
+	h.runSegmentPreview(w, r, req.MatchAll, req.Rules)
+}
+
+// runSegmentPreview executes the shared preview query for a given rule set.
+// Both the saved-segment preview (PreviewSegment) and the live form preview
+// (PreviewSegmentRules) funnel through here so the SQL only lives in one
+// place.
+func (h *Handler) runSegmentPreview(w http.ResponseWriter, r *http.Request, matchAll bool, rules []SegmentRule) {
+	clause, args, err := buildSegmentWhere(matchAll, rules)
 	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "rule_build_error", err.Error())
 		return
@@ -286,7 +309,7 @@ func (h *Handler) PreviewSegment(w http.ResponseWriter, r *http.Request) {
 		it.Tags = []string{}
 		items = append(items, it)
 	}
-	count, _ := countMembers(r.Context(), h, s.MatchAll, s.Rules)
+	count, _ := countMembers(r.Context(), h, matchAll, rules)
 	httpx.JSON(w, http.StatusOK, map[string]any{
 		"items": items,
 		"total": count,

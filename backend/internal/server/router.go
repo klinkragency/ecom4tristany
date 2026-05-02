@@ -200,8 +200,10 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/returns/{id}/refund", retH.AdminRefund)
 			r.Post("/returns/{id}/cancel", retH.AdminCancel)
 
-			// Customers (admin view + CRM actions).
-			custAdminH := customer.NewHandler(d.DB, d.Sessions)
+			// Customers (admin view + CRM actions). Uses *WithConfig so the
+			// AdminCreate handler can send invite emails (needs ShopPublicURL
+			// + ShopName + SMTP via cfg).
+			custAdminH := customer.NewHandlerWithConfig(d.DB, d.Sessions, d.Cfg)
 			r.Get("/customers", custAdminH.AdminList)
 			r.Post("/customers", custAdminH.AdminCreate)
 			r.Get("/customers/{id}", custAdminH.AdminGet)
@@ -219,6 +221,9 @@ func NewRouter(d Deps) http.Handler {
 			// Customer segments (saved filters)
 			r.Get("/segments", custAdminH.ListSegments)
 			r.Post("/segments", custAdminH.CreateSegment)
+			// Live preview must be declared before the /{id} routes so chi
+			// does not match "preview" as a segment id.
+			r.Post("/segments/preview", custAdminH.PreviewSegmentRules)
 			r.Get("/segments/{id}", custAdminH.GetSegment)
 			r.Put("/segments/{id}", custAdminH.UpdateSegment)
 			r.Delete("/segments/{id}", custAdminH.DeleteSegment)
