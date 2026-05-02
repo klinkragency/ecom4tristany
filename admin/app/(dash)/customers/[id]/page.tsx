@@ -71,17 +71,17 @@ export default function CustomerDetailPage() {
   const name = `${c.firstName} ${c.lastName}`.trim() || c.email;
   return (
     <section className="max-w-5xl grid md:grid-cols-[1fr_320px] gap-6">
-      <div>
-        <div className="flex items-center gap-3 mb-4">
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
           <Link href="/customers" className="text-sm text-stone-500 hover:underline">← Customers</Link>
           <h1 className="h-page">{name}</h1>
         </div>
 
         {error && (
-          <div className="mb-3 alert alert-error">{error}</div>
+          <div className="alert alert-error">{error}</div>
         )}
 
-        <Card title="Summary" className="mb-4 space-y-2">
+        <Card title="Summary" className="space-y-2">
           <div className="grid grid-cols-3 gap-4 text-sm">
             <Stat label="Orders" value={String(c.orderCount)} />
             <Stat label="Spent" value={formatPrice(c.totalSpentCents, c.storeCreditCurrency)} />
@@ -92,7 +92,7 @@ export default function CustomerDetailPage() {
           </div>
         </Card>
 
-        <Card title={`Recent orders (${c.recentOrders.length})`}>
+        <Card title={`Recent orders (${c.recentOrders.length})`} className="space-y-2">
           {c.recentOrders.length === 0 ? (
             <p className="text-sm text-stone-500">No orders.</p>
           ) : (
@@ -113,7 +113,7 @@ export default function CustomerDetailPage() {
           )}
         </Card>
 
-        <Card title={`Addresses (${c.addresses.length})`}>
+        <Card title={`Addresses (${c.addresses.length})`} className="space-y-2">
           {c.addresses.length === 0 ? (
             <p className="text-sm text-stone-500">No addresses saved.</p>
           ) : (
@@ -137,7 +137,7 @@ export default function CustomerDetailPage() {
           )}
         </Card>
 
-        <Card title={`Store credit (${formatPrice(c.storeCreditCents, c.storeCreditCurrency)})`}>
+        <Card title={`Store credit (${formatPrice(c.storeCreditCents, c.storeCreditCurrency)})`} className="space-y-2">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm text-stone-500">Balance · {c.ledgerEntries.length} entries</span>
             <button
