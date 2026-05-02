@@ -1,7 +1,7 @@
 // admin/app/(dash)/segments/_forms/shared/RulesSection.tsx
 'use client';
 
-import { Card } from '@/components/ui';
+import { Card, Select } from '@/components/ui';
 import {
   FIELDS,
   OPS,
@@ -70,11 +70,11 @@ export function RulesSection({
                 key={idx}
                 className="grid grid-cols-[1fr_1fr_2fr_auto] gap-2 text-sm"
               >
-                <select
-                  className="select w-auto"
+                <Select<Field>
+                  ariaLabel="Field"
+                  size="sm"
                   value={rule.field}
-                  onChange={(e) => {
-                    const field = e.target.value as Field;
+                  onChange={(field) => {
                     const k = fieldKind(field);
                     const list = OPS[k] ?? OPS.text;
                     patchRule(idx, {
@@ -86,28 +86,15 @@ export function RulesSection({
                       value: '',
                     });
                   }}
-                >
-                  {FIELDS.map((f) => (
-                    <option key={f.v} value={f.v}>
-                      {f.l}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select w-auto"
+                  options={FIELDS.map((f) => ({ value: f.v, label: f.l }))}
+                />
+                <Select<Operator>
+                  ariaLabel="Operator"
+                  size="sm"
                   value={op}
-                  onChange={(e) =>
-                    patchRule(idx, {
-                      operator: e.target.value as Operator,
-                    })
-                  }
-                >
-                  {ops.map((o) => (
-                    <option key={o.v} value={o.v}>
-                      {o.l}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(operator) => patchRule(idx, { operator })}
+                  options={ops.map((o) => ({ value: o.v, label: o.l }))}
+                />
                 {needsValue(op) ? (
                   <input
                     className="input text-sm"

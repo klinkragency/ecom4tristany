@@ -1,7 +1,7 @@
 // admin/app/(dash)/collections/_forms/shared/SortOrderSection.tsx
 'use client';
 
-import { Card, Field } from '@/components/ui';
+import { Card, Field, Select } from '@/components/ui';
 import type { SortOrder } from '@/lib/types';
 import type { CollectionPayload } from './types';
 
@@ -34,17 +34,15 @@ export function SortOrderSection({
             : 'Pick "Manual" to control the exact order yourself; pick anything else to let the system order them.'
         }
       >
-        <select
-          className="select"
+        <Select<SortOrder>
+          ariaLabel="Sort order"
           value={values.sortOrder}
-          onChange={(e) => onChange({ sortOrder: e.target.value as SortOrder })}
-        >
-          {OPTIONS.filter((o) => !o.manualOnly || !isRulesBased).map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => onChange({ sortOrder: v })}
+          options={OPTIONS.filter((o) => !o.manualOnly || !isRulesBased).map((o) => ({
+            value: o.value,
+            label: o.label,
+          }))}
+        />
       </Field>
     </Card>
   );
