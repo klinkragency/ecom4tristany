@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import EntryForm, { EMPTY_ENTRY, type EntryPayload } from '../../EntryForm';
 import type { FieldDef } from '../../../TypeForm';
+import { ConfirmDialog } from '@/components/ui';
 
 export default function EditEntryPage() {
   const params = useParams<{ typeId: string; entryId: string }>();
@@ -16,6 +17,7 @@ export default function EditEntryPage() {
   const [typeName, setTypeName] = useState('');
   const [initial, setInitial] = useState<EntryPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -47,13 +49,7 @@ export default function EditEntryPage() {
   }
 
   async function del() {
-    if (!confirm('Delete this entry?')) return;
-    try {
-      await api(`/api/admin/content/metaobjects/entries/${entryId}`, { method: 'DELETE' });
-      router.push(`/content/metaobjects/${typeId}`);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
+    setConfirmDelete(true);
   }
 
   if (!fieldDefs || !initial) {
@@ -67,6 +63,19 @@ export default function EditEntryPage() {
         <h1 className="h-page">{initial.name || 'Edit entry'}</h1>
       </div>
       <EntryForm initial={initial} fieldDefs={fieldDefs} onSave={save} saveLabel="Save changes" onDelete={del} />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete entry?"
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await api(`/api/admin/content/metaobjects/entries/${entryId}`, { method: 'DELETE' });
+          setConfirmDelete(false);
+          router.push(`/content/metaobjects/${typeId}`);
+        }}
+      />
     </section>
   );
 }

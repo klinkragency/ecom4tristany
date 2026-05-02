@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { ConfirmDialog } from '@/components/ui';
 
 type AdminUser = {
   id: string;
@@ -19,6 +20,7 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
 
   async function load() {
     try {
@@ -39,15 +41,6 @@ export default function UsersPage() {
     }
   }
 
-  async function del(u: AdminUser) {
-    if (!confirm(`Delete admin ${u.email}? This is irreversible.`)) return;
-    try {
-      await api(`/api/admin/users/${u.id}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   async function resend(id: string) {
     try {
@@ -109,7 +102,7 @@ export default function UsersPage() {
                   {u.mustChangePassword && (
                     <button onClick={() => resend(u.id)} className="btn btn-ghost btn-sm">Resend invite</button>
                   )}
-                  <button onClick={() => del(u)} className="btn btn-danger btn-sm">Delete</button>
+                  <button onClick={() => setPendingDelete(u)} className="btn btn-danger btn-sm">Delete</button>
                 </div>
               </td>
             </tr>
@@ -127,6 +120,21 @@ export default function UsersPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={pendingDelete ? `Delete admin ${pendingDelete.email}?` : ''}
+        description="This is irreversible. The user will lose access immediately."
+        confirmLabel="Delete admin"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={async () => {
+          if (!pendingDelete) return;
+          await api(`/api/admin/users/${pendingDelete.id}`, { method: 'DELETE' });
+          setPendingDelete(null);
+          await load();
+        }}
+      />
     </div>
   );
 }

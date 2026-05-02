@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { ConfirmDialog } from '@/components/ui';
 
 type TaxRate = {
   id: string;
@@ -18,6 +19,7 @@ export default function TaxesPage() {
     country: '', percent: '', name: '',
   });
   const [editing, setEditing] = useState<TaxRate | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -49,15 +51,6 @@ export default function TaxesPage() {
     setDraft({ country: '', percent: '', name: '' });
   }
 
-  async function del(country: string) {
-    if (!confirm(`Delete VAT rate for ${country}?`)) return;
-    try {
-      await api(`/api/admin/tax-rates/${country}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   return (
     <div className="max-w-4xl space-y-4">
@@ -157,7 +150,7 @@ export default function TaxesPage() {
                   ) : (
                     <div className="flex justify-end gap-1">
                       <button onClick={() => setEditing(t)} className="btn btn-ghost btn-sm">Edit</button>
-                      <button onClick={() => del(t.country)} className="btn btn-danger btn-sm">Delete</button>
+                      <button onClick={() => setPendingDelete(t.country)} className="btn btn-danger btn-sm">Delete</button>
                     </div>
                   )}
                 </td>
@@ -166,6 +159,20 @@ export default function TaxesPage() {
           </tbody>
         </table>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={pendingDelete ? `Delete VAT rate for ${pendingDelete}?` : ''}
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={async () => {
+          if (!pendingDelete) return;
+          await api(`/api/admin/tax-rates/${pendingDelete}`, { method: 'DELETE' });
+          setPendingDelete(null);
+          await load();
+        }}
+      />
     </div>
   );
 }

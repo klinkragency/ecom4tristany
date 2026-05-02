@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { ConfirmDialog } from '@/components/ui';
+
+type Pending =
+  | { kind: 'zone'; id: string }
+  | { kind: 'rate'; id: string }
+  | null;
 
 type Rate = {
   id: string;
@@ -34,6 +40,7 @@ export default function ShippingSettingsPage() {
   const [busy, setBusy] = useState(false);
   const [editingZone, setEditingZone] = useState<Partial<Zone> | null>(null);
   const [editingRate, setEditingRate] = useState<{ zoneId: string; rate: Partial<Rate> } | null>(null);
+  const [pending, setPending] = useState<Pending>(null);
 
   async function load() {
     try {
@@ -68,15 +75,6 @@ export default function ShippingSettingsPage() {
     }
   }
 
-  async function deleteZone(id: string) {
-    if (!confirm('Delete this zone and all its rates?')) return;
-    try {
-      await api(`/api/admin/shipping/zones/${id}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   async function saveRate() {
     if (!editingRate) return;
@@ -108,15 +106,6 @@ export default function ShippingSettingsPage() {
     }
   }
 
-  async function deleteRate(id: string) {
-    if (!confirm('Delete this rate?')) return;
-    try {
-      await api(`/api/admin/shipping/rates/${id}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   return (
     <div className="max-w-4xl space-y-3">
@@ -152,7 +141,7 @@ export default function ShippingSettingsPage() {
                   </div>
                 </div>
                 <button onClick={() => setEditingZone(z)} className="btn btn-ghost btn-sm">Edit</button>
-                <button onClick={() => deleteZone(z.id)} className="btn btn-danger btn-sm">Delete</button>
+                <button onClick={() => setPending({ kind: 'zone', id: z.id })} className="btn btn-danger btn-sm">Delete</button>
               </div>
 
               <div className="mb-2 flex items-center justify-between">
@@ -181,7 +170,7 @@ export default function ShippingSettingsPage() {
                       </div>
                       {!r.active && <span className="badge badge-neutral no-dot">inactive</span>}
                       <button onClick={() => setEditingRate({ zoneId: z.id, rate: r })} className="btn btn-ghost btn-sm">Edit</button>
-                      <button onClick={() => deleteRate(r.id)} className="btn btn-danger btn-sm">Delete</button>
+                      <button onClick={() => setPending({ kind: 'rate', id: r.id })} className="btn btn-danger btn-sm">Delete</button>
                     </div>
                   ))}
                 </div>
@@ -208,6 +197,25 @@ export default function ShippingSettingsPage() {
           busy={busy}
         />
       )}
+
+      <ConfirmDialog
+        open={pending !== null}
+        title={pending?.kind === 'zone' ? 'Delete shipping zone?' : 'Delete shipping rate?'}
+        description={pending?.kind === 'zone' ? 'All rates inside this zone will also be deleted. This cannot be undone.' : undefined}
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          if (pending.kind === 'zone') {
+            await api(`/api/admin/shipping/zones/${pending.id}`, { method: 'DELETE' });
+          } else {
+            await api(`/api/admin/shipping/rates/${pending.id}`, { method: 'DELETE' });
+          }
+          setPending(null);
+          await load();
+        }}
+      />
     </div>
   );
 }

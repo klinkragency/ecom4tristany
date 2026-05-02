@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import type { Product, ProductMedia } from '@/lib/types';
+import { ConfirmDialog } from '@/components/ui';
 
 type PresignResp = {
   uploadUrl: string;
@@ -23,6 +24,8 @@ export default function MediaUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   async function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
     return new Promise((resolve) => {
@@ -95,16 +98,6 @@ export default function MediaUploader({
     }
   }
 
-  async function remove(mediaId: string) {
-    if (!confirm('Delete this image?')) return;
-    try {
-      await api(`/api/admin/media/${mediaId}`, { method: 'DELETE' });
-      onChanged();
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
-
   async function move(mediaId: string, direction: -1 | 1) {
     const ordered = [...product.media]
       .sort((a, b) => a.position - b.position)
@@ -118,9 +111,10 @@ export default function MediaUploader({
         method: 'POST',
         body: JSON.stringify({ orderedIds: ordered }),
       });
+      setError(null);
       onChanged();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Reorder failed');
+      setError(err instanceof ApiError ? err.message : 'Reorder failed');
     }
   }
 
@@ -130,14 +124,17 @@ export default function MediaUploader({
         method: 'PUT',
         body: JSON.stringify({ alt }),
       });
+      setError(null);
       onChanged();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Save alt failed');
+      setError(err instanceof ApiError ? err.message : 'Save alt failed');
     }
   }
 
   return (
-    <div
+    <div className="space-y-3">
+      {error && <div className="alert alert-error">{error}</div>}
+      <div
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
@@ -215,7 +212,7 @@ export default function MediaUploader({
                       </button>
                     </div>
                     <button
-                      onClick={() => remove(m.id)}
+                      onClick={() => setPendingDelete(m.id)}
                       className="text-red-700 hover:underline"
                     >
                       Delete
@@ -242,6 +239,21 @@ export default function MediaUploader({
           ))}
         </div>
       )}
+      </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete image?"
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={async () => {
+          if (!pendingDelete) return;
+          await api(`/api/admin/media/${pendingDelete}`, { method: 'DELETE' });
+          setPendingDelete(null);
+          onChanged();
+        }}
+      />
     </div>
   );
 }

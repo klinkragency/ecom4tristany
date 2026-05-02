@@ -5,6 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import type { Transfer } from '@/lib/types';
+import { ConfirmDialog } from '@/components/ui';
+
+type TransferAction = 'ship' | 'receive' | 'cancel';
+const ACTION_LABELS: Record<TransferAction, string> = {
+  ship: 'Ship this transfer?',
+  receive: 'Mark as received?',
+  cancel: 'Cancel this draft?',
+};
 
 const BADGE: Record<Transfer['status'], string> = {
   draft: 'bg-gray-100 text-gray-800',
@@ -20,6 +28,7 @@ export default function TransferDetailPage() {
   const [t, setT] = useState<Transfer | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<TransferAction | null>(null);
 
   async function load() {
     try {
@@ -31,20 +40,6 @@ export default function TransferDetailPage() {
 
   useEffect(() => { load(); }, [id]);
 
-  async function transition(action: 'ship' | 'receive' | 'cancel') {
-    const labels = { ship: 'Ship this transfer?', receive: 'Mark as received?', cancel: 'Cancel this draft?' };
-    if (!confirm(labels[action])) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await api(`/api/admin/transfers/${id}/${action}`, { method: 'POST' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Action failed');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   if (!t) {
     return <section><p className="text-stone-500">Loading…</p>{error && <div className="text-red-700 text-sm mt-3">{error}</div>}</section>;
@@ -65,16 +60,16 @@ export default function TransferDetailPage() {
         <div className="flex items-center gap-2 text-sm">
           {t.status === 'draft' && (
             <>
-              <button onClick={() => transition('cancel')} disabled={busy} className="btn btn-secondary">
+              <button onClick={() => setPending('cancel')} disabled={busy} className="btn btn-secondary">
                 Cancel draft
               </button>
-              <button onClick={() => transition('ship')} disabled={busy} className="btn btn-primary">
+              <button onClick={() => setPending('ship')} disabled={busy} className="btn btn-primary">
                 Ship
               </button>
             </>
           )}
           {t.status === 'in_transit' && (
-            <button onClick={() => transition('receive')} disabled={busy} className="btn btn-primary">
+            <button onClick={() => setPending('receive')} disabled={busy} className="btn btn-primary">
               Mark received
             </button>
           )}
@@ -131,6 +126,25 @@ export default function TransferDetailPage() {
           Back to list
         </button>
       )}
+
+      <ConfirmDialog
+        open={pending !== null}
+        title={pending ? ACTION_LABELS[pending] : ''}
+        confirmLabel={pending === 'ship' ? 'Ship' : pending === 'receive' ? 'Mark received' : pending === 'cancel' ? 'Cancel draft' : 'Confirm'}
+        destructive={pending === 'ship' || pending === 'cancel'}
+        onCancel={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          setBusy(true);
+          try {
+            await api(`/api/admin/transfers/${id}/${pending}`, { method: 'POST' });
+            setPending(null);
+            await load();
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
     </section>
   );
 }

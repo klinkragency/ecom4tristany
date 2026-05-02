@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import TypeForm, { EMPTY_TYPE, type TypePayload } from '../TypeForm';
+import { ConfirmDialog } from '@/components/ui';
 
 type Entry = {
   id: string;
@@ -23,6 +24,7 @@ export default function TypeDetailPage() {
   const [typeName, setTypeName] = useState('');
   const [entries, setEntries] = useState<Entry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function load() {
     try {
@@ -53,13 +55,7 @@ export default function TypeDetailPage() {
   }
 
   async function del() {
-    if (!confirm(`Delete type "${typeName}" and all its entries?`)) return;
-    try {
-      await api(`/api/admin/content/metaobjects/types/${typeId}`, { method: 'DELETE' });
-      router.push('/content/metaobjects');
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
+    setConfirmDelete(true);
   }
 
   if (!initial) {
@@ -110,6 +106,20 @@ export default function TypeDetailPage() {
           </ul>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`Delete type "${typeName}"?`}
+        description="All entries of this type will also be deleted."
+        confirmLabel="Delete type"
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await api(`/api/admin/content/metaobjects/types/${typeId}`, { method: 'DELETE' });
+          setConfirmDelete(false);
+          router.push('/content/metaobjects');
+        }}
+      />
     </section>
   );
 }

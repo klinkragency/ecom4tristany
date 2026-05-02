@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { Card } from '@/components/ui';
+import { Card, ConfirmDialog } from '@/components/ui';
+
+type OrderPending =
+  | { kind: 'cancelOrder' }
+  | { kind: 'cancelFulfillment'; fulfillmentId: string }
+  | null;
 import { formatPrice, type Order, type FinancialStatus, type FulfillmentStatus } from '@/lib/types';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
@@ -72,6 +77,7 @@ export default function OrderDetailPage() {
   const [returnsList, setReturnsList] = useState<ReturnRow[]>([]);
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [fulfillOpen, setFulfillOpen] = useState(false);
+  const [pending, setPending] = useState<OrderPending>(null);
 
   async function load() {
     try {
@@ -97,19 +103,6 @@ export default function OrderDetailPage() {
 
   useEffect(() => { load(); loadLocations(); }, [id]);
 
-  async function cancel() {
-    if (!confirm('Cancel this order?')) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await api(`/api/admin/orders/${id}/cancel`, { method: 'POST' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Cancel failed');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function saveNote(note: string) {
     setBusy(true);
@@ -248,15 +241,7 @@ export default function OrderDetailPage() {
                   </ul>
                   {f.status !== 'cancelled' && (
                     <button
-                      onClick={async () => {
-                        if (!confirm('Cancel this fulfillment and restock?')) return;
-                        try {
-                          await api(`/api/admin/fulfillments/${f.id}/cancel`, { method: 'POST' });
-                          await load();
-                        } catch (err) {
-                          setError(err instanceof ApiError ? err.message : 'Cancel failed');
-                        }
-                      }}
+                      onClick={() => setPending({ kind: 'cancelFulfillment', fulfillmentId: f.id })}
                       className="btn btn-danger btn-sm mt-2"
                     >
                       Cancel fulfillment
@@ -347,7 +332,7 @@ export default function OrderDetailPage() {
         </Card>
 
         {order.status !== 'cancelled' && order.financialStatus !== 'paid' && order.financialStatus !== 'partially_refunded' && order.financialStatus !== 'refunded' && (
-          <button onClick={cancel} disabled={busy} className="btn btn-danger w-full">
+          <button onClick={() => setPending({ kind: 'cancelOrder' })} disabled={busy} className="btn btn-danger w-full">
             Cancel order
           </button>
         )}
@@ -379,6 +364,32 @@ export default function OrderDetailPage() {
           onDone={async () => { setFulfillOpen(false); await load(); }}
         />
       )}
+
+      <ConfirmDialog
+        open={pending !== null}
+        title={pending?.kind === 'cancelOrder' ? 'Cancel order?' : pending?.kind === 'cancelFulfillment' ? 'Cancel fulfillment?' : ''}
+        description={
+          pending?.kind === 'cancelOrder'
+            ? 'The order moves to cancelled status. Stock that was committed will be released.'
+            : pending?.kind === 'cancelFulfillment'
+            ? 'The items go back to inventory.'
+            : undefined
+        }
+        confirmLabel={pending?.kind === 'cancelOrder' ? 'Cancel order' : pending?.kind === 'cancelFulfillment' ? 'Cancel & restock' : 'Confirm'}
+        cancelLabel={pending?.kind === 'cancelOrder' ? 'Keep open' : pending?.kind === 'cancelFulfillment' ? 'Keep' : 'Cancel'}
+        destructive
+        onCancel={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          if (pending.kind === 'cancelOrder') {
+            await api(`/api/admin/orders/${id}/cancel`, { method: 'POST' });
+          } else if (pending.kind === 'cancelFulfillment') {
+            await api(`/api/admin/fulfillments/${pending.fulfillmentId}/cancel`, { method: 'POST' });
+          }
+          setPending(null);
+          await load();
+        }}
+      />
     </section>
   );
 }

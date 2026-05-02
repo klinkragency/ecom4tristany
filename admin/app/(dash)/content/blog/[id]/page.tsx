@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import BlogForm, { EMPTY_POST, type BlogPayload } from '../BlogForm';
+import { ConfirmDialog } from '@/components/ui';
 
 export default function EditBlogPost() {
   const params = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ export default function EditBlogPost() {
   const id = params.id;
   const [initial, setInitial] = useState<BlogPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -40,13 +42,7 @@ export default function EditBlogPost() {
   }
 
   async function del() {
-    if (!confirm('Delete this post?')) return;
-    try {
-      await api(`/api/admin/content/blog/${id}`, { method: 'DELETE' });
-      router.push('/content/blog');
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
+    setConfirmDelete(true);
   }
 
   if (!initial) {
@@ -60,6 +56,19 @@ export default function EditBlogPost() {
         <h1 className="h-page">{initial.title || 'Edit post'}</h1>
       </div>
       <BlogForm initial={initial} onSave={save} saveLabel="Save changes" onDelete={del} />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete blog post?"
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await api(`/api/admin/content/blog/${id}`, { method: 'DELETE' });
+          setConfirmDelete(false);
+          router.push('/content/blog');
+        }}
+      />
     </section>
   );
 }

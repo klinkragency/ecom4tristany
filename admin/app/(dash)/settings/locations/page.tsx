@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import type { Location } from '@/lib/types';
+import { ConfirmDialog } from '@/components/ui';
 
 export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Partial<Location> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -51,15 +53,6 @@ export default function LocationsPage() {
     }
   }
 
-  async function del(id: string) {
-    if (!confirm('Delete this location?')) return;
-    try {
-      await api(`/api/admin/locations/${id}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   return (
     <div className="max-w-3xl space-y-3">
@@ -112,7 +105,7 @@ export default function LocationsPage() {
                 <td className="text-right">
                   <div className="flex justify-end gap-1">
                     <button onClick={() => setEditing(l)} className="btn btn-ghost btn-sm">Edit</button>
-                    <button onClick={() => del(l.id)} className="btn btn-danger btn-sm">Delete</button>
+                    <button onClick={() => setPendingDeleteId(l.id)} className="btn btn-danger btn-sm">Delete</button>
                   </div>
                 </td>
               </tr>
@@ -150,6 +143,21 @@ export default function LocationsPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Delete location?"
+        description="Inventory levels at this location will be lost."
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={async () => {
+          if (!pendingDeleteId) return;
+          await api(`/api/admin/locations/${pendingDeleteId}`, { method: 'DELETE' });
+          setPendingDeleteId(null);
+          await load();
+        }}
+      />
     </div>
   );
 }

@@ -8,7 +8,14 @@ import { type Product, type ProductVariant } from '@/lib/types';
 import MediaUploader from './MediaUploader';
 import RichTextEditor from '@/components/RichTextEditor';
 import InventorySection from './InventorySection';
-import { Card, Field } from '@/components/ui';
+import { Card, ConfirmDialog, Field } from '@/components/ui';
+
+type Pending =
+  | { kind: 'product' }
+  | { kind: 'option'; id: string }
+  | { kind: 'value'; valueId: string }
+  | { kind: 'variant'; id: string }
+  | null;
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -19,6 +26,7 @@ export default function EditProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [pending, setPending] = useState<Pending>(null);
 
   // local form state mirroring the product
   const [title, setTitle] = useState('');
@@ -82,15 +90,6 @@ export default function EditProductPage() {
     }
   }
 
-  async function del() {
-    if (!confirm('Delete this product? This cannot be undone.')) return;
-    try {
-      await api(`/api/admin/products/${id}`, { method: 'DELETE' });
-      router.push('/products');
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
 
   if (!product) {
     return (
@@ -117,7 +116,7 @@ export default function EditProductPage() {
             </span>
           )}
           <button
-            onClick={del}
+            onClick={() => setPending({ kind: 'product' })}
             className="btn btn-danger"
           >
             Delete
@@ -168,8 +167,8 @@ export default function EditProductPage() {
           <MediaUploader product={product} onChanged={refetch} />
         </Card>
 
-        <OptionsEditor product={product} onChanged={refetch} onError={setError} />
-        <VariantsEditor product={product} onChanged={refetch} onError={setError} />
+        <OptionsEditor product={product} onChanged={refetch} onError={setError} onRequestDelete={setPending} />
+        <VariantsEditor product={product} onChanged={refetch} onError={setError} onRequestDelete={setPending} />
         <InventorySection productId={product.id} />
 
         <Card title="Organization" className="space-y-3">
@@ -227,6 +226,47 @@ export default function EditProductPage() {
           </Field>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={pending !== null}
+        title={
+          pending?.kind === 'product' ? 'Delete product?' :
+          pending?.kind === 'option' ? 'Remove option?' :
+          pending?.kind === 'value' ? 'Remove option value?' :
+          pending?.kind === 'variant' ? 'Delete variant?' : ''
+        }
+        description={
+          pending?.kind === 'product' ? 'This cannot be undone. Variants and inventory levels are removed too.' :
+          pending?.kind === 'option' ? 'Any variants using this option will also be removed.' :
+          pending?.kind === 'value' ? 'Any variants using this value will also be removed.' :
+          undefined
+        }
+        confirmLabel={
+          pending?.kind === 'product' ? 'Delete product' :
+          pending?.kind === 'option' || pending?.kind === 'value' ? 'Remove' :
+          'Delete'
+        }
+        destructive
+        onCancel={() => setPending(null)}
+        onConfirm={async () => {
+          if (!pending) return;
+          if (pending.kind === 'product') {
+            await api(`/api/admin/products/${id}`, { method: 'DELETE' });
+            setPending(null);
+            router.push('/products');
+            return;
+          }
+          if (pending.kind === 'option') {
+            await api(`/api/admin/options/${pending.id}`, { method: 'DELETE' });
+          } else if (pending.kind === 'value') {
+            await api(`/api/admin/option-values/${pending.valueId}`, { method: 'DELETE' });
+          } else if (pending.kind === 'variant') {
+            await api(`/api/admin/variants/${pending.id}`, { method: 'DELETE' });
+          }
+          setPending(null);
+          await refetch();
+        }}
+      />
     </section>
   );
 }
@@ -235,10 +275,12 @@ function OptionsEditor({
   product,
   onChanged,
   onError,
+  onRequestDelete,
 }: {
   product: Product;
   onChanged: () => void;
   onError: (s: string) => void;
+  onRequestDelete: (p: Pending) => void;
 }) {
   const [name, setName] = useState('');
   const [values, setValues] = useState('');
@@ -261,16 +303,6 @@ function OptionsEditor({
     }
   }
 
-  async function del(oid: string) {
-    if (!confirm('Remove this option and any variants using it?')) return;
-    try {
-      await api(`/api/admin/options/${oid}`, { method: 'DELETE' });
-      onChanged();
-    } catch (err) {
-      onError(err instanceof ApiError ? err.message : 'Failed to remove option');
-    }
-  }
-
   async function addValue(oid: string, value: string) {
     const v = value.trim();
     if (!v) return;
@@ -285,16 +317,6 @@ function OptionsEditor({
     }
   }
 
-  async function delValue(vid: string) {
-    if (!confirm('Remove this value? Any variants using it will also be removed.')) return;
-    try {
-      await api(`/api/admin/option-values/${vid}`, { method: 'DELETE' });
-      onChanged();
-    } catch (err) {
-      onError(err instanceof ApiError ? err.message : 'Failed to remove value');
-    }
-  }
-
   return (
     <Card title={`Options (${product.options.length} / 3)`}>
       {product.options.length === 0 && (
@@ -306,7 +328,7 @@ function OptionsEditor({
         <div key={o.id} className="border border-stone-200 rounded p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="font-medium text-sm">{o.name}</div>
-            <button onClick={() => del(o.id)} className="btn btn-ghost btn-sm text-red-700">
+            <button onClick={() => onRequestDelete({ kind: 'option', id: o.id })} className="btn btn-ghost btn-sm text-red-700">
               Remove option
             </button>
           </div>
@@ -318,7 +340,7 @@ function OptionsEditor({
               >
                 {v.value}
                 <button
-                  onClick={() => delValue(v.id)}
+                  onClick={() => onRequestDelete({ kind: 'value', valueId: v.id })}
                   className="text-gray-500 hover:text-red-700"
                   title="Remove value"
                 >
@@ -389,23 +411,19 @@ function VariantsEditor({
   product,
   onChanged,
   onError,
+  onRequestDelete,
 }: {
   product: Product;
   onChanged: () => void;
   onError: (s: string) => void;
+  onRequestDelete: (p: Pending) => void;
 }) {
-  async function del(vid: string) {
+  function requestDelete(vid: string) {
     if (product.variants.length <= 1) {
       onError('Cannot delete the last variant of a product');
       return;
     }
-    if (!confirm('Delete this variant?')) return;
-    try {
-      await api(`/api/admin/variants/${vid}`, { method: 'DELETE' });
-      onChanged();
-    } catch (err) {
-      onError(err instanceof ApiError ? err.message : 'Failed to delete variant');
-    }
+    onRequestDelete({ kind: 'variant', id: vid });
   }
 
   const hasOptions = product.options.length > 0;
@@ -423,7 +441,7 @@ function VariantsEditor({
             variant={v}
             onChanged={onChanged}
             onError={onError}
-            onDelete={() => del(v.id)}
+            onDelete={() => requestDelete(v.id)}
           />
         ))}
       </div>

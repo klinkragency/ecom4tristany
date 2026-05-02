@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import PageForm, { EMPTY_PAGE, type PagePayload } from '../PageForm';
+import { ConfirmDialog } from '@/components/ui';
 
 export default function EditContentPage() {
   const params = useParams<{ id: string }>();
@@ -12,6 +13,7 @@ export default function EditContentPage() {
   const id = params.id;
   const [initial, setInitial] = useState<PagePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -37,13 +39,7 @@ export default function EditContentPage() {
   }
 
   async function del() {
-    if (!confirm('Delete this page?')) return;
-    try {
-      await api(`/api/admin/content/pages/${id}`, { method: 'DELETE' });
-      router.push('/content/pages');
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
+    setConfirmDelete(true);
   }
 
   if (!initial) {
@@ -57,6 +53,19 @@ export default function EditContentPage() {
         <h1 className="h-page">{initial.title || 'Edit page'}</h1>
       </div>
       <PageForm initial={initial} onSave={save} saveLabel="Save changes" onDelete={del} />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete page?"
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await api(`/api/admin/content/pages/${id}`, { method: 'DELETE' });
+          setConfirmDelete(false);
+          router.push('/content/pages');
+        }}
+      />
     </section>
   );
 }
