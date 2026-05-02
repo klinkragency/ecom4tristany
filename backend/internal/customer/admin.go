@@ -1,15 +1,20 @@
 package customer
 
 import (
+	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/3mg/shop/backend/internal/auth"
+	"github.com/3mg/shop/backend/internal/email"
 	"github.com/3mg/shop/backend/internal/httpx"
 
 	"github.com/go-chi/chi/v5"
@@ -358,18 +363,20 @@ func (h *Handler) AdminGrantCredit(w http.ResponseWriter, r *http.Request) {
 // ─── Admin create ──────────────────────────────────────────────────────
 
 type AdminCreateReq struct {
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Phone     string `json:"phone"`
+	Email      string `json:"email"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	Phone      string `json:"phone"`
+	SendInvite bool   `json:"sendInvite"`
 }
 
 type AdminCreateResp struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Phone     string `json:"phone"`
+	ID         string `json:"id"`
+	Email      string `json:"email"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	Phone      string `json:"phone"`
+	InviteSent bool   `json:"inviteSent"`
 }
 
 // AdminCreate adds a customer record from the admin panel. The customer has
@@ -423,11 +430,75 @@ func (h *Handler) AdminCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	inviteSent := false
+	if req.SendInvite {
+		if err := h.sendInviteEmail(r.Context(), id, req.Email, req.FirstName, req.LastName, clientIPFromRequest(r), r.UserAgent()); err != nil {
+			// Don't fail the create — the customer record is good. Log on
+			// stderr so the admin can retry by hitting "Resend" later.
+			fmt.Println("invite email send failed:", err)
+		} else {
+			inviteSent = true
+		}
+	}
+
 	httpx.JSON(w, http.StatusCreated, AdminCreateResp{
-		ID:        id,
-		Email:     req.Email,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Phone:     req.Phone,
+		ID:         id,
+		Email:      req.Email,
+		FirstName:  req.FirstName,
+		LastName:   req.LastName,
+		Phone:      req.Phone,
+		InviteSent: inviteSent,
 	})
+}
+
+// sendInviteEmail generates a password-reset token (TTL = resetTTL, same as
+// the public reset flow) and emails the customer a "set your password" link.
+// Internally it reuses the customer_password_resets table.
+func (h *Handler) sendInviteEmail(ctx context.Context, customerID, em, first, last, ip, ua string) error {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return err
+	}
+	secret := base64.RawURLEncoding.EncodeToString(raw)
+	sum := sha256.Sum256([]byte(secret))
+	tokenHash := hex.EncodeToString(sum[:])
+
+	if _, err := h.db.Exec(ctx, `
+        INSERT INTO customer_password_resets (customer_id, token_hash, expires_at, ip, user_agent)
+        VALUES ($1, $2, $3, $4, $5)
+    `, customerID, tokenHash, time.Now().Add(resetTTL), ip, ua); err != nil {
+		return err
+	}
+
+	if h.cfg == nil {
+		// No email config wired (admin handler was constructed via NewHandler
+		// without cfg). Skip the email but the token is still valid — the
+		// admin can resend later.
+		return nil
+	}
+
+	resetURL := fmt.Sprintf("%s/account/password-reset/confirm?token=%s",
+		strings.TrimRight(h.cfg.ShopPublicURL, "/"), secret)
+	sender := email.New(h.cfg)
+	name := strings.TrimSpace(first + " " + last)
+	if name == "" {
+		name = em
+	}
+	return sender.Send(email.Message{
+		To:      em,
+		Subject: "Welcome to " + h.cfg.ShopName + " — set your password",
+		HTML:    renderInviteHTML(h.cfg.ShopName, name, resetURL),
+	})
+}
+
+func renderInviteHTML(shopName, name, url string) string {
+	return fmt.Sprintf(`<!doctype html>
+<html><body style="font-family:system-ui,sans-serif;max-width:560px;margin:24px auto;color:#1c1917;">
+<h2 style="margin:0 0 16px;font-weight:600;">Welcome to %s</h2>
+<p>Hi %s,</p>
+<p>An account has been created for you. Click the button below to set a password and start using your account.</p>
+<p><a href="%s" style="display:inline-block;padding:10px 18px;background:#1c1917;color:#fff;border-radius:8px;text-decoration:none;">Set your password</a></p>
+<p style="color:#78716c;font-size:13px;">If the button doesn't work, copy and paste this link into your browser:<br><span style="word-break:break-all;">%s</span></p>
+<p style="color:#78716c;font-size:13px;">This link expires in 1 hour. If you didn't expect this email, you can safely ignore it.</p>
+</body></html>`, shopName, name, url, url)
 }
