@@ -11,7 +11,7 @@ import {
   type FinancialStatus,
   type FulfillmentStatus,
 } from '@/lib/types';
-import { ConfirmDialog, RowActionsMenu, type RowAction } from '@/components/ui';
+import { ConfirmDialog, RowActionsMenu, Select, type RowAction } from '@/components/ui';
 import { AddNoteDialog } from './AddNoteDialog';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
@@ -71,28 +71,51 @@ export default function OrdersListPage() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); load({ q: search, fin: finStatus, ful: fulStatus }); }}
-        className="mb-4 flex flex-wrap items-center gap-2"
+        className="mb-4 flex flex-wrap items-center gap-2 md:flex-nowrap"
       >
         <input
           type="search"
           placeholder="Search by email or order #"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input w-64"
+          className="input min-w-0 flex-1"
         />
-        <select value={finStatus} onChange={(e) => setFinStatus(e.target.value)} className="select w-auto">
-          <option value="">All payments</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="refunded">Refunded</option>
-          <option value="partially_refunded">Partially refunded</option>
-        </select>
-        <select value={fulStatus} onChange={(e) => setFulStatus(e.target.value)} className="select w-auto">
-          <option value="">All fulfillment</option>
-          <option value="unfulfilled">Unfulfilled</option>
-          <option value="partial">Partial</option>
-          <option value="fulfilled">Fulfilled</option>
-        </select>
+        <div className="w-44">
+          <Select
+            ariaLabel="Filter by payment status"
+            value={finStatus}
+            onChange={setFinStatus}
+            options={[
+              { value: '', label: 'All payments' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'paid', label: 'Paid' },
+              { value: 'refunded', label: 'Refunded' },
+              { value: 'partially_refunded', label: 'Partially refunded' },
+            ]}
+          />
+        </div>
+        <div className="w-44">
+          <Select
+            ariaLabel="Filter by fulfillment status"
+            value={fulStatus}
+            onChange={setFulStatus}
+            options={[
+              { value: '', label: 'All fulfillment' },
+              { value: 'unfulfilled', label: 'Unfulfilled' },
+              { value: 'partial', label: 'Partial' },
+              { value: 'fulfilled', label: 'Fulfilled' },
+            ]}
+          />
+        </div>
+        {(search || finStatus || fulStatus) && (
+          <button
+            type="button"
+            onClick={() => { setSearch(''); setFinStatus(''); setFulStatus(''); }}
+            className="ml-auto text-sm text-stone-500 hover:text-stone-900"
+          >
+            Clear filters
+          </button>
+        )}
       </form>
 
       {error && <div className="alert alert-error mb-4">{error}</div>}

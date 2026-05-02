@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice } from '@/lib/types';
+import { Select } from '@/components/ui';
 
 type ReturnRow = {
   id: string;
@@ -47,15 +48,34 @@ export default function ReturnsListPage() {
     <section className="max-w-5xl">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="h-page">Returns</h1>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="select w-auto">
-          <option value="">All statuses</option>
-          <option value="requested">Requested</option>
-          <option value="approved">Approved</option>
-          <option value="received">Received</option>
-          <option value="refunded">Refunded</option>
-          <option value="rejected">Rejected</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2 md:flex-nowrap">
+        <div className="w-44">
+          <Select
+            ariaLabel="Filter by status"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: '', label: 'All statuses' },
+              { value: 'requested', label: 'Requested' },
+              { value: 'approved', label: 'Approved' },
+              { value: 'received', label: 'Received' },
+              { value: 'refunded', label: 'Refunded' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'cancelled', label: 'Cancelled' },
+            ]}
+          />
+        </div>
+        {filter && (
+          <button
+            type="button"
+            onClick={() => setFilter('')}
+            className="ml-auto text-sm text-stone-500 hover:text-stone-900"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {error && <div className="alert alert-error mb-4">{error}</div>}

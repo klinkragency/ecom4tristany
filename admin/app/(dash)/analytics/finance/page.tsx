@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { Card } from '@/components/ui';
+import { Card, Select } from '@/components/ui';
 import { formatPrice } from '@/lib/types';
 
 type SalesRow = {
@@ -90,13 +90,19 @@ export default function FinancePage() {
       <div className="flex items-center gap-3 mb-4">
         <Link href="/analytics" className="text-sm text-stone-500 hover:underline">← Analytics</Link>
         <h1 className="h-page flex-1">Finance</h1>
-        <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-          className="select w-auto">
-          <option value={7}>Last 7 days</option>
-          <option value={30}>Last 30 days</option>
-          <option value={90}>Last 90 days</option>
-          <option value={365}>Last year</option>
-        </select>
+        <div className="w-40">
+          <Select
+            ariaLabel="Date range"
+            value={String(days)}
+            onChange={(v) => setDays(Number(v))}
+            options={[
+              { value: '7', label: 'Last 7 days' },
+              { value: '30', label: 'Last 30 days' },
+              { value: '90', label: 'Last 90 days' },
+              { value: '365', label: 'Last year' },
+            ]}
+          />
+        </div>
       </div>
       {error && <div className="mb-3 alert alert-error">{error}</div>}
 

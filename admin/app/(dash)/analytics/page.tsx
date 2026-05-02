@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice } from '@/lib/types';
+import { Select } from '@/components/ui';
 
 type Summary = {
   from: string;
@@ -115,16 +116,26 @@ export default function AnalyticsPage() {
         <h1 className="h-page">Analytics</h1>
         <div className="flex items-center gap-3">
           <Link href="/analytics/finance" className="text-sm hover:underline">Finance →</Link>
-          <select value={days} onChange={(e) => setDays(Number(e.target.value))}
-            className="select w-auto">
-            {RANGES.map((r) => <option key={r.days} value={r.days}>Last {r.label}</option>)}
-          </select>
-          <select value={granularity} onChange={(e) => setGranularity(e.target.value as 'day' | 'week' | 'month')}
-            className="select w-auto">
-            <option value="day">Daily</option>
-            <option value="week">Weekly</option>
-            <option value="month">Monthly</option>
-          </select>
+          <div className="w-36">
+            <Select
+              ariaLabel="Date range"
+              value={String(days)}
+              onChange={(v) => setDays(Number(v))}
+              options={RANGES.map((r) => ({ value: String(r.days), label: `Last ${r.label}` }))}
+            />
+          </div>
+          <div className="w-32">
+            <Select<'day' | 'week' | 'month'>
+              ariaLabel="Granularity"
+              value={granularity}
+              onChange={setGranularity}
+              options={[
+                { value: 'day', label: 'Daily' },
+                { value: 'week', label: 'Weekly' },
+                { value: 'month', label: 'Monthly' },
+              ]}
+            />
+          </div>
         </div>
       </div>
       {error && <div className="mb-3 alert alert-error">{error}</div>}
