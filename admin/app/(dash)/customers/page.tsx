@@ -47,7 +47,6 @@ export default function CustomersListPage() {
           router.push(`/customers/${c.id}`);
         }}
       />
-      </div>
 
       <form onSubmit={(e) => { e.preventDefault(); load(search); }} className="mb-4">
         <input
