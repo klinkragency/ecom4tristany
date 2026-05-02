@@ -148,10 +148,13 @@ export default function TypeForm({
                 <div className="grid grid-cols-2 gap-2">
                   <input className={input + ' font-mono'} placeholder="handle_snake_case"
                     value={f.key} onChange={(e) => updateField(i, { key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })} />
-                  <select className={input + ' bg-white'} value={f.type}
-                    onChange={(e) => updateField(i, { type: e.target.value as FieldType })}>
-                    {FIELD_TYPES.map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}
-                  </select>
+                  <Select<FieldType>
+                    ariaLabel="Field type"
+                    size="sm"
+                    value={f.type}
+                    onChange={(v) => updateField(i, { type: v })}
+                    options={FIELD_TYPES.map((t) => ({ value: t.v, label: t.label }))}
+                  />
                 </div>
                 <input className={input} placeholder="Help text (optional, shown under the input)"
                   value={f.help ?? ''} onChange={(e) => updateField(i, { help: e.target.value })} />
