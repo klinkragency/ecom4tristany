@@ -221,6 +221,9 @@ func NewRouter(d Deps) http.Handler {
 			// Customer segments (saved filters)
 			r.Get("/segments", custAdminH.ListSegments)
 			r.Post("/segments", custAdminH.CreateSegment)
+			// Live preview must be declared before the /{id} routes so chi
+			// does not match "preview" as a segment id.
+			r.Post("/segments/preview", custAdminH.PreviewSegmentRules)
 			r.Get("/segments/{id}", custAdminH.GetSegment)
 			r.Put("/segments/{id}", custAdminH.UpdateSegment)
 			r.Delete("/segments/{id}", custAdminH.DeleteSegment)
