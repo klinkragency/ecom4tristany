@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type CustomerListItem, type CustomerListPage } from '@/lib/types';
-import { ConfirmDialog, RowActionsMenu } from '@/components/ui';
+import { ConfirmDialog, EntitySearchInput, RowActionsMenu } from '@/components/ui';
 import { NewCustomerDialog } from './NewCustomerDialog';
 import { GrantCreditDialog } from './GrantCreditDialog';
 
@@ -15,17 +15,14 @@ export default function CustomersListPage() {
   const router = useRouter();
   const [page, setPage] = useState<CustomerListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [grantFor, setGrantFor] = useState<CustomerListItem | null>(null);
   const [eraseFor, setEraseFor] = useState<CustomerListItem | null>(null);
 
-  async function load(q = '') {
+  async function load() {
     try {
-      const res = await api<CustomerListPage>(
-        `/api/admin/customers?limit=50${q ? `&q=${encodeURIComponent(q)}` : ''}`,
-      );
+      const res = await api<CustomerListPage>(`/api/admin/customers?limit=50`);
       setPage(res);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Load failed');
@@ -78,7 +75,7 @@ export default function CustomersListPage() {
       body: JSON.stringify({ note: 'Admin-initiated GDPR erasure' }),
     });
     setEraseFor(null);
-    await load(search);
+    await load();
   }
 
   return (
@@ -102,15 +99,12 @@ export default function CustomersListPage() {
         }}
       />
 
-      <form onSubmit={(e) => { e.preventDefault(); load(search); }} className="mb-4">
-        <input
-          type="search"
-          placeholder="Search by email or name…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input w-80"
+      <div className="mb-4 w-80">
+        <EntitySearchInput
+          kinds={['customer']}
+          placeholder="Search customers — fuzzy match across email, name, phone…"
         />
-      </form>
+      </div>
 
       {flash && <div className="alert alert-success mb-4">{flash}</div>}
       {error && <div className="alert alert-error mb-4">{error}</div>}
@@ -200,7 +194,7 @@ export default function CustomersListPage() {
           onDone={async () => {
             setGrantFor(null);
             showFlash('Store credit applied');
-            await load(search);
+            await load();
           }}
         />
       )}

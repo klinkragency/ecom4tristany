@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice, type Product, type ProductListItem, type ProductListPage, type ProductStatus } from '@/lib/types';
-import { ConfirmDialog, RowActionsMenu } from '@/components/ui';
+import { ConfirmDialog, EntitySearchInput, RowActionsMenu } from '@/components/ui';
 import { storefrontUrl } from '@/lib/storefront';
 
 type ImportResult = {
@@ -23,7 +23,6 @@ export default function ProductsListPage() {
   const router = useRouter();
   const [page, setPage] = useState<ProductListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +49,7 @@ export default function ProductsListPage() {
           seoDescription: full.seoDescription,
         }),
       });
-      await load(search);
+      await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Update failed');
     } finally {
@@ -62,14 +61,12 @@ export default function ProductsListPage() {
     if (!toDelete) return;
     await api(`/api/admin/products/${toDelete.id}`, { method: 'DELETE' });
     setToDelete(null);
-    await load(search);
+    await load();
   }
 
-  async function load(q = '') {
+  async function load() {
     try {
-      const data = await api<ProductListPage>(
-        `/api/admin/products?limit=25${q ? `&q=${encodeURIComponent(q)}` : ''}`,
-      );
+      const data = await api<ProductListPage>(`/api/admin/products?limit=25`);
       setPage(data);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Load failed');
@@ -108,17 +105,12 @@ export default function ProductsListPage() {
         );
       }
       setImportResult(body as ImportResult);
-      await load(search);
+      await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed');
     } finally {
       setImporting(false);
     }
-  }
-
-  function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    load(search);
   }
 
   return (
@@ -167,15 +159,12 @@ export default function ProductsListPage() {
         </div>
       )}
 
-      <form onSubmit={onSearch} className="mb-4">
-        <input
-          type="search"
-          placeholder="Search title, handle, vendor…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input w-80"
+      <div className="mb-4 w-80">
+        <EntitySearchInput
+          kinds={['product']}
+          placeholder="Search products…"
         />
-      </form>
+      </div>
 
       {error && <div className="alert alert-error mb-4">{error}</div>}
 
