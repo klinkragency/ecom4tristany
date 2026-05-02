@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
+import { RowActionsMenu, type RowAction } from '@/components/ui';
 import { CreateDiscountButton } from './CreateDiscountButton';
-import { RowActionsMenu } from './RowActionsMenu';
 import { DeleteDiscountDialog } from './DeleteDiscountDialog';
 import { normalizeDiscount, type DiscountResponse } from './_forms/shared/types';
 
@@ -33,10 +34,12 @@ function describe(d: Discount): string {
 }
 
 export default function DiscountsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<Discount[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Discount | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -66,6 +69,19 @@ export default function DiscountsPage() {
       setError(err instanceof ApiError ? err.message : 'Update failed');
     } finally {
       setPendingId(null);
+    }
+  }
+
+  async function copyCode(d: Discount) {
+    if (!d.code) return;
+    try {
+      await navigator.clipboard.writeText(d.code);
+      setCopiedId(d.id);
+      window.setTimeout(() => {
+        setCopiedId((cur) => (cur === d.id ? null : cur));
+      }, 2000);
+    } catch {
+      setError('Copy failed — clipboard unavailable');
     }
   }
 
@@ -122,43 +138,63 @@ export default function DiscountsPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map((d) => (
-              <tr key={d.id} className={pendingId === d.id ? 'opacity-60' : ''}>
-                <td className="font-medium">
-                  <Link href={`/discounts/${d.id}`} className="hover:underline">{d.title}</Link>
-                </td>
-                <td>
-                  {d.code
-                    ? <span className="font-mono text-xs">{d.code}</span>
-                    : <span className="text-stone-400 italic">automatic</span>}
-                </td>
-                <td>{describe(d)}</td>
-                <td className="text-stone-500 capitalize">{d.scope}</td>
-                <td className="tabular-nums">{d.usageCount}</td>
-                <td>
-                  <span className={`badge ${d.active ? 'badge-success' : 'badge-neutral'}`}>
-                    {d.active ? 'active' : 'inactive'}
-                  </span>
-                </td>
-                <td>
-                  <RowActionsMenu
-                    label={`Actions for ${d.title}`}
-                    actions={[
-                      {
-                        label: d.active ? 'Deactivate' : 'Activate',
-                        onClick: () => toggleActive(d),
-                        disabled: pendingId === d.id,
-                      },
-                      {
-                        label: 'Delete',
-                        destructive: true,
-                        onClick: () => setToDelete(d),
-                      },
-                    ]}
-                  />
-                </td>
-              </tr>
-            ))}
+            {items.map((d) => {
+              const actions: RowAction[] = [
+                {
+                  label: 'Edit',
+                  onClick: () => router.push(`/discounts/${d.id}`),
+                },
+              ];
+              if (d.code) {
+                actions.push({
+                  label: copiedId === d.id ? 'Copied' : 'Copy code',
+                  onClick: () => copyCode(d),
+                });
+              }
+              actions.push({
+                label: d.active ? 'Deactivate' : 'Activate',
+                onClick: () => toggleActive(d),
+                disabled: pendingId === d.id,
+              });
+              actions.push({
+                label: 'Delete',
+                destructive: true,
+                onClick: () => setToDelete(d),
+              });
+              return (
+                <tr key={d.id} className={pendingId === d.id ? 'opacity-60' : ''}>
+                  <td className="font-medium">
+                    <Link href={`/discounts/${d.id}`} className="hover:underline">{d.title}</Link>
+                  </td>
+                  <td>
+                    {d.code ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="font-mono text-xs">{d.code}</span>
+                        {copiedId === d.id && (
+                          <span className="text-xs font-medium text-emerald-600">Copied</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-stone-400 italic">automatic</span>
+                    )}
+                  </td>
+                  <td>{describe(d)}</td>
+                  <td className="text-stone-500 capitalize">{d.scope}</td>
+                  <td className="tabular-nums">{d.usageCount}</td>
+                  <td>
+                    <span className={`badge ${d.active ? 'badge-success' : 'badge-neutral'}`}>
+                      {d.active ? 'active' : 'inactive'}
+                    </span>
+                  </td>
+                  <td>
+                    <RowActionsMenu
+                      label={`Actions for ${d.title}`}
+                      actions={actions}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

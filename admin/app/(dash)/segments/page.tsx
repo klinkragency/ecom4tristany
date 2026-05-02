@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { RowActionsMenu } from './RowActionsMenu';
+import { RowActionsMenu } from '@/components/ui';
 import { DeleteSegmentDialog } from './DeleteSegmentDialog';
 
 type Segment = {
@@ -16,6 +17,7 @@ type Segment = {
 };
 
 export default function SegmentsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<Segment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Segment | null>(null);
@@ -120,6 +122,10 @@ export default function SegmentsPage() {
                   <RowActionsMenu
                     label={`Actions for ${s.name}`}
                     actions={[
+                      {
+                        label: 'Edit',
+                        onClick: () => router.push(`/segments/${s.id}`),
+                      },
                       {
                         label: 'Delete',
                         destructive: true,
