@@ -2,6 +2,7 @@ import {
   Home,
   ShoppingBag,
   Package,
+  Warehouse,
   Users,
   Tag,
   FileText,
@@ -43,6 +44,13 @@ export const TOP_NAV: NavSection[] = [
     subs: [
       { href: '/products', label: 'Products' },
       { href: '/collections', label: 'Collections' },
+    ],
+  },
+  {
+    key: 'operations',
+    label: 'Operations',
+    icon: Warehouse,
+    subs: [
       { href: '/inventory', label: 'Inventory' },
       { href: '/inventory/transfers', label: 'Transfers' },
     ],
