@@ -2,5 +2,6 @@
 4000 0000 0000 9995 — insufficient funds
 4000 0000 0000 0002 — generic decline
 4242 4242 4242 4242 - paiment proceed
-Email    : admin@shop.test
+
+Email : admin@shop.test
 Password : changeme123

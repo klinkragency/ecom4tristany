@@ -1,6 +1,8 @@
 package customer
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"net/http"
 	"strconv"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // ─── Admin list view ────────────────────────────────────────────────────
@@ -350,4 +353,81 @@ func (h *Handler) AdminGrantCredit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// ─── Admin create ──────────────────────────────────────────────────────
+
+type AdminCreateReq struct {
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+}
+
+type AdminCreateResp struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+}
+
+// AdminCreate adds a customer record from the admin panel. The customer has
+// no usable password — we hash 32 random bytes so the row satisfies the
+// NOT-NULL constraint but no one can ever log in with it. If the customer
+// later wants to access their account, they go through the public password
+// reset flow (which only requires the email).
+func (h *Handler) AdminCreate(w http.ResponseWriter, r *http.Request) {
+	var req AdminCreateReq
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "invalid_body", "invalid JSON body")
+		return
+	}
+	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+	req.FirstName = strings.TrimSpace(req.FirstName)
+	req.LastName = strings.TrimSpace(req.LastName)
+	req.Phone = strings.TrimSpace(req.Phone)
+	if req.Email == "" {
+		httpx.Error(w, http.StatusBadRequest, "missing_email", "email is required")
+		return
+	}
+	if !strings.Contains(req.Email, "@") {
+		httpx.Error(w, http.StatusBadRequest, "invalid_email", "email looks invalid")
+		return
+	}
+
+	var raw [32]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "rand_error", "could not generate password seed")
+		return
+	}
+	hash, err := auth.HashPassword(base64.StdEncoding.EncodeToString(raw[:]))
+	if err != nil {
+		httpx.Error(w, http.StatusInternalServerError, "hash_error", "could not hash placeholder password")
+		return
+	}
+
+	var id string
+	err = h.db.QueryRow(r.Context(), `
+        INSERT INTO customers (email, password_hash, first_name, last_name, phone)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id::text
+    `, req.Email, hash, req.FirstName, req.LastName, req.Phone).Scan(&id)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			httpx.Error(w, http.StatusConflict, "email_taken", "a customer with that email already exists")
+			return
+		}
+		httpx.Error(w, http.StatusInternalServerError, "db_error", err.Error())
+		return
+	}
+
+	httpx.JSON(w, http.StatusCreated, AdminCreateResp{
+		ID:        id,
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Phone:     req.Phone,
+	})
 }
