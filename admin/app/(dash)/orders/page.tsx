@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { formatPrice, type OrderListPage, type FinancialStatus, type FulfillmentStatus } from '@/lib/types';
+import {
+  formatPrice,
+  type OrderListItem,
+  type OrderListPage,
+  type FinancialStatus,
+  type FulfillmentStatus,
+} from '@/lib/types';
+import { ConfirmDialog, RowActionsMenu, type RowAction } from '@/components/ui';
+import { AddNoteDialog } from './AddNoteDialog';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
   pending: 'badge-neutral',
@@ -23,11 +32,14 @@ const FUL_BADGE: Record<FulfillmentStatus, string> = {
 };
 
 export default function OrdersListPage() {
+  const router = useRouter();
   const [page, setPage] = useState<OrderListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [finStatus, setFinStatus] = useState('');
   const [fulStatus, setFulStatus] = useState('');
+  const [noteFor, setNoteFor] = useState<OrderListItem | null>(null);
+  const [cancelFor, setCancelFor] = useState<OrderListItem | null>(null);
 
   async function load(opts?: { q?: string; fin?: string; ful?: string }) {
     try {
@@ -42,6 +54,13 @@ export default function OrdersListPage() {
   }
 
   useEffect(() => { load({ q: search, fin: finStatus, ful: fulStatus }); }, [finStatus, fulStatus]);
+
+  async function confirmCancel() {
+    if (!cancelFor) return;
+    await api(`/api/admin/orders/${cancelFor.id}/cancel`, { method: 'POST' });
+    setCancelFor(null);
+    await load({ q: search, fin: finStatus, ful: fulStatus });
+  }
 
   return (
     <section>
@@ -93,36 +112,87 @@ export default function OrdersListPage() {
               <th>Fulfillment</th>
               <th>Total</th>
               <th>Items</th>
+              <th className="w-12"></th>
             </tr>
           </thead>
           <tbody>
-            {page.items.map((o) => (
-              <tr key={o.id}>
-                <td>
-                  <Link href={`/orders/${o.id}`} className="font-medium hover:underline">{o.number}</Link>
-                </td>
-                <td className="text-stone-500">{new Date(o.createdAt).toLocaleString()}</td>
-                <td>
-                  <div>{o.customerName || '—'}</div>
-                  <div className="text-xs text-stone-500">{o.email}</div>
-                </td>
-                <td>
-                  <span className={`badge ${FIN_BADGE[o.financialStatus]}`}>
-                    {o.financialStatus.replace('_', ' ')}
-                  </span>
-                </td>
-                <td>
-                  <span className={`badge ${FUL_BADGE[o.fulfillmentStatus]}`}>
-                    {o.fulfillmentStatus}
-                  </span>
-                </td>
-                <td className="font-medium tabular-nums">{formatPrice(o.totalCents, o.currency)}</td>
-                <td className="text-stone-500 tabular-nums">{o.itemsCount}</td>
-              </tr>
-            ))}
+            {page.items.map((o) => {
+              // Spec: hide cancel when already cancelled or already fulfilled.
+              // FinancialStatus has no 'cancelled' variant — order-level status carries that.
+              const cancellable =
+                o.status !== 'cancelled' &&
+                o.fulfillmentStatus !== 'fulfilled';
+              const actions: RowAction[] = [
+                {
+                  label: 'View',
+                  onClick: () => router.push(`/orders/${o.id}`),
+                },
+                {
+                  label: 'Add note',
+                  onClick: () => setNoteFor(o),
+                },
+              ];
+              if (cancellable) {
+                actions.push({
+                  label: 'Cancel order',
+                  destructive: true,
+                  onClick: () => setCancelFor(o),
+                });
+              }
+              return (
+                <tr key={o.id}>
+                  <td>
+                    <Link href={`/orders/${o.id}`} className="font-medium hover:underline">{o.number}</Link>
+                  </td>
+                  <td className="text-stone-500">{new Date(o.createdAt).toLocaleString()}</td>
+                  <td>
+                    <div>{o.customerName || '—'}</div>
+                    <div className="text-xs text-stone-500">{o.email}</div>
+                  </td>
+                  <td>
+                    <span className={`badge ${FIN_BADGE[o.financialStatus]}`}>
+                      {o.financialStatus.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${FUL_BADGE[o.fulfillmentStatus]}`}>
+                      {o.fulfillmentStatus}
+                    </span>
+                  </td>
+                  <td className="font-medium tabular-nums">{formatPrice(o.totalCents, o.currency)}</td>
+                  <td className="text-stone-500 tabular-nums">{o.itemsCount}</td>
+                  <td>
+                    <RowActionsMenu label={`Actions for ${o.number}`} actions={actions} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
+
+      {noteFor && (
+        <AddNoteDialog
+          open
+          orderId={noteFor.id}
+          orderNumber={noteFor.number}
+          onClose={() => setNoteFor(null)}
+          onDone={async () => {
+            setNoteFor(null);
+            await load({ q: search, fin: finStatus, ful: fulStatus });
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={cancelFor !== null}
+        title="Cancel order?"
+        description="The order moves to cancelled status. Stock that was committed will be released."
+        confirmLabel="Cancel order"
+        destructive
+        onCancel={() => setCancelFor(null)}
+        onConfirm={confirmCancel}
+      />
     </section>
   );
 }
