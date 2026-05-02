@@ -200,8 +200,10 @@ func NewRouter(d Deps) http.Handler {
 			r.Post("/returns/{id}/refund", retH.AdminRefund)
 			r.Post("/returns/{id}/cancel", retH.AdminCancel)
 
-			// Customers (admin view + CRM actions).
-			custAdminH := customer.NewHandler(d.DB, d.Sessions)
+			// Customers (admin view + CRM actions). Uses *WithConfig so the
+			// AdminCreate handler can send invite emails (needs ShopPublicURL
+			// + ShopName + SMTP via cfg).
+			custAdminH := customer.NewHandlerWithConfig(d.DB, d.Sessions, d.Cfg)
 			r.Get("/customers", custAdminH.AdminList)
 			r.Post("/customers", custAdminH.AdminCreate)
 			r.Get("/customers/{id}", custAdminH.AdminGet)
