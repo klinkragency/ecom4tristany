@@ -11,7 +11,7 @@ import {
   type FinancialStatus,
   type FulfillmentStatus,
 } from '@/lib/types';
-import { ConfirmDialog, RowActionsMenu, Select, type RowAction } from '@/components/ui';
+import { ConfirmDialog, EntitySearchInput, RowActionsMenu, Select, type RowAction } from '@/components/ui';
 import { AddNoteDialog } from './AddNoteDialog';
 
 const FIN_BADGE: Record<FinancialStatus, string> = {
@@ -73,13 +73,12 @@ export default function OrdersListPage() {
         onSubmit={(e) => { e.preventDefault(); load({ q: search, fin: finStatus, ful: fulStatus }); }}
         className="mb-4 flex flex-wrap items-center gap-2 md:flex-nowrap"
       >
-        <input
-          type="search"
-          placeholder="Search by email or order #"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input min-w-0 flex-1"
-        />
+        <div className="min-w-0 flex-1">
+          <EntitySearchInput
+            kinds={['order']}
+            placeholder="Search by email or order #…"
+          />
+        </div>
         <div className="w-44">
           <Select
             ariaLabel="Filter by payment status"
