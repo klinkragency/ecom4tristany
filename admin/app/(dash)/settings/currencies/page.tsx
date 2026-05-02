@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { ConfirmDialog } from '@/components/ui';
 
 type Currency = {
   code: string;
@@ -32,6 +33,7 @@ export default function CurrenciesPage() {
   const [items, setItems] = useState<Currency[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -53,16 +55,6 @@ export default function CurrenciesPage() {
     }
   }
 
-  async function del(code: string) {
-    if (!confirm(`Delete currency ${code}?`)) return;
-    try {
-      await api(`/api/admin/currencies/${code}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Delete failed');
-    }
-  }
-
   return (
     <div className="max-w-4xl">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -79,7 +71,7 @@ export default function CurrenciesPage() {
       ) : (
         <div className="card divide-y divide-stone-200/60">
           {items.map((c) => (
-            <CurrencyRow key={c.code} value={c} onSave={save} onDelete={del} />
+            <CurrencyRow key={c.code} value={c} onSave={save} onDelete={setPendingDelete} />
           ))}
         </div>
       )}
@@ -90,6 +82,21 @@ export default function CurrenciesPage() {
           onSave={async (d) => { await save(d); setAddOpen(false); }}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={pendingDelete ? `Delete currency ${pendingDelete}?` : ''}
+        description="Past orders that referenced this currency keep their snapshot. New orders will fall back to the shop default."
+        confirmLabel="Delete"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={async () => {
+          if (!pendingDelete) return;
+          await api(`/api/admin/currencies/${pendingDelete}`, { method: 'DELETE' });
+          setPendingDelete(null);
+          await load();
+        }}
+      />
     </div>
   );
 }
