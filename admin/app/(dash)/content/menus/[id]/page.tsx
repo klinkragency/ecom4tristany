@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
+import { Select } from '@/components/ui';
 
 type LinkType =
   | 'url' | 'page' | 'collection' | 'product'
@@ -200,10 +201,15 @@ function MenuItemRow({
           onChange={(e) => onPatch(path, { label: e.target.value })}
           placeholder="Label"
           className="input text-sm flex-1" />
-        <select value={item.linkType} onChange={(e) => onPatch(path, { linkType: e.target.value as LinkType })}
-          className="select w-auto text-xs">
-          {LINK_TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
-        </select>
+        <div className="w-40">
+          <Select<LinkType>
+            ariaLabel="Link type"
+            size="sm"
+            value={item.linkType}
+            onChange={(v) => onPatch(path, { linkType: v })}
+            options={LINK_TYPES.map((t) => ({ value: t.v, label: t.l }))}
+          />
+        </div>
         {item.linkType !== 'menu_header' && item.linkType !== 'blog' && (
           <input value={item.target} onChange={(e) => onPatch(path, { target: e.target.value })}
             placeholder={linkHelp}

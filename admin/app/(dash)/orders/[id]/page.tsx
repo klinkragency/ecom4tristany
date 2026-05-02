@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { Card, ConfirmDialog } from '@/components/ui';
+import { Card, ConfirmDialog, Select } from '@/components/ui';
 
 type OrderPending =
   | { kind: 'cancelOrder' }
@@ -484,13 +484,18 @@ function FulfillModal({
           ))}
         </div>
 
-        <label className="block">
+        <div className="block">
           <span className="label">Ship from</span>
-          <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="select">
-            <option value="">— No location (inventory not decremented) —</option>
-            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
-        </label>
+          <Select
+            ariaLabel="Ship from"
+            value={locationId}
+            onChange={setLocationId}
+            options={[
+              { value: '', label: '— No location (inventory not decremented) —' },
+              ...locations.map((l) => ({ value: l.id, label: l.name })),
+            ]}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
             <span className="label">Carrier</span>
@@ -640,15 +645,20 @@ function RefundModal({
         </label>
 
         {refundTo === 'card' && (
-          <label className="block">
+          <div className="block">
             <span className="label">Reason (Stripe)</span>
-            <select value={reason} onChange={(e) => setReason(e.target.value as typeof reason)} className="select">
-              <option value="requested_by_customer">Requested by customer</option>
-              <option value="duplicate">Duplicate</option>
-              <option value="fraudulent">Fraudulent</option>
-              <option value="">Unspecified</option>
-            </select>
-          </label>
+            <Select<'requested_by_customer' | 'duplicate' | 'fraudulent' | ''>
+              ariaLabel="Reason"
+              value={reason}
+              onChange={(v) => setReason(v as typeof reason)}
+              options={[
+                { value: 'requested_by_customer', label: 'Requested by customer' },
+                { value: 'duplicate', label: 'Duplicate' },
+                { value: 'fraudulent', label: 'Fraudulent' },
+                { value: '', label: 'Unspecified' },
+              ]}
+            />
+          </div>
         )}
 
         <label className="block">

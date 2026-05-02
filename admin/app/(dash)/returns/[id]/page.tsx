@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { formatPrice } from '@/lib/types';
+import { Select } from '@/components/ui';
 
 type Line = {
   id: string;
@@ -223,12 +224,15 @@ function ReceiveModal({
           Restock items to inventory
         </label>
         {restock && (
-          <label className="block">
+          <div className="block">
             <span className="label">Restock to location</span>
-            <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="select">
-              {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </label>
+            <Select
+              ariaLabel="Restock to location"
+              value={locationId}
+              onChange={setLocationId}
+              options={locations.map((l) => ({ value: l.id, label: l.name }))}
+            />
+          </div>
         )}
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
@@ -271,13 +275,18 @@ function RefundModal({
             </span>
           )}
         </label>
-        <label className="block">
+        <div className="block">
           <span className="label">Refund to</span>
-          <select value={refundTo} onChange={(e) => setRefundTo(e.target.value as 'card' | 'store_credit')} className="select">
-            <option value="card">Original payment method (Stripe)</option>
-            <option value="store_credit">Store credit</option>
-          </select>
-        </label>
+          <Select<'card' | 'store_credit'>
+            ariaLabel="Refund to"
+            value={refundTo}
+            onChange={setRefundTo}
+            options={[
+              { value: 'card', label: 'Original payment method (Stripe)' },
+              { value: 'store_credit', label: 'Store credit' },
+            ]}
+          />
+        </div>
         <label className="block">
           <span className="label">Note (optional)</span>
           <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />

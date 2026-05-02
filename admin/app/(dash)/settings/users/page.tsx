@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { ConfirmDialog } from '@/components/ui';
+import { ConfirmDialog, RowActionsMenu, Select, type RowAction } from '@/components/ui';
+import { ChangeRoleDialog, type UserRole } from './ChangeRoleDialog';
 
 type AdminUser = {
   id: string;
   email: string;
   name: string;
-  role: 'owner' | 'admin' | 'staff';
+  role: UserRole;
   mustChangePassword: boolean;
   lastLoginAt?: string | null;
   invitedAt?: string | null;
@@ -21,6 +22,8 @@ export default function UsersPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
+  const [roleFor, setRoleFor] = useState<AdminUser | null>(null);
+  const [flashId, setFlashId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -32,20 +35,12 @@ export default function UsersPage() {
   }
   useEffect(() => { load(); }, []);
 
-  async function setRole(id: string, role: AdminUser['role']) {
+  async function resend(u: AdminUser) {
     try {
-      await api(`/api/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Role change failed');
-    }
-  }
-
-
-  async function resend(id: string) {
-    try {
-      const r = await api<{ inviteUrl: string }>(`/api/admin/users/${id}/resend-invite`, { method: 'POST' });
+      const r = await api<{ inviteUrl: string }>(`/api/admin/users/${u.id}/resend-invite`, { method: 'POST' });
       setInviteUrl(r.inviteUrl);
+      setFlashId(u.id);
+      window.setTimeout(() => setFlashId((cur) => (cur === u.id ? null : cur)), 3000);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Resend failed');
     }
@@ -72,41 +67,48 @@ export default function UsersPage() {
             <th>Name</th>
             <th>Role</th>
             <th>Last login</th>
-            <th></th>
+            <th className="w-12"></th>
           </tr>
         </thead>
         <tbody>
-          {items.map((u) => (
-            <tr key={u.id}>
-              <td>
-                <div className="font-medium">{u.email}</div>
-                {u.mustChangePassword && <span className="badge badge-warning no-dot">pending first login</span>}
-              </td>
-              <td>{u.name}</td>
-              <td>
-                <select
-                  value={u.role}
-                  onChange={(e) => setRole(u.id, e.target.value as AdminUser['role'])}
-                  className="select w-auto"
-                >
-                  <option value="owner">Owner</option>
-                  <option value="admin">Admin</option>
-                  <option value="staff">Staff</option>
-                </select>
-              </td>
-              <td className="text-xs text-stone-500">
-                {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '—'}
-              </td>
-              <td className="text-right">
-                <div className="flex justify-end gap-1">
-                  {u.mustChangePassword && (
-                    <button onClick={() => resend(u.id)} className="btn btn-ghost btn-sm">Resend invite</button>
+          {items.map((u) => {
+            const actions: RowAction[] = [
+              {
+                label: 'Change role',
+                onClick: () => setRoleFor(u),
+              },
+            ];
+            if (u.mustChangePassword) {
+              actions.push({
+                label: 'Resend invite',
+                onClick: () => resend(u),
+              });
+            }
+            actions.push({
+              label: 'Delete admin',
+              destructive: true,
+              onClick: () => setPendingDelete(u),
+            });
+            return (
+              <tr key={u.id}>
+                <td>
+                  <div className="font-medium">{u.email}</div>
+                  {u.mustChangePassword && <span className="badge badge-warning no-dot">pending first login</span>}
+                  {flashId === u.id && (
+                    <span className="ml-2 text-xs font-medium text-emerald-600">Invite resent</span>
                   )}
-                  <button onClick={() => setPendingDelete(u)} className="btn btn-danger btn-sm">Delete</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td>{u.name}</td>
+                <td className="capitalize">{u.role}</td>
+                <td className="text-xs text-stone-500">
+                  {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '—'}
+                </td>
+                <td>
+                  <RowActionsMenu label={`Actions for ${u.email}`} actions={actions} />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -116,6 +118,20 @@ export default function UsersPage() {
           onDone={async (url) => {
             setInviteOpen(false);
             setInviteUrl(url);
+            await load();
+          }}
+        />
+      )}
+
+      {roleFor && (
+        <ChangeRoleDialog
+          open
+          userId={roleFor.id}
+          userEmail={roleFor.email}
+          currentRole={roleFor.role}
+          onClose={() => setRoleFor(null)}
+          onDone={async () => {
+            setRoleFor(null);
             await load();
           }}
         />
@@ -147,7 +163,7 @@ function InviteModal({
 }) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<AdminUser['role']>('staff');
+  const [role, setRole] = useState<UserRole>('staff');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -179,14 +195,19 @@ function InviteModal({
           <span className="label">Name</span>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className="block">
+        <div className="block">
           <span className="label">Role</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as AdminUser['role'])} className="select">
-            <option value="staff">Staff — day-to-day ops, no refunds or deletes</option>
-            <option value="admin">Admin — everything except managing admins</option>
-            <option value="owner">Owner — full rights</option>
-          </select>
-        </label>
+          <Select<UserRole>
+            ariaLabel="Role"
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: 'staff', label: 'Staff — day-to-day ops, no refunds or deletes' },
+              { value: 'admin', label: 'Admin — everything except managing admins' },
+              { value: 'owner', label: 'Owner — full rights' },
+            ]}
+          />
+        </div>
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button onClick={submit} disabled={busy || !email.trim() || !name.trim()} className="btn btn-primary">

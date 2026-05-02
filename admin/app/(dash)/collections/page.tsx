@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import type { CollectionListItem, CollectionListPage } from '@/lib/types';
+import { RowActionsMenu } from '@/components/ui';
+import { storefrontUrl } from '@/lib/storefront';
 import { CreateCollectionButton } from './CreateCollectionButton';
-import { RowActionsMenu } from './RowActionsMenu';
 import { DeleteCollectionDialog } from './DeleteCollectionDialog';
 
 export default function CollectionsListPage() {
+  const router = useRouter();
   const [page, setPage] = useState<CollectionListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -135,6 +138,19 @@ export default function CollectionsListPage() {
                   <RowActionsMenu
                     label={`Actions for ${c.title}`}
                     actions={[
+                      {
+                        label: 'Edit',
+                        onClick: () => router.push(`/collections/${c.id}`),
+                      },
+                      {
+                        label: 'View on storefront',
+                        onClick: () =>
+                          window.open(
+                            `${storefrontUrl()}/collections/${c.handle}`,
+                            '_blank',
+                            'noopener,noreferrer',
+                          ),
+                      },
                       {
                         label: 'Delete',
                         destructive: true,

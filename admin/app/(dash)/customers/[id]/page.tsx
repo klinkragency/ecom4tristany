@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { Card } from '@/components/ui';
+import { Card, Select } from '@/components/ui';
 import { formatPrice, type CustomerDetail, type FinancialStatus } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
@@ -458,17 +458,21 @@ function GrantModal({ customerId, currency, onClose, onDone }: { customerId: str
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
             className="input" />
         </label>
-        <label className="block">
+        <div className="block">
           <span className="label">Reason</span>
-          <select value={reason} onChange={(e) => setReason(e.target.value)}
-            className="select">
-            <option value="grant">Grant (compensation / goodwill)</option>
-            <option value="promotional">Promotional (birthday, etc.)</option>
-            <option value="adjustment">Adjustment (correction)</option>
-            <option value="refund">Refund-to-credit</option>
-            <option value="expiration">Expiration (debit)</option>
-          </select>
-        </label>
+          <Select
+            ariaLabel="Reason"
+            value={reason}
+            onChange={setReason}
+            options={[
+              { value: 'grant', label: 'Grant (compensation / goodwill)' },
+              { value: 'promotional', label: 'Promotional (birthday, etc.)' },
+              { value: 'adjustment', label: 'Adjustment (correction)' },
+              { value: 'refund', label: 'Refund-to-credit' },
+              { value: 'expiration', label: 'Expiration (debit)' },
+            ]}
+          />
+        </div>
         <label className="block">
           <span className="label">Note</span>
           <input value={note} onChange={(e) => setNote(e.target.value)} className="input" />

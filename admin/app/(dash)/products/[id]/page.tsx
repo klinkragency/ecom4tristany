@@ -8,7 +8,7 @@ import { type Product, type ProductVariant } from '@/lib/types';
 import MediaUploader from './MediaUploader';
 import RichTextEditor from '@/components/RichTextEditor';
 import InventorySection from './InventorySection';
-import { Card, ConfirmDialog, Field } from '@/components/ui';
+import { Card, ConfirmDialog, Field, Select } from '@/components/ui';
 
 type Pending =
   | { kind: 'product' }
@@ -174,15 +174,16 @@ export default function EditProductPage() {
         <Card title="Organization" className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Status">
-              <select
+              <Select<'draft' | 'active' | 'archived'>
+                ariaLabel="Status"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as typeof status)}
-                className="select"
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="archived">Archived</option>
-              </select>
+                onChange={setStatus}
+                options={[
+                  { value: 'draft', label: 'Draft' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'archived', label: 'Archived' },
+                ]}
+              />
             </Field>
             <Field label="Vendor">
               <input
@@ -581,19 +582,18 @@ function AddVariantForm({
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2">
         {product.options.map((o) => (
-          <select
+          <Select
             key={o.id}
+            ariaLabel={o.name}
+            size="sm"
             value={values[o.id] || ''}
-            onChange={(e) => setValues({ ...values, [o.id]: e.target.value })}
-            className="select w-auto text-sm"
-          >
-            <option value="">{o.name}…</option>
-            {o.values.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.value}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setValues({ ...values, [o.id]: v })}
+            placeholder={`${o.name}…`}
+            options={[
+              { value: '', label: `${o.name}…` },
+              ...o.values.map((v) => ({ value: v.id, label: v.value })),
+            ]}
+          />
         ))}
         <input
           placeholder="SKU"

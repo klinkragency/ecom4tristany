@@ -1,7 +1,7 @@
 // admin/app/(dash)/collections/_forms/shared/RulesSection.tsx
 'use client';
 
-import { Card } from '@/components/ui';
+import { Card, Select } from '@/components/ui';
 import type { CollectionRule } from '@/lib/types';
 import type { CollectionPayload, RuleInput } from './types';
 
@@ -78,14 +78,18 @@ export function RulesSection({
     <Card title="Conditions">
       <div className="mb-3 flex items-center gap-2 text-sm">
         <span className="text-stone-500">Products must match</span>
-        <select
-          className="select w-auto"
-          value={values.matchAll ? 'all' : 'any'}
-          onChange={(e) => onChange({ matchAll: e.target.value === 'all' })}
-        >
-          <option value="all">all conditions</option>
-          <option value="any">any condition</option>
-        </select>
+        <div className="w-44">
+          <Select<'all' | 'any'>
+            ariaLabel="Match mode"
+            size="sm"
+            value={values.matchAll ? 'all' : 'any'}
+            onChange={(v) => onChange({ matchAll: v === 'all' })}
+            options={[
+              { value: 'all', label: 'all conditions' },
+              { value: 'any', label: 'any condition' },
+            ]}
+          />
+        </div>
       </div>
 
       {values.rules.length === 0 ? (
@@ -105,11 +109,11 @@ export function RulesSection({
                 key={idx}
                 className="grid grid-cols-[1fr_1fr_2fr_auto] gap-2 text-sm"
               >
-                <select
-                  className="select w-auto"
+                <Select<CollectionRule['field']>
+                  ariaLabel="Field"
+                  size="sm"
                   value={rule.field}
-                  onChange={(e) => {
-                    const field = e.target.value as CollectionRule['field'];
+                  onChange={(field) => {
                     const nextOps = operatorsFor(field);
                     patchRule(idx, {
                       field,
@@ -120,28 +124,18 @@ export function RulesSection({
                       value: '',
                     });
                   }}
-                >
-                  {Object.entries(FIELD_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select w-auto"
+                  options={Object.entries(FIELD_LABELS).map(([k, v]) => ({
+                    value: k as CollectionRule['field'],
+                    label: v,
+                  }))}
+                />
+                <Select<CollectionRule['operator']>
+                  ariaLabel="Operator"
+                  size="sm"
                   value={op}
-                  onChange={(e) =>
-                    patchRule(idx, {
-                      operator: e.target.value as CollectionRule['operator'],
-                    })
-                  }
-                >
-                  {ops.map((o) => (
-                    <option key={o} value={o}>
-                      {OPERATOR_LABELS[o]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(operator) => patchRule(idx, { operator })}
+                  options={ops.map((o) => ({ value: o, label: OPERATOR_LABELS[o] }))}
+                />
                 {valueless(op) ? (
                   <div />
                 ) : (

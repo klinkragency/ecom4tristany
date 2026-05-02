@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
+import { Select } from '@/components/ui';
 
 type AuditEntry = {
   id: string;
@@ -47,10 +48,18 @@ export default function AuditPage() {
   return (
     <div className="max-w-5xl space-y-3">
       <div className="flex items-center justify-end">
-        <select value={resourceFilter} onChange={(e) => setResourceFilter(e.target.value)} className="select w-auto">
-          <option value="">All resources</option>
-          {resourceTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
+        <div className="w-48">
+          <Select
+            ariaLabel="Filter by resource"
+            value={resourceFilter}
+            onChange={setResourceFilter}
+            searchable={resourceTypes.length > 12}
+            options={[
+              { value: '', label: 'All resources' },
+              ...resourceTypes.map((t) => ({ value: t, label: t })),
+            ]}
+          />
+        </div>
       </div>
       {error && <div className="alert alert-error">{error}</div>}
 

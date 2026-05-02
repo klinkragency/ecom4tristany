@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import type { Location, ProductListPage, Transfer } from '@/lib/types';
+import { Select } from '@/components/ui';
 
 // Minimal variant type for the picker (we reuse admin product detail endpoint).
 type ProductDetail = {
@@ -73,26 +74,24 @@ export default function NewTransferPage() {
 
       <div className="space-y-4">
         <div className="card card-pad grid grid-cols-2 gap-3">
-          <label className="block text-sm">
+          <div className="block text-sm">
             <span className="label">Source</span>
-            <select
+            <Select
+              ariaLabel="Source location"
               value={fromId}
-              onChange={(e) => setFromId(e.target.value)}
-              className="select"
-            >
-              {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </label>
-          <label className="block text-sm">
+              onChange={setFromId}
+              options={locations.map((l) => ({ value: l.id, label: l.name }))}
+            />
+          </div>
+          <div className="block text-sm">
             <span className="label">Destination</span>
-            <select
+            <Select
+              ariaLabel="Destination location"
               value={toId}
-              onChange={(e) => setToId(e.target.value)}
-              className="select"
-            >
-              {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
-          </label>
+              onChange={setToId}
+              options={locations.map((l) => ({ value: l.id, label: l.name }))}
+            />
+          </div>
           <label className="block text-sm col-span-2">
             <span className="label">Note (optional)</span>
             <input
